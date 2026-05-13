@@ -1,0 +1,38 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+
+<Base
+  title="Secciones de Sonido — Sebastián Ortiz de Zevallos"
+  description="An audiovisual experiment in three movements."
+  currentPage="projects"
+>
+  <article class="project">
+    <div class="project__year">2026 · Audiovisual</div>
+    <h1 class="project__title">Secciones de Sonido</h1>
+    <p class="project__subtitle">un experimento en tres tiempos</p>
+
+    <div class="project__body">
+      <p>
+        Audiovisual exhibition piece using Suno AI, Demucs stem separation, and
+        Grasshopper/Rhino to computationally analyze and visualize three
+        musical compositions.
+      </p>
+
+      <p>
+        The pipeline reads MP3 stems, extracts waveform and pitch data using
+        librosa's pYIN algorithm via a custom Python script, and drives 3D mesh
+        deformations synchronized to a time slider.
+      </p>
+
+      <p style="color: var(--ink-faint); font-style: italic; margin-top: 3rem;">
+        Images, video documentation, and exhibition texts coming soon.
+      </p>
+    </div>
+
+    <div class="meta">
+      <div><a href="/projects">← All projects</a></div>
+      <div>2026</div>
+    </div>
+  </article>
+</Base>
