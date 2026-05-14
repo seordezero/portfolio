@@ -24,7 +24,7 @@ export const projects: Project[] = [
   {
     slug: "algoritmia",
     title: "Algoritmia",
-    subtitle: "thesis project, PUCP",
+    subtitle: "Autourbanización Asistida",
     year: 2023,
     category: "Research",
   },

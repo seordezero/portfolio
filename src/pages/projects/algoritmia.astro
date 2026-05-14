@@ -1,31 +1,87 @@
 ---
 import Base from "../../layouts/Base.astro";
+
+const boards = Array.from({ length: 14 }, (_, i) => {
+  const n = String(i + 1).padStart(2, "0");
+  return {
+    src: `/images/algoritmia/LÁMINAS_Page_${n}.jpg`,
+    alt: `Algoritmia — board ${n}`,
+  };
+});
 ---
 
 <Base
   title="Algoritmia — Sebastián Ortiz de Zevallos"
-  description="Thesis project at Pontificia Universidad Católica del Perú."
+  description="A parametric thesis proposing an algorithm-driven densification strategy for informal hillside settlements in Lima."
   currentPage="projects"
 >
   <article class="project">
     <div class="project__year">2023 · Research</div>
     <h1 class="project__title">Algoritmia</h1>
-    <p class="project__subtitle">thesis project, PUCP</p>
+    <p class="project__subtitle">Autourbanización Asistida</p>
+
+    <div class="project__cover">
+      <img
+        src="/images/algoritmia/cover image.png"
+        alt="Algoritmia — cover render showing modular densification in a Lima hillside barrio"
+        loading="eager"
+      />
+    </div>
 
     <div class="project__body">
       <p>
-        Thesis project developed at the Pontificia Universidad Católica del
-        Perú.
+        Architecture thesis developed at the Pontificia Universidad Católica del
+        Perú (PUCP), Lima, 2023. The project addresses the structural and social
+        fragility of informal hillside settlements — a condition affecting more
+        than half of Lima's urban area — through an algorithmic design
+        framework that assists, rather than replaces, the self-building logic
+        already operating in these territories.
       </p>
 
-      <p style="color: var(--ink-faint); font-style: italic; margin-top: 3rem;">
-        Project description, drawings, and documentation coming soon.
+      <p>
+        The central question the thesis poses is how to formalize incremental
+        urbanization without erasing it. The response is a Grasshopper algorithm
+        that reads a multi-layered risk map — cross-referencing structural
+        parameters (material, state, slope), urban parameters (accessibility,
+        built density, vegetation cover), and human parameters (household
+        composition, tenure, proximity to services) — and produces a ranked
+        intervention sequence for each building cluster.
       </p>
+
+      <p>
+        The algorithm outputs are organized around eight nested strategies:
+        parametrize, connect, reinforce, clear, grow, equip, appropriate,
+        replicate. Each strategy maps to a component in a modular steel-frame
+        kit-of-parts — designed for incremental assembly by residents — that
+        can expand an existing dwelling vertically, create an elevated plaza,
+        add a communal rooftop, or insert a vertical circulation core between
+        properties.
+      </p>
+
+      <p>
+        The post-algorithm renders show two scales of outcome: the section of
+        an <em>Expansive Dwelling</em>, where three tenant families and one
+        original family cohabit a restructured block with shared threshold
+        spaces; and an aerial view of <em>Open Spaces</em>, where the
+        algorithm's collective interventions have transformed a formerly
+        disconnected slope into a legible network of paths, platforms, and
+        shared ground.
+      </p>
+
+      <h2>Project boards</h2>
+    </div>
+
+    <div class="project__gallery">
+      {boards.map((b) => (
+        <figure class="project__gallery-item">
+          <img src={b.src} alt={b.alt} loading="lazy" />
+        </figure>
+      ))}
     </div>
 
     <div class="meta">
       <div><a href="/projects">← All projects</a></div>
-      <div>2023</div>
+      <div>PUCP · Lima · 2023</div>
     </div>
   </article>
 </Base>
