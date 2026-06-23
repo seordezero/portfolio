@@ -8,6 +8,7 @@ import Gallery from "../../components/Gallery.astro";
   description="Restoration of an interior courtyard in an old adobe house in Barranco."
   currentPage="projects"
   theme="pink"
+  layout="split"
 >
   <article class="project">
     <div class="project__year">2021 · Architecture</div>
@@ -29,8 +30,6 @@ import Gallery from "../../components/Gallery.astro";
 
     </div>
 
-    <Gallery slug="jiron-tumbes" images={["01.png", "02.jpg"]} alt="Jirón Tumbes" />
-
     <div class="collab">
       <p class="collab__label">Collaborators</p>
       <p class="collab__names">Carolina Rivera</p>
@@ -41,4 +40,6 @@ import Gallery from "../../components/Gallery.astro";
       <div>2021</div>
     </div>
   </article>
+
+  <Gallery slot="gallery" slug="jiron-tumbes" images={["01.png", "02.jpg"]} alt="Jirón Tumbes" />
 </Base>

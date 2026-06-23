@@ -8,6 +8,7 @@ import Gallery from "../../components/Gallery.astro";
   description="Club house and condo design with natural low-cost materials."
   currentPage="projects"
   theme="yellow"
+  layout="split"
 >
   <article class="project">
     <div class="project__year">2021 · Architecture</div>
@@ -32,11 +33,11 @@ import Gallery from "../../components/Gallery.astro";
 
     </div>
 
-    <Gallery slug="la-bienvenida" images={["01.png"]} alt="La Bienvenida" />
-
     <div class="meta">
       <div><a href="/">← Index</a></div>
       <div>2021</div>
     </div>
   </article>
+
+  <Gallery slot="gallery" slug="la-bienvenida" images={["01.png"]} alt="La Bienvenida" />
 </Base>

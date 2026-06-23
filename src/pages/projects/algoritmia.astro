@@ -8,6 +8,7 @@ import Gallery from "../../components/Gallery.astro";
   description="Parametric urban proposal for Lima's auto-urbanization — final year project at PUCP."
   currentPage="projects"
   theme="red"
+  layout="split"
 >
   <article class="project">
     <div class="project__year">2021 · Research</div>
@@ -86,15 +87,16 @@ import Gallery from "../../components/Gallery.astro";
 
     </div>
 
-    <Gallery
-      slug="algoritmia"
-      images={["01.png", "02.png", "03.jpg", "04.png"]}
-      alt="Algoritmia"
-    />
-
     <div class="meta">
       <div><a href="/">← Index</a></div>
       <div>PUCP · Lima · 2021</div>
     </div>
   </article>
+
+  <Gallery
+    slot="gallery"
+    slug="algoritmia"
+    images={["01.png", "02.png", "03.jpg", "04.png"]}
+    alt="Algoritmia"
+  />
 </Base>

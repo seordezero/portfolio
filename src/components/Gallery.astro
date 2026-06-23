@@ -7,26 +7,56 @@ interface Props {
 const { slug, images, alt = "" } = Astro.props;
 ---
 
-<div class="gallery">
-  {images.map((file, i) => {
-    const n = String(i + 1).padStart(2, "0");
-    const label = `${alt} — image ${i + 1}`;
-    return (
-      <a
-        class="gallery__item"
-        href={`/images/${slug}/full/${file}`}
-        data-lightbox
-        data-alt={label}
-        aria-label={label}
-      >
-        <img
-          src={`/images/${slug}/thumb/${n}.jpg`}
-          alt={label}
-          width="512"
-          height="512"
-          loading="lazy"
-        />
-      </a>
-    );
-  })}
+<div class="carousel" data-carousel>
+  <div class="carousel__stage">
+    {images.map((file, i) => {
+      const n = String(i + 1).padStart(2, "0");
+      const label = `${alt} — image ${i + 1}`;
+      return (
+        <a
+          class="carousel__item"
+          href={`/images/${slug}/full/${file}`}
+          data-lightbox
+          data-alt={label}
+          aria-label={label}
+          hidden={i !== 0}
+        >
+          <img
+            src={`/images/${slug}/thumb/${n}.jpg`}
+            alt={label}
+            width="512"
+            height="512"
+            loading="lazy"
+          />
+        </a>
+      );
+    })}
+  </div>
+
+  {images.length > 1 && (
+    <div class="carousel__nav">
+      <button type="button" data-prev aria-label="Previous image">←</button>
+      <span class="carousel__count"><span data-current>1</span> / {images.length}</span>
+      <button type="button" data-next aria-label="Next image">→</button>
+    </div>
+  )}
 </div>
+
+<script>
+  document.querySelectorAll("[data-carousel]").forEach((c) => {
+    const items = Array.from(c.querySelectorAll(".carousel__item"));
+    if (items.length < 2) return;
+    const counter = c.querySelector("[data-current]");
+    let idx = 0;
+    const show = (n) => {
+      idx = (n + items.length) % items.length;
+      items.forEach((it, i) => {
+        if (i === idx) it.removeAttribute("hidden");
+        else it.setAttribute("hidden", "");
+      });
+      if (counter) counter.textContent = String(idx + 1);
+    };
+    c.querySelector("[data-prev]")?.addEventListener("click", () => show(idx - 1));
+    c.querySelector("[data-next]")?.addEventListener("click", () => show(idx + 1));
+  });
+</script>

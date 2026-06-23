@@ -8,6 +8,7 @@ import Gallery from "../../components/Gallery.astro";
   description="Furniture for a 25 m² Airbnb apartment."
   currentPage="projects"
   theme="white"
+  layout="split"
 >
   <article class="project">
     <div class="project__year">2021 · Design</div>
@@ -31,12 +32,6 @@ import Gallery from "../../components/Gallery.astro";
       </p>
     </div>
 
-    <Gallery
-      slug="foldable-breakfast-table"
-      images={["01.jpg", "02.jpg", "03.jpg"]}
-      alt="Foldable Breakfast Table"
-    />
-
     <div class="collab">
       <p class="collab__label">Collaborators</p>
       <p class="collab__names">Carolina Rivera</p>
@@ -47,4 +42,11 @@ import Gallery from "../../components/Gallery.astro";
       <div>2021</div>
     </div>
   </article>
+
+  <Gallery
+    slot="gallery"
+    slug="foldable-breakfast-table"
+    images={["01.jpg", "02.jpg", "03.jpg"]}
+    alt="Foldable Breakfast Table"
+  />
 </Base>

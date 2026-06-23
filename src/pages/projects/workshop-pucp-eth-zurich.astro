@@ -8,6 +8,7 @@ import Gallery from "../../components/Gallery.astro";
   description="A Room for Archeologists and Kids — Small Building of the Year, Dezeen Awards 2019."
   currentPage="projects"
   theme="pink"
+  layout="split"
 >
   <article class="project">
     <div class="project__year">2018 · Architecture</div>
@@ -63,15 +64,16 @@ import Gallery from "../../components/Gallery.astro";
       </p>
     </div>
 
-    <Gallery
-      slug="workshop-pucp-eth-zurich"
-      images={["01.jpg", "02.jpg", "03.jpg", "04.png"]}
-      alt="A Room for Archeologists and Kids"
-    />
-
     <div class="meta">
       <div><a href="/">← Index</a></div>
       <div>2018</div>
     </div>
   </article>
+
+  <Gallery
+    slot="gallery"
+    slug="workshop-pucp-eth-zurich"
+    images={["01.jpg", "02.jpg", "03.jpg", "04.png"]}
+    alt="A Room for Archeologists and Kids"
+  />
 </Base>

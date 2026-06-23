@@ -8,6 +8,7 @@ import Gallery from "../../components/Gallery.astro";
   description="A critique and invitation to rethink future city-expansions such as Copenhagen's Lynetteholm."
   currentPage="projects"
   theme="blue"
+  layout="split"
 >
   <article class="project">
     <div class="project__year">2023 · Architecture</div>
@@ -48,12 +49,6 @@ import Gallery from "../../components/Gallery.astro";
 
     </div>
 
-    <Gallery
-      slug="cph-mothership"
-      images={["01.png", "02.png", "03.png", "04.png"]}
-      alt="CPH Mothership"
-    />
-
     <div class="collab">
       <p class="collab__label">Collaborators</p>
       <p class="collab__names">Mu-Huai Liu, Aikaterini Marinaki, Yang Xiao</p>
@@ -64,4 +59,11 @@ import Gallery from "../../components/Gallery.astro";
       <div>2023</div>
     </div>
   </article>
+
+  <Gallery
+    slot="gallery"
+    slug="cph-mothership"
+    images={["01.png", "02.png", "03.png", "04.png"]}
+    alt="CPH Mothership"
+  />
 </Base>
