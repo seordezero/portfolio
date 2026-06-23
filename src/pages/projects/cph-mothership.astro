@@ -4,28 +4,63 @@ import Base from "../../layouts/Base.astro";
 
 <Base
   title="CPH Mothership — Sebastián Ortiz de Zevallos"
-  description="IAAC research project."
+  description="A critique and invitation to rethink future city-expansions such as Copenhagen's Lynetteholm."
   currentPage="projects"
 >
   <article class="project">
-    <div class="project__year">2024 · Architecture</div>
+    <div class="project__year">2023 · Architecture</div>
     <h1 class="project__title">CPH Mothership</h1>
-    <p class="project__subtitle">IAAC research project</p>
+    <p class="project__subtitle">X-Urban Studio, IAAC · with MuHuai Liu, Akaterini Marinaki &amp; Yang Xiao</p>
 
     <div class="project__body">
       <p>
-        Research project developed at the Institute for Advanced Architecture
-        of Catalonia (IAAC).
+        This project is a critique and an invitation to rethink how a future
+        city-expansion such as Copenhagen's island "Lynetteholm" can be thought.
+        Rem Koolhaas coined the term BIGNESS in 1995 to describe a scale in
+        which the project exceeds architecture itself as the conception of a
+        single building.
       </p>
 
-      <p style="color: var(--ink-faint); font-style: italic; margin-top: 3rem;">
-        Project description, drawings, and documentation coming soon.
+      <p>
+        From this idea, we intend to radicalize the separation between the
+        envelope and the organs of the project, proposing a multi-scalar system
+        that acts as a system of systems, a "Mothership" of sorts, blurring the
+        edges of the individual and the collective.
       </p>
+
+      <p>
+        Its modules come from three experimental precedent projects that
+        challenge the vertical typology of the skyscraper. Thus, this counter
+        proposal to Lynetteholm does not pretend to offer a better alternative
+        nor to describe a dystopian future scenario. It dwells in-between these
+        two poles, focusing on creating a new fertile ground for the design of
+        future cities through the radicalization of typology.
+      </p>
+
+      <h2>Method</h2>
+      <p>
+        For the module connections we used the Monoceros plugin for Grasshopper
+        by Sub.Digital. This way we could define the connections between
+        buildings that we wanted and try different combinations.
+      </p>
+
+    </div>
+
+    <div class="project__gallery">
+      {[1, 2, 3].map((n) => (
+        <figure class="project__gallery-item">
+          <img
+            src={`/images/cph-mothership/${String(n).padStart(2, "0")}.jpg`}
+            alt={`CPH Mothership — spread ${n}`}
+            loading="lazy"
+          />
+        </figure>
+      ))}
     </div>
 
     <div class="meta">
       <div><a href="/projects">← All projects</a></div>
-      <div>2024</div>
+      <div>2023</div>
     </div>
   </article>
 </Base>

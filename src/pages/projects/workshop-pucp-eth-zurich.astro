@@ -1,0 +1,81 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+
+<Base
+  title="Workshop PUCP — ETH Zürich — Sebastián Ortiz de Zevallos"
+  description="A Room for Archeologists and Kids — Small Building of the Year, Dezeen Awards 2019."
+  currentPage="projects"
+>
+  <article class="project">
+    <div class="project__year">2018 · Architecture</div>
+    <h1 class="project__title">Workshop PUCP — ETH Zürich</h1>
+    <p class="project__subtitle">A Room for Archeologists and Kids · Small Building of the Year, Dezeen Awards 2019</p>
+
+    <div class="project__body">
+      <p>
+        The archeological complex of Pachacamac is the most important
+        prehispanic center in the Peruvian coast. Sanctuaries were built on top
+        of their predecessors throughout many cultures. The architectural topics
+        are similar: symmetry, hierarchy, long ramps and terraces.
+      </p>
+
+      <p>
+        I was particularly attracted to this relation between control mechanisms
+        and architecture. The impact these buildings have while you walk through
+        them varies and intensifies according to your point of view. The Incas
+        used these effects in order to appear powerful and divine to the common
+        folk. This is what I tried to capture in drawings of different ruins of
+        the sanctuary by changing perspectives.
+      </p>
+
+      <h2>Workshop with ETH Zürich</h2>
+      <p>
+        The second part of the studio consisted of a Workshop in collaboration
+        with the Tom Emerson Studio from ETH Zürich. We had two first weeks to
+        define the design of a Pavilion for archeologists and kids and make
+        prototypes through the process. After this period, we had three weeks to
+        build the Pavilion on-site while still defining the final details of it.
+        We split into groups with different tasks; I participated in the ground
+        team, even though we all participated in every team at the end.
+      </p>
+      <p>
+        My work in this team involved everything from digging the foundations to
+        laying the adobe bricks for the floor once the structure was finished.
+        For the foundations, we decided to dig one-meter-deep conical holes on
+        the ground that we later filled with sand to bury the wooden structure
+        that was inserted into them. The reason for this was the possibility of
+        undiscovered archeological remains under the construction, which demanded
+        superficial and light foundations. The next task was the layout of the
+        adobe bricks that would serve as the ground for the outdoor archeological
+        exhibition. The inspiration for the pattern came out of the weaving of
+        Quincha, a material made from cane and mud that dates from the
+        precolonial era.
+      </p>
+      <p>
+        This workshop was a great experience to learn from the ETH professors and
+        students and their methodologies, as well as from the ancient
+        architecture of my homeland. The next year after we finished the
+        Pavilion, it was awarded Small Building of the Year by the Dezeen Awards
+        2019.
+      </p>
+    </div>
+
+    <div class="project__gallery">
+      {[1, 2].map((n) => (
+        <figure class="project__gallery-item">
+          <img
+            src={`/images/workshop-pucp-eth-zurich/${String(n).padStart(2, "0")}.jpg`}
+            alt={`A Room for Archeologists and Kids — spread ${n}`}
+            loading="lazy"
+          />
+        </figure>
+      ))}
+    </div>
+
+    <div class="meta">
+      <div><a href="/projects">← All projects</a></div>
+      <div>2018</div>
+    </div>
+  </article>
+</Base>
