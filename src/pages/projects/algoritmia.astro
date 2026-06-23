@@ -1,13 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
-
-const boards = Array.from({ length: 14 }, (_, i) => {
-  const n = String(i + 1).padStart(2, "0");
-  return {
-    src: `/images/algoritmia/LÁMINAS_Page_${n}.jpg`,
-    alt: `Algoritmia — board ${n}`,
-  };
-});
+import Gallery from "../../components/Gallery.astro";
 ---
 
 <Base
@@ -19,14 +12,6 @@ const boards = Array.from({ length: 14 }, (_, i) => {
     <div class="project__year">2021 · Research</div>
     <h1 class="project__title">Algoritmia</h1>
     <p class="project__subtitle">Final year project, PUCP</p>
-
-    <div class="project__cover">
-      <img
-        src="/images/algoritmia/cover image.png"
-        alt="Algoritmia — cover render showing modular densification in a Lima hillside barrio"
-        loading="eager"
-      />
-    </div>
 
     <div class="project__body">
       <p>
@@ -98,16 +83,13 @@ const boards = Array.from({ length: 14 }, (_, i) => {
         governments is just outdated and useless for the broader scale.
       </p>
 
-      <h2>Project boards</h2>
     </div>
 
-    <div class="project__gallery">
-      {boards.map((b) => (
-        <figure class="project__gallery-item">
-          <img src={b.src} alt={b.alt} loading="lazy" />
-        </figure>
-      ))}
-    </div>
+    <Gallery
+      slug="algoritmia"
+      images={["01.png", "02.png", "03.jpg", "04.jpg"]}
+      alt="Algoritmia"
+    />
 
     <div class="meta">
       <div><a href="/projects">← All projects</a></div>

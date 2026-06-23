@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import Gallery from "../../components/Gallery.astro";
 ---
 
 <Base
@@ -25,10 +26,9 @@ import Base from "../../layouts/Base.astro";
         existing walls and giving this interesting spatiality.
       </p>
 
-      <p style="color: var(--ink-faint); font-style: italic; margin-top: 3rem;">
-        Images and documentation coming soon.
-      </p>
     </div>
+
+    <Gallery slug="jiron-tumbes" images={["01.png", "02.jpg"]} alt="Jirón Tumbes" />
 
     <div class="meta">
       <div><a href="/projects">← All projects</a></div>

@@ -1,0 +1,32 @@
+---
+interface Props {
+  slug: string;
+  images: string[]; // full-res filenames with extension, in order
+  alt?: string;
+}
+const { slug, images, alt = "" } = Astro.props;
+---
+
+<div class="gallery">
+  {images.map((file, i) => {
+    const n = String(i + 1).padStart(2, "0");
+    const label = `${alt} — image ${i + 1}`;
+    return (
+      <a
+        class="gallery__item"
+        href={`/images/${slug}/full/${file}`}
+        data-lightbox
+        data-alt={label}
+        aria-label={label}
+      >
+        <img
+          src={`/images/${slug}/thumb/${n}.jpg`}
+          alt={label}
+          width="512"
+          height="512"
+          loading="lazy"
+        />
+      </a>
+    );
+  })}
+</div>

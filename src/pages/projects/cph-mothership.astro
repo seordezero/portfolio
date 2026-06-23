@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import Gallery from "../../components/Gallery.astro";
 ---
 
 <Base
@@ -46,17 +47,11 @@ import Base from "../../layouts/Base.astro";
 
     </div>
 
-    <div class="project__gallery">
-      {[1, 2, 3].map((n) => (
-        <figure class="project__gallery-item">
-          <img
-            src={`/images/cph-mothership/${String(n).padStart(2, "0")}.jpg`}
-            alt={`CPH Mothership — spread ${n}`}
-            loading="lazy"
-          />
-        </figure>
-      ))}
-    </div>
+    <Gallery
+      slug="cph-mothership"
+      images={["01.png", "02.png", "03.png", "04.png"]}
+      alt="CPH Mothership"
+    />
 
     <div class="meta">
       <div><a href="/projects">← All projects</a></div>
