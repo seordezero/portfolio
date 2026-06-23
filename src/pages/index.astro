@@ -96,6 +96,8 @@ const year = new Date().getFullYear();
         });
       });
     }
-    document.addEventListener("astro:page-load", initSort);
+    if (document.readyState === "loading")
+      document.addEventListener("DOMContentLoaded", initSort);
+    else initSort();
   </script>
 </Base>

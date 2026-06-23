@@ -63,5 +63,7 @@ const { slug, images, alt = "" } = Astro.props;
       c.querySelector("[data-next]")?.addEventListener("click", () => show(idx + 1));
     });
   }
-  document.addEventListener("astro:page-load", initCarousels);
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", initCarousels);
+  else initCarousels();
 </script>

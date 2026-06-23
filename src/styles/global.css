@@ -57,9 +57,21 @@ html {
 }
 
 body {
-  background: var(--backdrop);
+  background: transparent;
   color: var(--ink);
   line-height: 1.55;
+}
+
+/* Full-screen canvas paints all background color (backdrop + square fills)
+   so the Perlin-noise dissolve can sweep across everything. */
+#fx {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
 }
 
 a {
@@ -76,6 +88,8 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 
 /* Centered square frame */
 .frame {
+  position: relative;
+  z-index: 1;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -93,7 +107,7 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 .square {
   position: relative;
   aspect-ratio: 1 / 1;
-  background: var(--paper);
+  background: transparent;
   color: var(--ink);
   overflow: hidden;
   container-type: inline-size;
@@ -104,11 +118,11 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 .square--content,
 .square--gallery { width: min(46vw, 88vh); }
 
-/* Right gallery square is always a blank white field */
+/* Right gallery square is always a blank white field (painted by canvas) */
 .square--gallery {
   --paper: #ffffff;
   --ink: #111110;
-  background: #ffffff;
+  background: transparent;
   color: #111110;
 }
 
@@ -507,16 +521,4 @@ p { margin: 1rem 0; max-width: 68ch; }
   .lede { margin: 2rem 0 3rem; }
   .project__body { font-size: 1.1rem; }
   .square--single { width: 92vmin; }
-}
-
-/* View transitions: smooth center→left morph + cross-fade */
-@media (prefers-reduced-motion: no-preference) {
-  ::view-transition-group(stage) {
-    animation-duration: 0.55s;
-    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
-  }
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 0.55s;
-  }
 }
