@@ -14,37 +14,26 @@
   --max-width: 100%;
   --gutter: 20px;
 
-  /* Default theme (white) — overridden by .theme-* on body */
+  /* Fallbacks — actual per-page values are set inline on <body> */
   --paper: #f4f1ea;
   --ink: #14110d;
   --backdrop: #e2231a;
-
-  /* Derived tokens — relative to the active theme */
-  --ink-muted: color-mix(in srgb, var(--ink) 62%, var(--paper));
-  --ink-faint: color-mix(in srgb, var(--ink) 40%, var(--paper));
-  --rule: color-mix(in srgb, var(--ink) 28%, transparent);
   --accent: var(--ink);
 }
 
-/* ---- Color themes : strong backgrounds with auto contrast ---- */
-/* Light-ink (black text) themes keep the default muted/faint hierarchy. */
-.theme-white  { --paper: #f4f1ea; --ink: #14110d; --backdrop: #e2231a; }
-.theme-yellow { --paper: #f5c400; --ink: #14110d; --backdrop: #1b2ed6; }
-.theme-pink   { --paper: #ff5da2; --ink: #14110d; --backdrop: #f5c400; }
+/* Secondary-text hierarchy, tuned to whichever text color the page uses.
+   --paper / --ink are set inline on <body> per page. */
+body.ink-dark {
+  --ink-muted: color-mix(in srgb, var(--ink) 62%, var(--paper));
+  --ink-faint: color-mix(in srgb, var(--ink) 40%, var(--paper));
+  --rule: color-mix(in srgb, var(--ink) 28%, transparent);
+}
 
-/* White-text themes: keep secondary text near-white so it stays legible. */
-.theme-red,
-.theme-blue,
-.theme-green,
-.theme-black {
-  --ink-muted: color-mix(in srgb, var(--ink) 90%, var(--paper));
-  --ink-faint: color-mix(in srgb, var(--ink) 78%, var(--paper));
+body.ink-light {
+  --ink-muted: color-mix(in srgb, var(--ink) 88%, var(--paper));
+  --ink-faint: color-mix(in srgb, var(--ink) 74%, var(--paper));
   --rule: color-mix(in srgb, var(--ink) 55%, transparent);
 }
-.theme-red    { --paper: #e2231a; --ink: #ffffff; --backdrop: #111110; }
-.theme-blue   { --paper: #1b2ed6; --ink: #ffffff; --backdrop: #111110; }
-.theme-green  { --paper: #0f7a3d; --ink: #ffffff; --backdrop: #111110; }
-.theme-black  { --paper: #111110; --ink: #f4f1ea; --backdrop: #e2231a; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -107,7 +96,7 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 .square {
   position: relative;
   aspect-ratio: 1 / 1;
-  background: transparent;
+  background: var(--paper);
   color: var(--ink);
   overflow: hidden;
   container-type: inline-size;
@@ -118,11 +107,11 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 .square--content,
 .square--gallery { width: min(46vw, 88vh); }
 
-/* Right gallery square is always a blank white field (painted by canvas) */
+/* Right gallery square is always a blank white field */
 .square--gallery {
   --paper: #ffffff;
   --ink: #111110;
-  background: transparent;
+  background: #ffffff;
   color: #111110;
 }
 

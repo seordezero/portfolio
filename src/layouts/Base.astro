@@ -1,11 +1,12 @@
 ---
 import "../styles/global.css";
+import { pageColors } from "../data/colors";
 
 interface Props {
   title: string;
   description?: string;
   currentPage?: "index" | "projects" | "about" | "contact";
-  theme?: "white" | "red" | "yellow" | "blue" | "black" | "green" | "pink";
+  colorIndex?: number;
   layout?: "square" | "split";
 }
 
@@ -13,20 +14,12 @@ const {
   title,
   description = "Architecture, computational design, and audiovisual work by Sebastián Ortiz de Zevallos.",
   currentPage = "index",
-  theme = "white",
+  colorIndex = 0,
   layout = "square",
 } = Astro.props;
 
-const backdrops: Record<string, string> = {
-  white: "#e2231a",
-  yellow: "#1b2ed6",
-  pink: "#f5c400",
-  red: "#111110",
-  blue: "#111110",
-  green: "#111110",
-  black: "#e2231a",
-};
-const backdrop = backdrops[theme];
+const { square, backdrop, ink } = pageColors(colorIndex);
+const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
 const year = new Date().getFullYear();
 ---
 
@@ -40,7 +33,7 @@ const year = new Date().getFullYear();
 
     <script is:inline>
       // Paint the previous backdrop instantly to avoid a color flash on load;
-      // the canvas then dissolves to this page's colors.
+      // the canvas then slowly dissolves to this page's backdrop.
       try {
         var prev = sessionStorage.getItem("fxBackdrop");
         document.documentElement.style.backgroundColor =
@@ -57,7 +50,7 @@ const year = new Date().getFullYear();
 
     <title>{title}</title>
   </head>
-  <body class={`theme-${theme}`}>
+  <body class={inkClass} style={`--paper:${square};--backdrop:${backdrop};--ink:${ink};`}>
     <canvas id="fx"></canvas>
 
     <div class="frame">
@@ -131,7 +124,8 @@ const year = new Date().getFullYear();
     </div>
 
     <script>
-      // ---- Perlin-noise background dissolve --------------------------------
+      // ---- Slow, organic Perlin-noise backdrop dissolve --------------------
+      // Only the outside background transitions; squares cut instantly.
       function hexToRgb(h) {
         h = (h || "").trim().replace("#", "");
         if (h.length === 3) h = h.split("").map((c) => c + c).join("");
@@ -142,7 +136,7 @@ const year = new Date().getFullYear();
       function makeNoise(seed) {
         const p = new Uint8Array(256);
         for (let i = 0; i < 256; i++) p[i] = i;
-        let s = seed >>> 0;
+        let s = (seed >>> 0) || 1;
         for (let i = 255; i > 0; i--) {
           s = (s * 1664525 + 1013904223) >>> 0;
           const j = s % (i + 1);
@@ -166,51 +160,33 @@ const year = new Date().getFullYear();
         };
       }
 
-      const noise = makeNoise(20260623);
-
       function initFx() {
         const canvas = document.getElementById("fx");
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
-        const CELL = 16;        // dot/cell size in px
-        const SCALE = 0.05;     // low-scale Perlin → big organic waves
-        const DURATION = 950;   // ms
-        const EDGE = 0.13;      // softness of the wave front
+        const CELL = 18; // dot/cell size in px
 
-        const readState = () => {
-          const backdrop = (
-            document.documentElement.dataset.backdrop ||
-            getComputedStyle(document.body).getPropertyValue("--backdrop")
-          ).trim();
-          const squares = Array.from(document.querySelectorAll(".square")).map((sq) => {
-            const r = sq.getBoundingClientRect();
-            const color = getComputedStyle(sq).getPropertyValue("--paper").trim();
-            return { x: r.left, y: r.top, w: r.width, h: r.height, color };
-          });
-          return { backdrop, squares, vw: innerWidth, vh: innerHeight };
-        };
+        // Fresh seed, scale, duration and offset every visit → no two
+        // transitions are ever the same.
+        const seed = (Math.random() * 4294967295) >>> 0;
+        const noise = makeNoise(seed);
+        const SCALE = 0.035 + Math.random() * 0.03; // low scale → big waves
+        const OFFX = Math.random() * 1000;
+        const OFFY = Math.random() * 1000;
+        const DURATION = 6000 + Math.random() * 4000; // 6–10s
+        const EDGE = 0.16;
 
-        const colorAt = (state, px, py) => {
-          for (const s of state.squares) {
-            if (px >= s.x && px < s.x + s.w && py >= s.y && py < s.y + s.h)
-              return s.color;
-          }
-          return state.backdrop;
-        };
+        const newBackdrop =
+          (document.documentElement.dataset.backdrop ||
+            getComputedStyle(document.body).getPropertyValue("--backdrop")).trim();
 
-        let cur = readState();
-        let prev = null;
+        let prevBackdrop = null;
         try {
-          const raw = sessionStorage.getItem("fxState");
-          if (raw) prev = JSON.parse(raw);
+          prevBackdrop = sessionStorage.getItem("fxBackdrop");
         } catch (e) {}
-
-        const save = () => {
-          try {
-            sessionStorage.setItem("fxState", JSON.stringify(cur));
-            sessionStorage.setItem("fxBackdrop", cur.backdrop);
-          } catch (e) {}
-        };
+        try {
+          sessionStorage.setItem("fxBackdrop", newBackdrop);
+        } catch (e) {}
 
         let cols = 0, rows = 0, field = null;
         const sizeCanvas = () => {
@@ -223,17 +199,12 @@ const year = new Date().getFullYear();
           field = new Float32Array(cols * rows);
           for (let j = 0; j < rows; j++)
             for (let i = 0; i < cols; i++)
-              field[j * cols + i] = noise(i * SCALE, j * SCALE);
+              field[j * cols + i] = noise(OFFX + i * SCALE, OFFY + j * SCALE);
         };
 
-        const paintStatic = (state) => {
-          for (let j = 0; j < rows; j++) {
-            for (let i = 0; i < cols; i++) {
-              const px = i * CELL + CELL / 2, py = j * CELL + CELL / 2;
-              ctx.fillStyle = colorAt(state, px, py);
-              ctx.fillRect(i * CELL, j * CELL, CELL + 1, CELL + 1);
-            }
-          }
+        const fill = (color) => {
+          ctx.fillStyle = color;
+          ctx.fillRect(0, 0, innerWidth, innerHeight);
         };
 
         const smooth = (e0, e1, x) => {
@@ -241,18 +212,16 @@ const year = new Date().getFullYear();
           return t * t * (3 - 2 * t);
         };
 
-        const animate = (from) => {
+        const animate = (from, to) => {
+          const a = hexToRgb(from), b = hexToRgb(to);
           const start = performance.now();
           const frame = (now) => {
             const p = Math.min(1, (now - start) / DURATION);
             const pp = p * (1 + 2 * EDGE);
             for (let j = 0; j < rows; j++) {
               for (let i = 0; i < cols; i++) {
-                const px = i * CELL + CELL / 2, py = j * CELL + CELL / 2;
                 const n = field[j * cols + i];
                 const t = smooth(n - EDGE, n + EDGE, pp);
-                const a = hexToRgb(colorAt(from, px, py));
-                const b = hexToRgb(colorAt(cur, px, py));
                 const r = (a[0] + (b[0] - a[0]) * t) | 0;
                 const g = (a[1] + (b[1] - a[1]) * t) | 0;
                 const bl = (a[2] + (b[2] - a[2]) * t) | 0;
@@ -261,26 +230,23 @@ const year = new Date().getFullYear();
               }
             }
             if (p < 1) requestAnimationFrame(frame);
-            else paintStatic(cur);
+            else fill(to);
           };
           requestAnimationFrame(frame);
         };
 
         const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
         sizeCanvas();
-        if (prev && !reduced) animate(prev);
-        else paintStatic(cur);
-        save();
+        if (prevBackdrop && prevBackdrop !== newBackdrop && !reduced)
+          animate(prevBackdrop, newBackdrop);
+        else fill(newBackdrop);
 
         let rt;
         addEventListener("resize", () => {
           clearTimeout(rt);
           rt = setTimeout(() => {
-            cur = readState();
             sizeCanvas();
-            paintStatic(cur);
-            save();
+            fill(newBackdrop);
           }, 120);
         });
       }
