@@ -8,7 +8,6 @@ export interface Project {
 
 export const projects: Project[] = [
   { slug: "secciones-de-sonido",         title: "Secciones de Sonido",         subtitle: "un experimento en tres tiempos",     year: 2026, category: "Audiovisual"  },
-  { slug: "tres-xemeneies",              title: "Tres Xemeneies de Sant Adrià", subtitle: "competition entry — Innovation Hub", year: 2024, category: "Architecture" },
   { slug: "cph-mothership",              title: "CPH Mothership",               subtitle: "X-Urban Studio, IAAC",                year: 2023, category: "Architecture" },
   { slug: "master-advanced-architecture", title: "Master in Advanced Architecture", subtitle: "IAAC, Barcelona",                year: 2023, category: "Research"     },
   { slug: "algoritmia",                  title: "Algoritmia",                   subtitle: "final year project, PUCP",            year: 2021, category: "Research"     },
