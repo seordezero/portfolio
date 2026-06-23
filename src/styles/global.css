@@ -361,6 +361,30 @@ p { margin: 1rem 0; max-width: 68ch; }
   font-family: var(--font-mono, monospace);
 }
 
+/* Collaborators */
+.collab {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--ink);
+}
+
+.collab__label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+  margin-bottom: 0.5rem;
+}
+
+.collab__names {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  line-height: 1.2;
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .gallery { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
