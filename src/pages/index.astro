@@ -3,6 +3,7 @@ import Base from "../layouts/Base.astro";
 import { projects } from "../data/projects";
 
 const sorted = [...projects].sort((a, b) => b.year - a.year);
+const year = new Date().getFullYear();
 ---
 
 <Base title="Sebastián Ortiz de Zevallos" currentPage="index" theme="red">
@@ -10,33 +11,91 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
     Parametric systems, sonic landscapes, and architectural research from <em>Madrid &amp; Lima</em>.
   </p>
 
+  <div class="index__sort" role="group" aria-label="Sort projects">
+    <span>Sort</span>
+    <button type="button" data-sort="year" aria-pressed="true">Year</button>
+    <button type="button" data-sort="title" aria-pressed="false">Name</button>
+    <button type="button" data-sort="category" aria-pressed="false">Category</button>
+  </div>
+
   <section class="index" aria-label="Project index">
     <div class="index__head">
       <div>Year</div>
       <div>Project</div>
       <div>Category</div>
-      <div>No.</div>
     </div>
 
-    {
-      sorted.map((project, i) => (
-        <a class="index__row" href={`/projects/${project.slug}`}>
-          <div class="index__year">{project.year}</div>
-          <div>
-            <span class="index__title">{project.title}</span>
-            {project.subtitle && (
-              <span class="index__subtitle">— {project.subtitle}</span>
-            )}
-          </div>
-          <div class="index__category">{project.category}</div>
-          <div class="index__num">{String(i + 1).padStart(2, "0")}</div>
-        </a>
-      ))
-    }
+    <div class="index__list" data-list>
+      {
+        sorted.map((project) => (
+          <a
+            class="index__row"
+            href={`/projects/${project.slug}`}
+            data-year={project.year}
+            data-title={project.title.toLowerCase()}
+            data-category={project.category.toLowerCase()}
+          >
+            <div class="index__year">{project.year}</div>
+            <div>
+              <span class="index__title">{project.title}</span>
+              {project.subtitle && (
+                <span class="index__subtitle">— {project.subtitle}</span>
+              )}
+            </div>
+            <div class="index__category">{project.category}</div>
+          </a>
+        ))
+      }
+    </div>
   </section>
 
   <div class="meta">
-    <div>{sorted.length} projects · sorted by year</div>
-    <div>Madrid · {new Date().getFullYear()}</div>
+    <div>{sorted.length} projects</div>
+    <div>Madrid · {year}</div>
   </div>
+
+  <script>
+    function initSort() {
+      const controls = document.querySelector(".index__sort");
+      const list = document.querySelector("[data-list]");
+      if (!controls || !list || list.dataset.ready) return;
+      list.dataset.ready = "1";
+
+      const rows = Array.from(list.children);
+      let key = "year";
+      let dir = -1; // year defaults to descending
+
+      const valueOf = (el, k) =>
+        k === "year" ? Number(el.dataset.year) : el.dataset[k];
+
+      const apply = () => {
+        [...rows]
+          .sort((a, b) => {
+            const va = valueOf(a, key);
+            const vb = valueOf(b, key);
+            if (va < vb) return -1 * dir;
+            if (va > vb) return 1 * dir;
+            return 0;
+          })
+          .forEach((row) => list.appendChild(row));
+      };
+
+      controls.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const k = btn.dataset.sort;
+          if (k === key) {
+            dir *= -1;
+          } else {
+            key = k;
+            dir = k === "year" ? -1 : 1;
+          }
+          controls.querySelectorAll("button").forEach((b) =>
+            b.setAttribute("aria-pressed", b === btn ? "true" : "false")
+          );
+          apply();
+        });
+      });
+    }
+    document.addEventListener("astro:page-load", initSort);
+  </script>
 </Base>

@@ -43,20 +43,25 @@ const { slug, images, alt = "" } = Astro.props;
 </div>
 
 <script>
-  document.querySelectorAll("[data-carousel]").forEach((c) => {
-    const items = Array.from(c.querySelectorAll(".carousel__item"));
-    if (items.length < 2) return;
-    const counter = c.querySelector("[data-current]");
-    let idx = 0;
-    const show = (n) => {
-      idx = (n + items.length) % items.length;
-      items.forEach((it, i) => {
-        if (i === idx) it.removeAttribute("hidden");
-        else it.setAttribute("hidden", "");
-      });
-      if (counter) counter.textContent = String(idx + 1);
-    };
-    c.querySelector("[data-prev]")?.addEventListener("click", () => show(idx - 1));
-    c.querySelector("[data-next]")?.addEventListener("click", () => show(idx + 1));
-  });
+  function initCarousels() {
+    document.querySelectorAll("[data-carousel]").forEach((c) => {
+      if (c.dataset.ready) return;
+      c.dataset.ready = "1";
+      const items = Array.from(c.querySelectorAll(".carousel__item"));
+      if (items.length < 2) return;
+      const counter = c.querySelector("[data-current]");
+      let idx = 0;
+      const show = (n) => {
+        idx = (n + items.length) % items.length;
+        items.forEach((it, i) => {
+          if (i === idx) it.removeAttribute("hidden");
+          else it.setAttribute("hidden", "");
+        });
+        if (counter) counter.textContent = String(idx + 1);
+      };
+      c.querySelector("[data-prev]")?.addEventListener("click", () => show(idx - 1));
+      c.querySelector("[data-next]")?.addEventListener("click", () => show(idx + 1));
+    });
+  }
+  document.addEventListener("astro:page-load", initCarousels);
 </script>

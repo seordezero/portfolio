@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { ViewTransitions } from "astro:transitions";
 
 interface Props {
   title: string;
@@ -17,7 +18,6 @@ const {
   layout = "square",
 } = Astro.props;
 
-const corners = ["tl", "tr", "bl", "br"];
 const year = new Date().getFullYear();
 ---
 
@@ -37,13 +37,13 @@ const year = new Date().getFullYear();
     />
 
     <title>{title}</title>
+    <ViewTransitions />
   </head>
   <body class={`theme-${theme}`}>
     <div class="frame">
       {layout === "split" ? (
         <div class="squares">
-          <section class="square square--content">
-            {corners.map((c) => <span class={`dot dot--${c}`} />)}
+          <section class="square square--content" transition:name="stage">
             <div class="square__scroll">
               <header class="site-header">
                 <div>
@@ -69,16 +69,14 @@ const year = new Date().getFullYear();
               </footer>
             </div>
           </section>
-          <section class="square square--gallery">
-            {corners.map((c) => <span class={`dot dot--${c}`} />)}
+          <section class="square square--gallery" transition:name="gallery-square" transition:animate="fade">
             <div class="square__center">
               <slot name="gallery" />
             </div>
           </section>
         </div>
       ) : (
-        <section class="square square--single">
-          {corners.map((c) => <span class={`dot dot--${c}`} />)}
+        <section class="square square--single" transition:name="stage">
           <div class="square__scroll">
             <header class="site-header">
               <div>
@@ -113,11 +111,12 @@ const year = new Date().getFullYear();
     </div>
 
     <script>
-      const box = document.getElementById("lightbox");
-      if (box) {
+      function initLightbox() {
+        const box = document.getElementById("lightbox");
+        if (!box) return;
         const img = box.querySelector("img");
         const open = (src, alt) => {
-          img.src = src;
+          img.src = src || "";
           img.alt = alt || "";
           box.classList.add("is-open");
           box.setAttribute("aria-hidden", "false");
@@ -134,13 +133,20 @@ const year = new Date().getFullYear();
           });
         });
         box.addEventListener("click", (e) => {
-          if (e.target === img) return;
-          close();
+          if (e.target !== img) close();
         });
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && box.classList.contains("is-open")) close();
-        });
+        if (!window.__lbKeyBound) {
+          window.__lbKeyBound = true;
+          document.addEventListener("keydown", (e) => {
+            const b = document.getElementById("lightbox");
+            if (e.key === "Escape" && b && b.classList.contains("is-open")) {
+              b.classList.remove("is-open");
+              b.setAttribute("aria-hidden", "true");
+            }
+          });
+        }
       }
+      document.addEventListener("astro:page-load", initLightbox);
     </script>
   </body>
 </html>
