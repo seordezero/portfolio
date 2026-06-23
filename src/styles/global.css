@@ -11,8 +11,8 @@
   --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
 
   /* Layout */
-  --max-width: 1200px;
-  --gutter: clamp(1.5rem, 4vw, 3rem);
+  --max-width: 100%;
+  --gutter: 20px;
 
   /* Default theme (white) — overridden by .theme-* on body */
   --paper: #f4f1ea;
@@ -26,12 +26,23 @@
 }
 
 /* ---- Color themes : strong backgrounds with auto contrast ---- */
+/* Light-ink (black text) themes keep the default muted/faint hierarchy. */
 .theme-white  { --paper: #f4f1ea; --ink: #14110d; }
 .theme-yellow { --paper: #f5c400; --ink: #14110d; }
+.theme-pink   { --paper: #ff5da2; --ink: #14110d; }
+
+/* White-text themes: keep secondary text near-white so it stays legible. */
+.theme-red,
+.theme-blue,
+.theme-green,
+.theme-black {
+  --ink-muted: color-mix(in srgb, var(--ink) 90%, var(--paper));
+  --ink-faint: color-mix(in srgb, var(--ink) 78%, var(--paper));
+  --rule: color-mix(in srgb, var(--ink) 55%, transparent);
+}
 .theme-red    { --paper: #e2231a; --ink: #ffffff; }
 .theme-blue   { --paper: #1b2ed6; --ink: #ffffff; }
 .theme-green  { --paper: #0f7a3d; --ink: #ffffff; }
-.theme-pink   { --paper: #ff5da2; --ink: #14110d; }
 .theme-black  { --paper: #111110; --ink: #f4f1ea; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -69,11 +80,16 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 var(--gutter);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
+.shell > main { flex: 1 0 auto; }
 
 /* Site header */
 .site-header {
-  padding: 2rem 0 1.25rem;
+  padding: 20px 0 1.25rem;
   border-bottom: 2px solid var(--ink);
   display: flex;
   justify-content: space-between;
@@ -120,8 +136,8 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 
 /* Site footer */
 .site-footer {
-  margin-top: 6rem;
-  padding: 1.25rem 0 2rem;
+  margin-top: auto;
+  padding: 1.5rem 0 20px;
   border-top: 2px solid var(--ink);
   display: flex;
   justify-content: space-between;
