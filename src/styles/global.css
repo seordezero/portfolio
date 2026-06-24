@@ -13,6 +13,7 @@
   /* Layout */
   --max-width: 100%;
   --gutter: 20px;
+  --sq-margin: clamp(1.25rem, 3vw, 2.75rem); /* uniform inner margin for every square */
 
   /* Fallbacks — actual per-page values are set inline on <body> */
   --paper: #f4f1ea;
@@ -120,14 +121,16 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 .square--gallery .square__center { padding: 0; }
 
 /* Inner content: scrolls (text) or centers (gallery) */
+/* Every square's scroll viewport is inset by the same margin on all sides,
+   so content always scrolls within a uniform margin (top and bottom too). */
 .square__scroll {
   position: absolute;
-  inset: 0;
+  inset: var(--sq-margin);
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  padding: clamp(1.25rem, 3vw, 2.75rem);
+  padding: 0;
   scrollbar-width: none;
 }
 
@@ -135,19 +138,17 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 
 .square__scroll > main { flex: 1 0 auto; }
 
-/* Content square: the scroll viewport is inset by the margin on ALL sides,
-   so text always scrolls within that margin (clipped top and bottom too). */
+/* Content square: only the top margin is tripled so the fixed back button
+   doesn't overlap the text. */
 .square--content .square__scroll {
-  inset: clamp(1.25rem, 3vw, 2.75rem);
-  padding: 0;
-  padding-top: 3.5rem; /* clear the fixed back button */
+  top: calc(var(--sq-margin) * 3);
 }
 
 /* Fixed back button — stays put while the text scrolls; click animates home */
 .back-btn {
   position: absolute;
-  top: clamp(1.25rem, 3vw, 2.75rem);
-  left: clamp(1.25rem, 3vw, 2.75rem);
+  top: var(--sq-margin);
+  left: var(--sq-margin);
   z-index: 2;
   width: 2.4rem;
   height: 2.4rem;
@@ -257,7 +258,7 @@ h3 { font-size: 1.1rem; }
 .index__intro {
   position: relative;
   /* fill the visible square so the view icons + list sit below the fold */
-  min-height: calc(min(92vmin, 1100px) - clamp(1.25rem, 3vw, 2.75rem));
+  min-height: calc(min(92vmin, 1100px) - 2 * var(--sq-margin));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -317,7 +318,7 @@ p { margin: 1rem 0; max-width: 68ch; }
 .index {
   display: flex;
   flex-direction: column;
-  min-height: calc(min(92vmin, 1100px) - 2 * clamp(1.25rem, 3vw, 2.75rem));
+  min-height: calc(min(92vmin, 1100px) - 2 * var(--sq-margin));
 }
 
 /* Top bar mirrors the bottom: list left, up-arrow center, grid right.
@@ -326,7 +327,6 @@ p { margin: 1rem 0; max-width: 68ch; }
   position: sticky;
   top: 0;
   z-index: 3;
-  background: var(--paper);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: center;
@@ -339,12 +339,18 @@ p { margin: 1rem 0; max-width: 68ch; }
 
 .index__body { flex: 1 1 auto; min-height: 0; }
 
+/* Catalog grid centered within the body */
+.index[data-view="grid"] .index__body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Sort columns pinned to the bottom (same position in both views) */
 .index .index__head {
   position: sticky;
   bottom: 0;
   z-index: 3;
-  background: var(--paper);
   margin-top: auto;
   padding-top: 1rem;
 }
@@ -479,7 +485,7 @@ p { margin: 1rem 0; max-width: 68ch; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 5px;
-  width: min(100%, 68cqi);
+  width: min(100%, 78cqi);
   margin: 0 auto;
 }
 
@@ -871,8 +877,8 @@ p { margin: 1rem 0; max-width: 68ch; }
   .index__title { font-size: 0.9rem; }
   .index__subtitle { display: none; }
   .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 4px; }
-  .index__intro { min-height: calc(min(92vw, 100dvh - 120px) - clamp(1.25rem, 3vw, 2.75rem)); }
-  .index { min-height: calc(min(92vw, 100dvh - 120px) - 2 * clamp(1.25rem, 3vw, 2.75rem)); }
+  .index__intro { min-height: calc(min(92vw, 100dvh - 120px) - 2 * var(--sq-margin)); }
+  .index { min-height: calc(min(92vw, 100dvh - 120px) - 2 * var(--sq-margin)); }
   .lede { margin: 0 auto; }
   .project__body { font-size: 1.1rem; }
 
