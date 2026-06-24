@@ -215,7 +215,7 @@ h3 { font-size: 1.1rem; }
   line-height: 1.25;
   max-width: 32ch;
   overflow-wrap: break-word;
-  margin: 2.5rem auto 8.5rem;
+  margin: 6rem auto 8.5rem;
   text-align: center;
 }
 
@@ -273,14 +273,14 @@ p { margin: 1rem 0; max-width: 68ch; }
   color: var(--ink-faint);
   padding-bottom: 0.5rem;
   border-bottom: none;
-  text-align: left;
+  text-align: center;
 }
 
 .index__head [data-sort] {
   cursor: pointer;
   user-select: none;
   transition: color 0.12s ease;
-  justify-self: start;
+  justify-self: center;
 }
 
 .index__head [data-sort]:hover { color: var(--ink); }
@@ -591,7 +591,7 @@ p { margin: 1rem 0; max-width: 68ch; }
   .index__title { font-size: 0.9rem; }
   .index__subtitle { display: none; }
   .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 4px; }
-  .lede { margin: 2rem auto 6rem; }
+  .lede { margin: 3.5rem auto 6rem; }
   .project__body { font-size: 1.1rem; }
   .square--single { width: min(92vmin, calc(100dvh - 32px)); }
 }
