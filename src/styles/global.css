@@ -274,28 +274,43 @@ h3 { font-size: 1.1rem; }
   pointer-events: none;
 }
 
-/* Up-arrow at the top of the list — click to return to the intro */
+/* Up-arrow in the list's top bar — click to return to the intro */
 .scroll-cue--up {
   position: relative;
   left: auto;
   bottom: auto;
   transform: none;
-  margin: 0 auto 1.25rem;
+  margin: 0;
+  width: 2.2rem;
+  height: 2.2rem;
 }
 
 .lede em { font-style: normal; color: var(--ink-muted); }
 
 p { margin: 1rem 0; max-width: 68ch; }
 
-/* Index / project list */
-.index { margin: 1rem 0 0; }
+/* Index / project list — icons on top, sort columns pinned to the bottom */
+.index {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(min(92vmin, 1100px) - 2 * clamp(1.25rem, 3vw, 2.75rem));
+}
+
+.index__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.index__body { flex: 1 1 auto; min-height: 0; }
+
+.index .index__head { margin-top: 1.25rem; }
 
 /* View toggle (list / catalog) */
 .index__views {
   display: flex;
-  justify-content: center;
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
 }
 
 .index__views button {
@@ -426,7 +441,16 @@ p { margin: 1rem 0; max-width: 68ch; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
-  margin-top: 0.5rem;
+}
+
+/* In catalog view, scrolling snaps to each 3x3 page (every 9th item) */
+.square__scroll:has(.index[data-view="grid"]) {
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: 3.5rem;
+}
+
+.index[data-view="grid"] .catalog__item:nth-child(9n + 1) {
+  scroll-snap-align: start;
 }
 
 .catalog__item {
@@ -805,6 +829,7 @@ p { margin: 1rem 0; max-width: 68ch; }
   .index__subtitle { display: none; }
   .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 4px; }
   .index__intro { min-height: calc(min(92vw, 100dvh - 120px) - clamp(1.25rem, 3vw, 2.75rem)); }
+  .index { min-height: calc(min(92vw, 100dvh - 120px) - 2 * clamp(1.25rem, 3vw, 2.75rem)); }
   .lede { margin: 0 auto; }
   .project__body { font-size: 1.1rem; }
 
