@@ -145,36 +145,15 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
         const CELL = 18;
-
-        const seed = (Math.random() * 4294967295) >>> 0;
-        const noise = makeNoise(seed);
-        const SCALE = 0.022 + Math.random() * 0.02;
-        const OFFX = Math.random() * 1000;
-        const OFFY = Math.random() * 1000;
-        const DURATION = 6000 + Math.random() * 4000;
         const EDGE = 0.16;
 
         const newBackdrop =
           (document.documentElement.dataset.backdrop ||
             getComputedStyle(document.body).getPropertyValue("--backdrop")).trim();
 
-        let prevBackdrop = null;
-        let cellSnapshot = null; // per-cell RGB from mid-dissolve
-        let samePage = false;    // reload / re-click of the current page
-        try {
-          prevBackdrop = sessionStorage.getItem("fxBackdrop");
-          const snap = sessionStorage.getItem("fxCells");
-          if (snap) {
-            cellSnapshot = JSON.parse(snap);
-            sessionStorage.removeItem("fxCells");
-          }
-          const prevPath = sessionStorage.getItem("fxPath");
-          samePage = prevPath === location.pathname;
-          sessionStorage.setItem("fxPath", location.pathname);
-        } catch (e) {}
-        try {
-          sessionStorage.setItem("fxBackdrop", newBackdrop);
-        } catch (e) {}
+        // Fresh noise parameters per dissolve (set in kick()).
+        let noise = makeNoise(1);
+        let SCALE = 0.03, OFFX = 0, OFFY = 0, DURATION = 8000;
 
         let cols = 0, rows = 0, field = null;
         const sizeCanvas = () => {
@@ -215,9 +194,6 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
 
         let rafId = null;
 
-        // animate supports:
-        //  - from as a hex string (uniform start color)
-        //  - fromCells as a string[] per cell (mid-dissolve snapshot)
         const setPaperOp = (v) => {
           document.body.style.setProperty("--paper-op", String(v));
         };
@@ -237,6 +213,9 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           requestAnimationFrame(opFrame);
         };
 
+        // animate supports:
+        //  - from as a hex string (uniform start color)
+        //  - fromCells as a string[] per cell (mid-dissolve snapshot)
         const animate = (from, to, fromCells) => {
           const b = hexToRgb(to);
           const uniformA = from ? hexToRgb(from) : null;
@@ -270,17 +249,52 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           rafId = requestAnimationFrame(frame);
         };
 
-        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-        sizeCanvas();
+        // Start (or restart) a dissolve from the stored state to this page's
+        // backdrop. Called on load and on pageshow (back/forward cache).
+        const kick = () => {
+          const seed = (Math.random() * 4294967295) >>> 0;
+          noise = makeNoise(seed);
+          SCALE = 0.022 + Math.random() * 0.02;
+          OFFX = Math.random() * 1000;
+          OFFY = Math.random() * 1000;
+          DURATION = 6000 + Math.random() * 4000;
 
-        // Snapshot canvas cells just before page unloads so next page can
-        // continue from the actual mid-dissolve pixel state.
+          let prevBackdrop = null;
+          let cellSnapshot = null;
+          let samePage = false;
+          try {
+            prevBackdrop = sessionStorage.getItem("fxBackdrop");
+            const snap = sessionStorage.getItem("fxCells");
+            if (snap) {
+              cellSnapshot = JSON.parse(snap);
+              sessionStorage.removeItem("fxCells");
+            }
+            const prevPath = sessionStorage.getItem("fxPath");
+            samePage = prevPath === location.pathname;
+            sessionStorage.setItem("fxPath", location.pathname);
+          } catch (e) {}
+          try {
+            sessionStorage.setItem("fxBackdrop", newBackdrop);
+          } catch (e) {}
+
+          if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+          sizeCanvas();
+
+          const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (!reduced && !samePage && (cellSnapshot || (prevBackdrop && prevBackdrop !== newBackdrop)))
+            animate(prevBackdrop, newBackdrop, cellSnapshot);
+          else fill(newBackdrop);
+        };
+
+        // Snapshot canvas cells just before the page is hidden so the next
+        // page (or this page on back/forward) can continue the dissolve.
         window.addEventListener("pagehide", saveSnapshot);
         window.addEventListener("beforeunload", saveSnapshot);
 
-        if (!reduced && !samePage && (cellSnapshot || (prevBackdrop && prevBackdrop !== newBackdrop)))
-          animate(prevBackdrop, newBackdrop, cellSnapshot);
-        else fill(newBackdrop);
+        // Back/forward cache restore: scripts don't re-run, so re-kick here.
+        window.addEventListener("pageshow", (e) => {
+          if (e.persisted) kick();
+        });
 
         let rt;
         addEventListener("resize", () => {
@@ -290,6 +304,8 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
             fill(newBackdrop);
           }, 120);
         });
+
+        kick();
       }
 
       // ---- Lightbox gallery viewer ----------------------------------------
