@@ -489,6 +489,10 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         initFx();
         initLightbox();
         initScroll();
+        // Returning to the index from a project should land on the list
+        document.querySelector(".back-btn")?.addEventListener("click", () => {
+          try { sessionStorage.setItem("indexSection", "list"); } catch (e) {}
+        });
       }
       if (document.readyState === "loading")
         document.addEventListener("DOMContentLoaded", boot);

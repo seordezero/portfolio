@@ -493,8 +493,9 @@ p { margin: 1rem 0; max-width: 68ch; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 5px;
-  width: min(100%, 78cqi);
-  margin: 0 auto;
+  /* sized so a 3x3 page is a square fitting the body height, centered */
+  width: min(100%, calc(min(92vmin, 1100px) - 9rem));
+  margin: auto;
 }
 
 /* In catalog view, scrolling snaps to each 3x3 page (every 9th item) */
@@ -786,7 +787,7 @@ p { margin: 1rem 0; max-width: 68ch; }
 .info__bottom {
   flex: 0 0 auto;
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: clamp(0.62rem, 2cqi, 0.78rem);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--ink-faint);
@@ -806,14 +807,14 @@ p { margin: 1rem 0; max-width: 68ch; }
 .info__main p {
   margin: 0;
   max-width: none;
-  font-size: clamp(0.95rem, 2.6cqi, 1.15rem);
+  font-size: clamp(1.05rem, 2.8cqi, 1.2rem);
   line-height: 1.55;
 }
 
 .info__main .info__lead {
   font-family: var(--font-italic);
   font-style: italic;
-  font-size: clamp(1.2rem, 4cqi, 1.8rem);
+  font-size: clamp(1.4rem, 4.5cqi, 1.95rem);
   line-height: 1.3;
 }
 
@@ -876,11 +877,19 @@ p { margin: 1rem 0; max-width: 68ch; }
   .index__head { grid-template-columns: repeat(3, 1fr); }
   .index__row { grid-template-columns: 0.6fr 2.4fr 0.9fr; }
   .corners__nav { top: 12px; left: 12px; }
-  .corners__name { top: 12px; right: 12px; font-size: 0.62rem; letter-spacing: 0.05em; }
-  .corners .site-nav { gap: 1rem; font-size: 0.85rem; }
-  .index__title { font-size: 1rem; }
+  .corners__name { top: 12px; right: 12px; font-size: 0.7rem; letter-spacing: 0.05em; }
+  .corners .site-nav { gap: 1.1rem; font-size: 1rem; }
+  .index__title { font-size: 1.05rem; }
+  .index__year { font-size: 0.95rem; }
+  .index__category { font-size: 0.82rem; }
   .index__subtitle { display: none; }
-  .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .index__catalog {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    width: min(100%, calc(min(92vw, 100dvh - 120px) - 7rem));
+  }
+  .index[data-view="grid"] .catalog__item:nth-child(9n + 1) { scroll-snap-align: none; }
+  .index[data-view="grid"] .catalog__item:nth-child(4n + 1) { scroll-snap-align: start; }
   .index__intro { min-height: calc(min(92vw, 100dvh - 120px) - 2 * var(--sq-margin)); }
   .lede { margin: 0 auto; font-size: clamp(1.4rem, 6.5cqi, 2rem); }
   .project__body { font-size: 1.1rem; }

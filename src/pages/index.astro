@@ -151,34 +151,42 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
       });
 
       // Two sections — cover (phrase) and list — only one shown at a time.
-      // Scrolling moves between them with a pause at the list's top edge:
-      // you reach the top of the list first, then a further scroll up returns
-      // to the phrase.
-      const sq = document.querySelector(".square__scroll");
+      // Scrolling anywhere on the page moves between them, with a pause at the
+      // list's top edge: reach the top of the list first, then a further scroll
+      // up returns to the phrase. The current section is remembered so coming
+      // back from a project lands on the list, not the phrase.
       const intro = document.querySelector("[data-intro]");
       const body = document.querySelector(".index__body");
       const cue = document.querySelector("[data-cue]");
       const cueUp = document.querySelector("[data-cue-up]");
+      const KEY = "indexSection";
       let section = "cover";
 
+      const remember = (v) => { try { sessionStorage.setItem(KEY, v); } catch (e) {} };
       const showCover = () => {
         section = "cover";
         if (intro) intro.style.display = "";
         index.style.display = "none";
+        remember("cover");
       };
       const showList = () => {
         section = "list";
         if (intro) intro.style.display = "none";
         index.style.display = "";
         if (body) body.scrollTop = 0;
+        remember("list");
       };
-      showCover(); // start on the cover
+
+      let saved = null;
+      try { saved = sessionStorage.getItem(KEY); } catch (e) {}
+      if (saved === "list") showList();
+      else showCover();
 
       cue?.addEventListener("click", showList);
       cueUp?.addEventListener("click", showCover);
 
-      if (sq && body) {
-        sq.addEventListener(
+      if (body) {
+        window.addEventListener(
           "wheel",
           (e) => {
             e.preventDefault();
@@ -195,7 +203,7 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
 
         let ty = null;
         let startAtTop = false;
-        sq.addEventListener(
+        window.addEventListener(
           "touchstart",
           (e) => {
             ty = e.touches[0].clientY;
@@ -203,7 +211,7 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
           },
           { passive: true }
         );
-        sq.addEventListener(
+        window.addEventListener(
           "touchmove",
           (e) => {
             if (ty === null) return;
