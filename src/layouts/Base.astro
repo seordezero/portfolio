@@ -18,7 +18,7 @@ const {
   layout = "square",
 } = Astro.props;
 
-const { square, backdrop, ink } = pageColors(colorIndex);
+const { square, backdrop, ink, inkBackdrop } = pageColors(colorIndex);
 const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
 ---
 
@@ -49,7 +49,7 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
 
     <title>{title}</title>
   </head>
-  <body class={inkClass} style={`--paper:${square};--backdrop:${backdrop};--ink:${ink};`}>
+  <body class={inkClass} style={`--paper:${square};--backdrop:${backdrop};--ink:${ink};--ink-corner:${inkBackdrop};`}>
     <canvas id="fx"></canvas>
 
     <div class="corners">
@@ -315,23 +315,45 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
       }
 
       // ---- Scroll anywhere -------------------------------------------------
-      // Wheel over the backdrop (outside the squares) scrolls the page's main
-      // vertical scroller. Over the gallery track, its own handler does the
-      // horizontal scroll; over the content square, native scrolling applies.
+      // Wheel and touch anywhere on the page scroll the main vertical scroller
+      // (the single/content square). Over the gallery track, its own handler
+      // takes the horizontal scroll instead.
       function initScroll() {
         const scroller = document.querySelector(
           ".square--single .square__scroll, .square--content .square__scroll"
         );
         if (!scroller) return;
+
+        const inGallery = (t) => t && t.closest && t.closest(".carousel__track");
+
         window.addEventListener(
           "wheel",
           (e) => {
-            const t = e.target;
-            if (t.closest && (t.closest(".carousel__track") || t.closest(".square__scroll")))
-              return;
+            if (inGallery(e.target)) return;
             scroller.scrollTop += e.deltaY;
+            e.preventDefault();
+          },
+          { passive: false }
+        );
+
+        let startY = null;
+        window.addEventListener(
+          "touchstart",
+          (e) => {
+            startY = inGallery(e.target) ? null : e.touches[0].clientY;
           },
           { passive: true }
+        );
+        window.addEventListener(
+          "touchmove",
+          (e) => {
+            if (startY === null) return;
+            const y = e.touches[0].clientY;
+            scroller.scrollTop += startY - y;
+            startY = y;
+            e.preventDefault();
+          },
+          { passive: false }
         );
       }
 

@@ -127,7 +127,10 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
   display: flex;
   flex-direction: column;
   padding: clamp(1.25rem, 3vw, 2.75rem);
+  scrollbar-width: none;
 }
+
+.square__scroll::-webkit-scrollbar { display: none; }
 
 .square__scroll > main { flex: 1 0 auto; }
 
@@ -148,7 +151,7 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
   inset: 0;
   z-index: 50;
   pointer-events: none;
-  color: var(--ink);
+  color: var(--ink-corner);
 }
 
 .corners__nav {
@@ -172,7 +175,8 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 
 .corners__name a { display: inline-block; }
 
-.corners .site-nav { color: var(--ink); }
+.corners .site-nav { color: var(--ink-corner); }
+.corners .site-nav a[aria-current="page"] { color: var(--ink-corner); }
 
 .site-nav {
   display: flex;
@@ -227,7 +231,8 @@ h3 { font-size: 1.1rem; }
    the bottom; the list lives just below the fold. */
 .index__intro {
   position: relative;
-  min-height: calc(min(92vmin, 1100px) - 7rem);
+  /* fill the visible square so the view icons + list sit below the fold */
+  min-height: calc(min(92vmin, 1100px) - clamp(1.25rem, 3vw, 2.75rem));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -654,9 +659,13 @@ p { margin: 1rem 0; max-width: 68ch; }
     height: 100%;
     justify-content: center;
   }
+  /* Squares a bit smaller so the fixed corner header rests outside them */
+  .square--single {
+    width: min(92vw, calc(100dvh - 120px));
+  }
   .square--content,
   .square--gallery {
-    width: min(calc((100dvh - 40px) / 2), calc(100vw - 24px));
+    width: min(calc((100dvh - 140px) / 2), calc(100vw - 24px));
   }
 }
 
@@ -669,8 +678,7 @@ p { margin: 1rem 0; max-width: 68ch; }
   .index__title { font-size: 0.9rem; }
   .index__subtitle { display: none; }
   .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 4px; }
-  .index__intro { min-height: calc(min(92vmin, 100dvh - 32px) - 5.5rem); }
+  .index__intro { min-height: calc(min(92vw, 100dvh - 120px) - clamp(1.25rem, 3vw, 2.75rem)); }
   .lede { margin: 0 auto; }
   .project__body { font-size: 1.1rem; }
-  .square--single { width: min(92vmin, calc(100dvh - 32px)); }
 }

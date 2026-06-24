@@ -6,7 +6,8 @@
 export interface PageColors {
   square: string;
   backdrop: string;
-  ink: string;
+  ink: string;        // readable on the square fill
+  inkBackdrop: string; // readable on the backdrop (used by the corner header)
 }
 
 // [square, backdrop] per page index. Both columns are a permutation of the
@@ -36,5 +37,5 @@ function readableInk(hex: string): string {
 
 export function pageColors(index: number): PageColors {
   const [square, backdrop] = pairs[((index % pairs.length) + pairs.length) % pairs.length];
-  return { square, backdrop, ink: readableInk(square) };
+  return { square, backdrop, ink: readableInk(square), inkBackdrop: readableInk(backdrop) };
 }

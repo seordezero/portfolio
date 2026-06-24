@@ -57,20 +57,41 @@ const { slug, images, alt = "" } = Astro.props;
       if (!track) return;
 
       const step = () => track.clientWidth;
-      const atEnd = () =>
-        track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
-      const atStart = () => track.scrollLeft <= 2;
+      const reals = Array.from(track.children);
+      const n = reals.length;
 
-      c.querySelector("[data-prev]")?.addEventListener("click", () => {
-        // continuous: wrap from the first image back to the last
-        if (atStart()) track.scrollTo({ left: track.scrollWidth, behavior: "smooth" });
-        else track.scrollBy({ left: -step(), behavior: "smooth" });
-      });
-      c.querySelector("[data-next]")?.addEventListener("click", () => {
-        // continuous: wrap from the last image back to the first
-        if (atEnd()) track.scrollTo({ left: 0, behavior: "smooth" });
-        else track.scrollBy({ left: step(), behavior: "smooth" });
-      });
+      if (n > 1) {
+        // Seamless infinite loop: clone last before first and first after
+        // last, so moving past either end continues in the same direction.
+        const firstClone = reals[0].cloneNode(true);
+        const lastClone = reals[n - 1].cloneNode(true);
+        firstClone.setAttribute("data-clone", "");
+        lastClone.setAttribute("data-clone", "");
+        track.insertBefore(lastClone, reals[0]);
+        track.appendChild(firstClone);
+
+        const toFirst = () => { track.scrollLeft = step(); };
+        requestAnimationFrame(toFirst);
+        window.addEventListener("resize", toFirst);
+
+        let normTimer;
+        track.addEventListener("scroll", () => {
+          clearTimeout(normTimer);
+          normTimer = setTimeout(() => {
+            const w = step();
+            const x = track.scrollLeft;
+            if (x < w * 0.5) track.scrollLeft = w * n;        // last clone -> real last
+            else if (x > w * (n + 0.5)) track.scrollLeft = w; // first clone -> real first
+          }, 90);
+        });
+
+        c.querySelector("[data-prev]")?.addEventListener("click", () =>
+          track.scrollBy({ left: -step(), behavior: "smooth" })
+        );
+        c.querySelector("[data-next]")?.addEventListener("click", () =>
+          track.scrollBy({ left: step(), behavior: "smooth" })
+        );
+      }
 
       // Vertical wheel / trackpad → horizontal scroll (Instagram-style)
       track.addEventListener(
