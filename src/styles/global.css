@@ -624,7 +624,7 @@ p { margin: 1rem 0; max-width: 68ch; }
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: zoom-in;
+  cursor: default;
 }
 
 .carousel__item img {
@@ -633,6 +633,7 @@ p { margin: 1rem 0; max-width: 68ch; }
   aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
+  cursor: zoom-in;
   transition: transform 0.3s ease;
 }
 

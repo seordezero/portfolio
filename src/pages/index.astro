@@ -181,8 +181,9 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         if (bh < 60) return;
         const rowH = Math.floor(bh / 4);
         rowEls.forEach((r) => { r.style.height = rowH + "px"; });
+        // Grid: one big row of two images at a time (cell = half the width)
         const gap = 5;
-        const cell = Math.floor(Math.min((bw - gap) / 2, (bh - gap) / 2));
+        const cell = Math.floor((bw - gap) / 2);
         if (catalog) {
           catalog.style.gridTemplateColumns = `repeat(2, ${cell}px)`;
           catalog.style.gridAutoRows = `${cell}px`;
@@ -212,54 +213,10 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
       if (saved === "list") showList();
       else showCover();
 
+      // Sections change only by clicking the arrows. Within the list/grid the
+      // body scrolls natively (smooth, with snap-on-stop).
       cue?.addEventListener("click", showList);
       cueUp?.addEventListener("click", showCover);
-
-      if (body) {
-        window.addEventListener(
-          "wheel",
-          (e) => {
-            e.preventDefault();
-            if (section === "cover") {
-              if (e.deltaY > 0) showList();
-            } else if (e.deltaY < 0 && body.scrollTop <= 0) {
-              showCover();
-            } else {
-              body.scrollTop += e.deltaY;
-            }
-          },
-          { passive: false }
-        );
-
-        let ty = null;
-        let startAtTop = false;
-        window.addEventListener(
-          "touchstart",
-          (e) => {
-            ty = e.touches[0].clientY;
-            startAtTop = section === "list" && body.scrollTop <= 0;
-          },
-          { passive: true }
-        );
-        window.addEventListener(
-          "touchmove",
-          (e) => {
-            if (ty === null) return;
-            const y = e.touches[0].clientY;
-            const dy = ty - y; // positive = scrolling down
-            ty = y;
-            e.preventDefault();
-            if (section === "cover") {
-              if (dy > 6) showList();
-            } else if (startAtTop && dy < 0) {
-              showCover();
-            } else {
-              body.scrollTop += dy;
-            }
-          },
-          { passive: false }
-        );
-      }
 
       // View toggle: list (detail) vs grid (catalog)
       index.querySelectorAll("[data-view-btn]").forEach((btn) => {

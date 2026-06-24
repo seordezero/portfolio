@@ -363,7 +363,8 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           links.forEach((a, i) => {
             a.addEventListener("click", (e) => {
               e.preventDefault();
-              open(list, i);
+              // Only zoom when the image itself is clicked (not blank space)
+              if (e.target.closest("img")) open(list, i);
             });
           });
         });
