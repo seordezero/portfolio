@@ -49,12 +49,20 @@ const { slug, images, alt = "" } = Astro.props;
       if (!track) return;
 
       const step = () => track.clientWidth;
-      c.querySelector("[data-prev]")?.addEventListener("click", () =>
-        track.scrollBy({ left: -step(), behavior: "smooth" })
-      );
-      c.querySelector("[data-next]")?.addEventListener("click", () =>
-        track.scrollBy({ left: step(), behavior: "smooth" })
-      );
+      const atEnd = () =>
+        track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
+      const atStart = () => track.scrollLeft <= 2;
+
+      c.querySelector("[data-prev]")?.addEventListener("click", () => {
+        // continuous: wrap from the first image back to the last
+        if (atStart()) track.scrollTo({ left: track.scrollWidth, behavior: "smooth" });
+        else track.scrollBy({ left: -step(), behavior: "smooth" });
+      });
+      c.querySelector("[data-next]")?.addEventListener("click", () => {
+        // continuous: wrap from the last image back to the first
+        if (atEnd()) track.scrollTo({ left: 0, behavior: "smooth" });
+        else track.scrollBy({ left: step(), behavior: "smooth" });
+      });
 
       // Vertical wheel / trackpad → horizontal scroll (Instagram-style)
       track.addEventListener(

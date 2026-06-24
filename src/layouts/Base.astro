@@ -323,9 +323,31 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         });
       }
 
+      // ---- Scroll anywhere -------------------------------------------------
+      // Wheel over the backdrop (outside the squares) scrolls the page's main
+      // vertical scroller. Over the gallery track, its own handler does the
+      // horizontal scroll; over the content square, native scrolling applies.
+      function initScroll() {
+        const scroller = document.querySelector(
+          ".square--single .square__scroll, .square--content .square__scroll"
+        );
+        if (!scroller) return;
+        window.addEventListener(
+          "wheel",
+          (e) => {
+            const t = e.target;
+            if (t.closest && (t.closest(".carousel__track") || t.closest(".square__scroll")))
+              return;
+            scroller.scrollTop += e.deltaY;
+          },
+          { passive: true }
+        );
+      }
+
       function boot() {
         initFx();
         initLightbox();
+        initScroll();
       }
       if (document.readyState === "loading")
         document.addEventListener("DOMContentLoaded", boot);

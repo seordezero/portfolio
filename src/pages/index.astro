@@ -6,9 +6,16 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
 ---
 
 <Base title="Sebastián Ortiz de Zevallos" currentPage="index" colorIndex={0}>
-  <p class="lede">
-    Parametric systems, sonic landscapes, and architectural research from <em>Madrid &amp; Lima</em>.
-  </p>
+  <div class="index__intro" data-intro>
+    <p class="lede">
+      Parametric systems, sonic landscapes, and architectural research from <em>Madrid &amp; Lima</em>.
+    </p>
+    <button class="scroll-cue" data-cue type="button" aria-label="Scroll to projects">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
 
   <section class="index" aria-label="Project index" data-view="list">
     <div class="index__views" role="group" aria-label="View mode">
@@ -132,6 +139,19 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         col.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") { e.preventDefault(); col.click(); }
         });
+      });
+
+      // Scroll cue: hide the down-arrow once the list emerges
+      const scroller = document.querySelector(".square__scroll");
+      const intro = document.querySelector("[data-intro]");
+      const cue = document.querySelector("[data-cue]");
+      if (scroller && intro) {
+        scroller.addEventListener("scroll", () => {
+          intro.classList.toggle("is-hidden", scroller.scrollTop > 12);
+        });
+      }
+      cue?.addEventListener("click", () => {
+        index.scrollIntoView({ behavior: "smooth", block: "start" });
       });
 
       // View toggle: list (detail) vs grid (catalog)
