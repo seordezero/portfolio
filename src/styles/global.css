@@ -115,6 +115,9 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
   color: #111110;
 }
 
+/* Gallery fills the whole square so scrolling/swiping works edge to edge */
+.square--gallery .square__center { padding: 0; }
+
 /* Inner content: scrolls (text) or centers (gallery) */
 .square__scroll {
   position: absolute;
@@ -462,7 +465,9 @@ p { margin: 1rem 0; max-width: 68ch; }
 
 .carousel__track {
   display: flex;
+  align-items: center;
   width: 100%;
+  height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
