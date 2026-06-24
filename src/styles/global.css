@@ -179,7 +179,7 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 .site-footer {
   margin-top: auto;
   padding: 1.5rem 0 20px;
-  border-top: 2px solid var(--ink);
+  border-top: none;
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
@@ -240,7 +240,7 @@ p { margin: 1rem 0; max-width: 68ch; }
   letter-spacing: 0.12em;
   color: var(--ink-faint);
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--ink);
+  border-bottom: none;
 }
 
 .index__head [data-sort] {
@@ -260,7 +260,7 @@ p { margin: 1rem 0; max-width: 68ch; }
 
 .index__row {
   padding: 1.1rem 0.5rem;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: none;
   transition: background 0.12s ease, color 0.12s ease, padding-left 0.15s ease;
 }
 
@@ -306,7 +306,7 @@ p { margin: 1rem 0; max-width: 68ch; }
 .meta {
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 2px solid var(--ink);
+  border-top: none;
   font-family: var(--font-mono);
   font-size: 0.68rem;
   color: var(--ink-faint);
@@ -450,7 +450,7 @@ p { margin: 1rem 0; max-width: 68ch; }
 .collab {
   margin-top: 3rem;
   padding-top: 1.25rem;
-  border-top: 2px solid var(--ink);
+  border-top: none;
 }
 
 .collab__label {
