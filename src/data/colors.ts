@@ -15,7 +15,7 @@ export interface PageColors {
 const pairs: [string, string][] = [
   ["#e2231a", "#111110"], // 0  index          red      on near-black
   ["#f2b705", "#3d1e8a"], // 1  about          gold     on deep violet
-  ["#1b2ed6", "#b5d400"], // 2  contact        blue     on chartreuse
+  ["#1b2ed6", "#6f8a00"], // 2  contact        blue     on darker green
   ["#6a1b9a", "#f2b705"], // 3  secciones      purple   on gold
   ["#0d8a8a", "#ff4d8d"], // 4  cph            teal     on hot pink
   ["#f25c05", "#1b2ed6"], // 5  master         orange   on blue
