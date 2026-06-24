@@ -141,18 +141,23 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         });
       });
 
-      // Scroll cue: hide the down-arrow once the list emerges
+      // Once you scroll down, the cover (phrase + arrow) is removed entirely,
+      // leaving just the list with its view icons on top.
       const scroller = document.querySelector(".square__scroll");
       const intro = document.querySelector("[data-intro]");
       const cue = document.querySelector("[data-cue]");
-      if (scroller && intro) {
+      const collapse = () => {
+        if (!intro || intro.dataset.collapsed) return;
+        intro.dataset.collapsed = "1";
+        intro.style.display = "none";
+        if (scroller) scroller.scrollTop = 0;
+      };
+      if (scroller) {
         scroller.addEventListener("scroll", () => {
-          intro.classList.toggle("is-hidden", scroller.scrollTop > 12);
+          if (scroller.scrollTop > 24) collapse();
         });
       }
-      cue?.addEventListener("click", () => {
-        index.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+      cue?.addEventListener("click", collapse);
 
       // View toggle: list (detail) vs grid (catalog)
       index.querySelectorAll("[data-view-btn]").forEach((btn) => {
