@@ -8,6 +8,7 @@ interface Props {
   currentPage?: "index" | "projects" | "about" | "contact";
   colorIndex?: number;
   layout?: "square" | "split";
+  staticFit?: boolean;
 }
 
 const {
@@ -16,6 +17,7 @@ const {
   currentPage = "index",
   colorIndex = 0,
   layout = "square",
+  staticFit = false,
 } = Astro.props;
 
 const { square, backdrop, ink, inkBackdrop } = pageColors(colorIndex);
@@ -81,7 +83,7 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         </div>
       ) : (
         <section class="square square--single">
-          <div class="square__scroll">
+          <div class={`square__scroll${staticFit ? " square__scroll--static" : ""}`}>
             <main>
               <slot />
             </main>
@@ -140,7 +142,7 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
 
         const seed = (Math.random() * 4294967295) >>> 0;
         const noise = makeNoise(seed);
-        const SCALE = 0.035 + Math.random() * 0.03;
+        const SCALE = 0.022 + Math.random() * 0.02;
         const OFFX = Math.random() * 1000;
         const OFFY = Math.random() * 1000;
         const DURATION = 6000 + Math.random() * 4000;

@@ -2,44 +2,41 @@
 import Base from "../layouts/Base.astro";
 ---
 
-<Base title="About — Sebastián Ortiz de Zevallos" currentPage="about" colorIndex={1}>
-  <article class="project">
-    <h1 class="project__title">About</h1>
+<Base title="About — Sebastián Ortiz de Zevallos" currentPage="about" colorIndex={1} staticFit>
+  <div class="info__top">About</div>
 
-    <div class="project__body">
-      <p>
-        Sebastián Ortiz de Zevallos is a Peruvian architect, urbanist, and
-        computational designer based in Madrid. He works independently across
-        parametric architecture, computational geometry, and audiovisual
-        practice.
-      </p>
+  <div class="info__main">
+    <p class="info__lead">
+      Sebastián Ortiz de Zevallos is a Peruvian architect, urbanist, and
+      computational designer based in Madrid, working independently across
+      parametric architecture, computational geometry, and audiovisual practice.
+    </p>
 
-      <p>
-        Trained at the Pontificia Universidad Católica del Perú (PUCP) and the
-        Institute for Advanced Architecture of Catalonia (IAAC), his work
-        operates at the intersection of algorithmic design, sound analysis, and
-        spatial research.
-      </p>
+    <p>
+      Trained at the Pontificia Universidad Católica del Perú (PUCP) and the
+      Institute for Advanced Architecture of Catalonia (IAAC), his work operates
+      at the intersection of algorithmic design, sound analysis, and spatial
+      research — parametric facade systems, audio-reactive installations, and
+      the audiovisual exhibition <em>Secciones de Sonido</em>.
+    </p>
 
-      <p>
-        Recent projects include parametric facade systems driven by attractor
-        curves, audio-reactive installations using stem separation and pitch
-        extraction pipelines, and the audiovisual exhibition <em
-          >Secciones de Sonido — un experimento en tres tiempos</em
-        >.
-      </p>
-
-      <h2 style="margin-top: 3rem; margin-bottom: 1rem;">Tools</h2>
-      <p>
-        Rhinoceros, Grasshopper, Anemone, Python, C#, Blender, Touch Designer,
-        DaVinci Resolve, custom audio analysis pipelines (librosa, Demucs).
-      </p>
-
-      <h2 style="margin-top: 3rem; margin-bottom: 1rem;">Selected studies</h2>
-      <p>
-        M.Adv.S. — IAAC, Barcelona<br />
-        Architecture — PUCP, Lima
-      </p>
+    <div class="info__cols">
+      <div>
+        <h2>Tools</h2>
+        <p>
+          Rhinoceros, Grasshopper, Anemone, Python, C#, Blender, TouchDesigner,
+          DaVinci Resolve, librosa, Demucs.
+        </p>
+      </div>
+      <div>
+        <h2>Selected studies</h2>
+        <p>
+          M.Adv.S. — IAAC, Barcelona<br />
+          Architecture — PUCP, Lima
+        </p>
+      </div>
     </div>
-  </article>
+  </div>
+
+  <div class="info__bottom">Madrid · Architecture · Computation · Sound</div>
 </Base>
