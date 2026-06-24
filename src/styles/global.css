@@ -215,7 +215,7 @@ h3 { font-size: 1.1rem; }
   line-height: 1.25;
   max-width: 32ch;
   overflow-wrap: break-word;
-  margin: 1rem auto 4.5rem;
+  margin: 2.5rem auto 8.5rem;
   text-align: center;
 }
 
@@ -260,8 +260,8 @@ p { margin: 1rem 0; max-width: 68ch; }
 .index__head,
 .index__row {
   display: grid;
-  grid-template-columns: 1fr 1.7fr 1fr;
-  gap: 0;
+  grid-template-columns: 0.6fr 3fr 0.9fr;
+  column-gap: 1.75rem;
   align-items: baseline;
 }
 
@@ -273,14 +273,14 @@ p { margin: 1rem 0; max-width: 68ch; }
   color: var(--ink-faint);
   padding-bottom: 0.5rem;
   border-bottom: none;
-  text-align: center;
+  text-align: left;
 }
 
 .index__head [data-sort] {
   cursor: pointer;
   user-select: none;
   transition: color 0.12s ease;
-  justify-self: center;
+  justify-self: start;
 }
 
 .index__head [data-sort]:hover { color: var(--ink); }
@@ -587,11 +587,11 @@ p { margin: 1rem 0; max-width: 68ch; }
 
 @media (max-width: 640px) {
   .index__head,
-  .index__row { grid-template-columns: 1fr 1.4fr 1fr; }
+  .index__row { grid-template-columns: 0.6fr 2.4fr 0.9fr; }
   .index__title { font-size: 0.9rem; }
   .index__subtitle { display: none; }
   .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 4px; }
-  .lede { margin: 1rem auto 3.5rem; }
+  .lede { margin: 2rem auto 6rem; }
   .project__body { font-size: 1.1rem; }
   .square--single { width: min(92vmin, calc(100dvh - 32px)); }
 }

@@ -3,7 +3,6 @@ import Base from "../layouts/Base.astro";
 import { projects } from "../data/projects";
 
 const sorted = [...projects].sort((a, b) => b.year - a.year);
-const year = new Date().getFullYear();
 ---
 
 <Base title="Sebastián Ortiz de Zevallos" currentPage="index" colorIndex={0}>
@@ -83,11 +82,6 @@ const year = new Date().getFullYear();
       }
     </div>
   </section>
-
-  <div class="meta">
-    <div>{sorted.length} projects</div>
-    <div>Madrid · {year}</div>
-  </div>
 
   <script>
     function initIndex() {
