@@ -211,11 +211,12 @@ h3 { font-size: 1.1rem; }
 .lede {
   font-family: var(--font-italic);
   font-style: italic;
-  font-size: clamp(1.5rem, 8cqi, 2.8rem);
-  line-height: 1.1;
-  max-width: 22ch;
+  font-size: clamp(1rem, 4.5cqi, 1.6rem);
+  line-height: 1.25;
+  max-width: 32ch;
   overflow-wrap: break-word;
-  margin: 3rem 0 4rem;
+  margin: 2rem auto 3rem;
+  text-align: center;
 }
 
 .lede em { font-style: normal; color: var(--ink-muted); }
