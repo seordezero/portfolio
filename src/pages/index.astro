@@ -233,6 +233,24 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
       cue?.addEventListener("click", showList);
       cueUp?.addEventListener("click", showCover);
 
+      // Mobile: allow scrolling anywhere on the screen — touches that start
+      // outside the body are forwarded to it; touches inside scroll natively.
+      if (body) {
+        let ty = null;
+        let forward = false;
+        window.addEventListener("touchstart", (e) => {
+          ty = e.touches[0].clientY;
+          forward = section === "list" && !e.target.closest(".index__body");
+        }, { passive: true });
+        window.addEventListener("touchmove", (e) => {
+          if (!forward || ty === null) return;
+          const y = e.touches[0].clientY;
+          body.scrollTop += ty - y;
+          ty = y;
+          e.preventDefault();
+        }, { passive: false });
+      }
+
       // View toggle: list (detail) vs grid (catalog)
       index.querySelectorAll("[data-view-btn]").forEach((btn) => {
         btn.addEventListener("click", () => {

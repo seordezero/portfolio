@@ -895,15 +895,31 @@ p { margin: 1rem 0; max-width: 68ch; }
     font-size: 0.72rem;
     letter-spacing: 0.05em;
   }
-  .corners .site-nav { gap: 1.1rem; font-size: 1rem; }
-  .index__title { font-size: 1.05rem; }
-  .index__year { font-size: 0.95rem; }
-  .index__category { font-size: 0.82rem; }
+  .corners__name { font-size: 0.82rem; }
+  .corners .site-nav { gap: 1.2rem; font-size: 1.2rem; }
+  .index__title { font-size: 1.25rem; }
+  .index__year { font-size: 1.1rem; }
+  .index__category { font-size: 0.95rem; }
   .index__subtitle { display: none; }
   /* Catalog columns + cell size are set by JS (layoutSizes) for an exact fit */
   .index__catalog { gap: 5px; }
-  .lede { margin: 0 auto; font-size: clamp(1.4rem, 6.5cqi, 2rem); }
-  .project__body { font-size: 1.1rem; }
+  .lede { margin: 0 auto; font-size: clamp(1.5rem, 7cqi, 2.1rem); }
+
+  /* Project text — bigger and clearly readable */
+  .project__year { font-size: 0.85rem; }
+  .project__subtitle { font-size: clamp(1.3rem, 4.5vw, 1.7rem); }
+  .project__body { font-size: 1.3rem; line-height: 1.7; }
+  .collab__names { font-size: clamp(1.35rem, 4.5vw, 1.7rem); }
+
+  /* About / Contact — bigger text; scroll if it doesn't fit */
+  .square__scroll--static { overflow-y: auto; }
+  .square__scroll--static > main { height: auto; min-height: 100%; }
+  .info__top, .info__bottom { font-size: 0.8rem; }
+  .info__main .info__lead { font-size: clamp(1.55rem, 6cqi, 2.1rem); }
+  .info__main p { font-size: clamp(1.2rem, 4.5cqi, 1.4rem); }
+  .info__cols h2 { font-size: 0.85rem; }
+  .info__links { font-size: clamp(1.05rem, 4cqi, 1.25rem); }
+  .info__email a { font-size: clamp(1.6rem, 9cqi, 2.4rem); }
 
   /* Lightbox caption drops below the image on small screens */
   .lightbox__figure {
