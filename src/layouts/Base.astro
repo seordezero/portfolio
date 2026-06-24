@@ -494,6 +494,15 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         if (path === "") path = "/";
         const idx = pages.indexOf(path);
         if (idx === -1) return; // only on the three main pages
+        const frame = document.querySelector(".frame");
+        const go = (url, dir) => {
+          if (frame) {
+            frame.style.transition = "transform 0.28s ease, opacity 0.28s ease";
+            frame.style.transform = `translateX(${dir * -32}vw)`;
+            frame.style.opacity = "0";
+          }
+          setTimeout(() => { location.href = url; }, 240);
+        };
         let sx = null, sy = null;
         window.addEventListener("touchstart", (e) => {
           sx = e.touches[0].clientX; sy = e.touches[0].clientY;
@@ -504,8 +513,8 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           const dy = e.changedTouches[0].clientY - sy;
           sx = sy = null;
           if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
-          if (dx < 0 && idx < pages.length - 1) location.href = pages[idx + 1];
-          else if (dx > 0 && idx > 0) location.href = pages[idx - 1];
+          if (dx < 0 && idx < pages.length - 1) go(pages[idx + 1], 1);
+          else if (dx > 0 && idx > 0) go(pages[idx - 1], -1);
         }, { passive: true });
       }
 

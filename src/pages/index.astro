@@ -162,12 +162,41 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
       const KEY = "indexSection";
       let section = "cover";
 
+      // Mobile: size list rows so 4 are visible and the catalog so a 2x2 fits
+      // exactly, both centered in the body, with one-row snapping.
+      const isMobile = () => matchMedia("(max-width: 640px)").matches;
+      const rowEls = list ? Array.from(list.children) : [];
+      const layoutMobile = () => {
+        const clear = () => {
+          rowEls.forEach((r) => { r.style.height = ""; });
+          if (catalog) {
+            catalog.style.gridTemplateColumns = "";
+            catalog.style.gridAutoRows = "";
+            catalog.style.width = "";
+          }
+        };
+        if (!body || !isMobile() || section !== "list") { clear(); return; }
+        const bh = body.clientHeight;
+        const bw = body.clientWidth;
+        if (bh < 60) return;
+        const rowH = Math.floor(bh / 4);
+        rowEls.forEach((r) => { r.style.height = rowH + "px"; });
+        const gap = 5;
+        const cell = Math.floor(Math.min((bw - gap) / 2, (bh - gap) / 2));
+        if (catalog) {
+          catalog.style.gridTemplateColumns = `repeat(2, ${cell}px)`;
+          catalog.style.gridAutoRows = `${cell}px`;
+          catalog.style.width = cell * 2 + gap + "px";
+        }
+      };
+
       const remember = (v) => { try { sessionStorage.setItem(KEY, v); } catch (e) {} };
       const showCover = () => {
         section = "cover";
         if (intro) intro.style.display = "";
         index.style.display = "none";
         remember("cover");
+        layoutMobile();
       };
       const showList = () => {
         section = "list";
@@ -175,6 +204,7 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         index.style.display = "";
         if (body) body.scrollTop = 0;
         remember("list");
+        layoutMobile();
       };
 
       let saved = null;
@@ -239,7 +269,15 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
           index.querySelectorAll("[data-view-btn]").forEach((b) =>
             b.setAttribute("aria-pressed", b === btn ? "true" : "false")
           );
+          if (body) body.scrollTop = 0;
+          layoutMobile();
         });
+      });
+
+      let rt;
+      window.addEventListener("resize", () => {
+        clearTimeout(rt);
+        rt = setTimeout(layoutMobile, 120);
       });
     }
     if (document.readyState === "loading")
