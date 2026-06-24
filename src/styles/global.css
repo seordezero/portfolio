@@ -96,7 +96,7 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 .square {
   position: relative;
   aspect-ratio: 1 / 1;
-  background: color-mix(in srgb, var(--paper) 85%, transparent);
+  background: color-mix(in srgb, var(--paper) calc(var(--paper-op, 100) * 1%), transparent);
   color: var(--ink);
   overflow: hidden;
   container-type: inline-size;
@@ -111,7 +111,7 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 .square--gallery {
   --paper: #ffffff;
   --ink: #111110;
-  background: color-mix(in srgb, #ffffff 85%, transparent);
+  background: color-mix(in srgb, #ffffff calc(var(--paper-op, 100) * 1%), transparent);
   color: #111110;
 }
 

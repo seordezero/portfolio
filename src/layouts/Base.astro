@@ -224,10 +224,30 @@ const year = new Date().getFullYear();
         // animate supports:
         //  - from as a hex string (uniform start color)
         //  - fromCells as a string[] per cell (mid-dissolve snapshot)
+        const setPaperOp = (v) => {
+          document.body.style.setProperty("--paper-op", String(v));
+        };
+
+        // Squares ramp 75% -> 100% at a steady pace: they reach 87.5% exactly
+        // when the dissolve finishes, then keep climbing at the same rate for
+        // another full duration to land at 100% (so total ramp = 2x DURATION).
+        const rampPaperOp = () => {
+          const opStart = performance.now();
+          const opDur = DURATION * 2;
+          setPaperOp(75);
+          const opFrame = (now) => {
+            const q = Math.min(1, (now - opStart) / opDur);
+            setPaperOp(75 + 25 * q);
+            if (q < 1) requestAnimationFrame(opFrame);
+          };
+          requestAnimationFrame(opFrame);
+        };
+
         const animate = (from, to, fromCells) => {
           const b = hexToRgb(to);
           const uniformA = from ? hexToRgb(from) : null;
           const start = performance.now();
+          rampPaperOp();
           const frame = (now) => {
             const p = Math.min(1, (now - start) / DURATION);
             const pp = p * (1 + 2 * EDGE);
