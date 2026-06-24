@@ -70,7 +70,7 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
           >
             <img
               class="catalog__thumb"
-              src={`/images/${project.slug}/thumb/01.jpg`}
+              src={`/images/${project.slug}/thumb/${String(project.cover ?? 1).padStart(2, "0")}.jpg`}
               alt={project.title}
               width="512"
               height="512"

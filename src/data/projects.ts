@@ -4,15 +4,16 @@ export interface Project {
   subtitle?: string;
   year: number;
   category: "Architecture" | "Design" | "Parametric" | "Audiovisual" | "Research";
+  cover?: number; // 1-based thumbnail index used in the catalog grid (default 1)
 }
 
 export const projects: Project[] = [
   { slug: "secciones-de-sonido",         title: "Secciones de Sonido",         subtitle: "un experimento en tres tiempos",     year: 2026, category: "Audiovisual"  },
   { slug: "cph-mothership",              title: "CPH Mothership",               subtitle: "X-Urban Studio, IAAC",                year: 2023, category: "Architecture" },
-  { slug: "master-advanced-architecture", title: "Master in Advanced Architecture", subtitle: "IAAC, Barcelona",                year: 2023, category: "Research"     },
+  { slug: "master-advanced-architecture", title: "Master in Advanced Architecture", subtitle: "IAAC, Barcelona",                year: 2023, category: "Research", cover: 4 },
   { slug: "algoritmia",                  title: "Algoritmia",                   subtitle: "final year project, PUCP",            year: 2021, category: "Research"     },
   { slug: "la-bienvenida",               title: "La Bienvenida",                subtitle: "club house & condo, Peru",            year: 2021, category: "Architecture" },
-  { slug: "jiron-tumbes",                title: "Jirón Tumbes",                 subtitle: "studio restoration, Barranco",        year: 2021, category: "Architecture" },
+  { slug: "jiron-tumbes",                title: "Jirón Tumbes",                 subtitle: "studio restoration, Barranco",        year: 2021, category: "Architecture", cover: 2 },
   { slug: "foldable-breakfast-table",    title: "Foldable Breakfast Table",     subtitle: "furniture for a 25 m² apartment",     year: 2021, category: "Design"       },
   { slug: "fable",                       title: "faBle",                        subtitle: "self-assembling CNC furniture",       year: 2020, category: "Design"       },
   { slug: "workshop-pucp-eth-zurich",    title: "Workshop PUCP — ETH Zürich",   subtitle: "A Room for Archeologists and Kids",   year: 2018, category: "Architecture" },

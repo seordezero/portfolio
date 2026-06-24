@@ -20,7 +20,6 @@ const {
 
 const { square, backdrop, ink } = pageColors(colorIndex);
 const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
-const year = new Date().getFullYear();
 ---
 
 <!DOCTYPE html>
@@ -71,10 +70,6 @@ const year = new Date().getFullYear();
               <main>
                 <slot />
               </main>
-              <footer class="site-footer">
-                <div>Madrid · {year}</div>
-                <div>seordezero@gmail.com</div>
-              </footer>
             </div>
           </section>
           <section class="square square--gallery">
@@ -99,10 +94,6 @@ const year = new Date().getFullYear();
             <main>
               <slot />
             </main>
-            <footer class="site-footer">
-              <div>Madrid · {year}</div>
-              <div>seordezero@gmail.com</div>
-            </footer>
           </div>
         </section>
       )}
