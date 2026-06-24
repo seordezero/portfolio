@@ -257,8 +257,8 @@ h3 { font-size: 1.1rem; }
    the bottom; the list lives just below the fold. */
 .index__intro {
   position: relative;
-  /* fill the visible square so the view icons + list sit below the fold */
-  min-height: calc(min(92vmin, 1100px) - 2 * var(--sq-margin));
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -315,13 +315,17 @@ h3 { font-size: 1.1rem; }
 p { margin: 1rem 0; max-width: 68ch; }
 
 /* Index / project list — icons on top, sort columns pinned to the bottom */
-/* Index manages its own internal scroll (cover vs list sections) */
+/* Index manages its own internal scroll (cover vs list sections).
+   `display: contents` drops the <main> box so the cover and list become
+   direct flex children of the square and get a definite height to scroll in. */
 .square__scroll:has(.index) { overflow: hidden; }
+.square__scroll:has(.index) > main { display: contents; }
 
 .index {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 /* Top bar mirrors the bottom: list left, up-arrow center, grid right.
@@ -441,8 +445,8 @@ p { margin: 1rem 0; max-width: 68ch; }
 }
 
 .index__row:hover {
-  background: var(--ink);
-  color: var(--paper);
+  background: #ff4d8d;
+  color: #111110;
 }
 
 .index__year {
@@ -475,7 +479,7 @@ p { margin: 1rem 0; max-width: 68ch; }
   font-size: 1rem;
 }
 
-.index__row:hover .index__subtitle { color: var(--paper); }
+.index__row:hover .index__subtitle { color: #111110; }
 
 .index__category {
   font-family: var(--font-mono);
@@ -876,8 +880,23 @@ p { margin: 1rem 0; max-width: 68ch; }
 @media (max-width: 640px) {
   .index__head { grid-template-columns: repeat(3, 1fr); }
   .index__row { grid-template-columns: 0.6fr 2.4fr 0.9fr; }
-  .corners__nav { top: 12px; left: 12px; }
-  .corners__name { top: 12px; right: 12px; font-size: 0.7rem; letter-spacing: 0.05em; }
+  /* Menu centered at the top, name centered at the bottom (footer) */
+  .corners__nav {
+    top: 12px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+  .corners__name {
+    top: auto;
+    bottom: 12px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+  }
   .corners .site-nav { gap: 1.1rem; font-size: 1rem; }
   .index__title { font-size: 1.05rem; }
   .index__year { font-size: 0.95rem; }
@@ -888,9 +907,9 @@ p { margin: 1rem 0; max-width: 68ch; }
     gap: 5px;
     width: min(100%, calc(min(92vw, 100dvh - 120px) - 7rem));
   }
+  /* Snap one row at a time so a centered 2x2 stays in view */
   .index[data-view="grid"] .catalog__item:nth-child(9n + 1) { scroll-snap-align: none; }
-  .index[data-view="grid"] .catalog__item:nth-child(4n + 1) { scroll-snap-align: start; }
-  .index__intro { min-height: calc(min(92vw, 100dvh - 120px) - 2 * var(--sq-margin)); }
+  .index[data-view="grid"] .catalog__item:nth-child(2n + 1) { scroll-snap-align: start; }
   .lede { margin: 0 auto; font-size: clamp(1.4rem, 6.5cqi, 2rem); }
   .project__body { font-size: 1.1rem; }
 
