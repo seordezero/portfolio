@@ -8,7 +8,7 @@ const { slug, images, alt = "" } = Astro.props;
 ---
 
 <div class="carousel" data-carousel>
-  <div class="carousel__stage">
+  <div class="carousel__track" data-track>
     {images.map((file, i) => {
       const n = String(i + 1).padStart(2, "0");
       const label = `${alt} — image ${i + 1}`;
@@ -19,7 +19,6 @@ const { slug, images, alt = "" } = Astro.props;
           data-lightbox
           data-alt={label}
           aria-label={label}
-          hidden={i !== 0}
         >
           <img
             src={`/images/${slug}/thumb/${n}.jpg`}
@@ -34,11 +33,10 @@ const { slug, images, alt = "" } = Astro.props;
   </div>
 
   {images.length > 1 && (
-    <div class="carousel__nav">
-      <button type="button" data-prev aria-label="Previous image">←</button>
-      <span class="carousel__count"><span data-current>1</span> / {images.length}</span>
-      <button type="button" data-next aria-label="Next image">→</button>
-    </div>
+    <>
+      <button class="carousel__arrow carousel__arrow--prev" data-prev aria-label="Previous image">←</button>
+      <button class="carousel__arrow carousel__arrow--next" data-next aria-label="Next image">→</button>
+    </>
   )}
 </div>
 
@@ -47,20 +45,28 @@ const { slug, images, alt = "" } = Astro.props;
     document.querySelectorAll("[data-carousel]").forEach((c) => {
       if (c.dataset.ready) return;
       c.dataset.ready = "1";
-      const items = Array.from(c.querySelectorAll(".carousel__item"));
-      if (items.length < 2) return;
-      const counter = c.querySelector("[data-current]");
-      let idx = 0;
-      const show = (n) => {
-        idx = (n + items.length) % items.length;
-        items.forEach((it, i) => {
-          if (i === idx) it.removeAttribute("hidden");
-          else it.setAttribute("hidden", "");
-        });
-        if (counter) counter.textContent = String(idx + 1);
-      };
-      c.querySelector("[data-prev]")?.addEventListener("click", () => show(idx - 1));
-      c.querySelector("[data-next]")?.addEventListener("click", () => show(idx + 1));
+      const track = c.querySelector("[data-track]");
+      if (!track) return;
+
+      const step = () => track.clientWidth;
+      c.querySelector("[data-prev]")?.addEventListener("click", () =>
+        track.scrollBy({ left: -step(), behavior: "smooth" })
+      );
+      c.querySelector("[data-next]")?.addEventListener("click", () =>
+        track.scrollBy({ left: step(), behavior: "smooth" })
+      );
+
+      // Vertical wheel / trackpad → horizontal scroll (Instagram-style)
+      track.addEventListener(
+        "wheel",
+        (e) => {
+          if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+            track.scrollLeft += e.deltaY;
+            e.preventDefault();
+          }
+        },
+        { passive: false }
+      );
     });
   }
   if (document.readyState === "loading")
