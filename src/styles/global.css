@@ -140,7 +140,7 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 
 /* Site header */
 .site-header {
-  padding: 20px 0 1.25rem;
+  padding: 0 0 2.5rem;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -178,7 +178,7 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 /* Site footer */
 .site-footer {
   margin-top: auto;
-  padding: 1.5rem 0 20px;
+  padding: 1.5rem 0 0;
   border-top: none;
   display: flex;
   justify-content: space-between;
@@ -215,7 +215,7 @@ h3 { font-size: 1.1rem; }
   line-height: 1.25;
   max-width: 32ch;
   overflow-wrap: break-word;
-  margin: 2rem auto 3rem;
+  margin: 1rem auto 4.5rem;
   text-align: center;
 }
 
@@ -572,7 +572,7 @@ p { margin: 1rem 0; max-width: 68ch; }
   .index__title { font-size: 0.9rem; }
   .index__subtitle { display: none; }
   .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-  .lede { margin: 2rem auto 3rem; }
+  .lede { margin: 1rem auto 3.5rem; }
   .project__body { font-size: 1.1rem; }
   .square--single { width: min(92vmin, calc(100dvh - 32px)); }
 }
