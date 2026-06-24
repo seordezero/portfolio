@@ -410,6 +410,8 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
       // (the single/content square). Over the gallery track, its own handler
       // takes the horizontal scroll instead.
       function initScroll() {
+        // The index page handles its own section/scroll logic.
+        if (document.querySelector(".index")) return;
         const scroller = document.querySelector(
           ".square--single .square__scroll, .square--content .square__scroll"
         );

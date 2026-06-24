@@ -150,31 +150,78 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         });
       });
 
-      // Once you scroll down, the cover (phrase + arrow) is removed entirely,
-      // leaving just the list with its view icons on top.
-      const scroller = document.querySelector(".square__scroll");
+      // Two sections — cover (phrase) and list — only one shown at a time.
+      // Scrolling moves between them with a pause at the list's top edge:
+      // you reach the top of the list first, then a further scroll up returns
+      // to the phrase.
+      const sq = document.querySelector(".square__scroll");
       const intro = document.querySelector("[data-intro]");
+      const body = document.querySelector(".index__body");
       const cue = document.querySelector("[data-cue]");
       const cueUp = document.querySelector("[data-cue-up]");
-      const collapse = () => {
-        if (!intro || intro.dataset.collapsed) return;
-        intro.dataset.collapsed = "1";
-        intro.style.display = "none";
-        if (scroller) scroller.scrollTop = 0;
+      let section = "cover";
+
+      const showCover = () => {
+        section = "cover";
+        if (intro) intro.style.display = "";
+        index.style.display = "none";
       };
-      const expand = () => {
-        if (!intro) return;
-        intro.dataset.collapsed = "";
-        intro.style.display = "";
-        if (scroller) scroller.scrollTop = 0;
+      const showList = () => {
+        section = "list";
+        if (intro) intro.style.display = "none";
+        index.style.display = "";
+        if (body) body.scrollTop = 0;
       };
-      if (scroller) {
-        scroller.addEventListener("scroll", () => {
-          if (scroller.scrollTop > 24) collapse();
-        });
+      showCover(); // start on the cover
+
+      cue?.addEventListener("click", showList);
+      cueUp?.addEventListener("click", showCover);
+
+      if (sq && body) {
+        sq.addEventListener(
+          "wheel",
+          (e) => {
+            e.preventDefault();
+            if (section === "cover") {
+              if (e.deltaY > 0) showList();
+            } else if (e.deltaY < 0 && body.scrollTop <= 0) {
+              showCover();
+            } else {
+              body.scrollTop += e.deltaY;
+            }
+          },
+          { passive: false }
+        );
+
+        let ty = null;
+        let startAtTop = false;
+        sq.addEventListener(
+          "touchstart",
+          (e) => {
+            ty = e.touches[0].clientY;
+            startAtTop = section === "list" && body.scrollTop <= 0;
+          },
+          { passive: true }
+        );
+        sq.addEventListener(
+          "touchmove",
+          (e) => {
+            if (ty === null) return;
+            const y = e.touches[0].clientY;
+            const dy = ty - y; // positive = scrolling down
+            ty = y;
+            e.preventDefault();
+            if (section === "cover") {
+              if (dy > 6) showList();
+            } else if (startAtTop && dy < 0) {
+              showCover();
+            } else {
+              body.scrollTop += dy;
+            }
+          },
+          { passive: false }
+        );
       }
-      cue?.addEventListener("click", collapse);
-      cueUp?.addEventListener("click", expand);
 
       // View toggle: list (detail) vs grid (catalog)
       index.querySelectorAll("[data-view-btn]").forEach((btn) => {
