@@ -905,11 +905,11 @@ p { margin: 1rem 0; max-width: 68ch; }
   /* Catalog columns + cell size are set by JS (layoutMobile) for an exact fit */
   .index__catalog { gap: 5px; }
 
-  /* Snap one row at a time so a full set stays in view (list + grid) */
+  /* Snap one row at a time (list = top-aligned 4 rows, grid = centered row) */
   .index__body { scroll-snap-type: y mandatory; }
   .index__row { scroll-snap-align: start; align-items: center; }
   .index[data-view="grid"] .catalog__item:nth-child(9n + 1) { scroll-snap-align: none; }
-  .index[data-view="grid"] .catalog__item:nth-child(2n + 1) { scroll-snap-align: start; }
+  .index[data-view="grid"] .catalog__item:nth-child(2n + 1) { scroll-snap-align: center; }
   .lede { margin: 0 auto; font-size: clamp(1.4rem, 6.5cqi, 2rem); }
   .project__body { font-size: 1.1rem; }
 

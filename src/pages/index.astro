@@ -172,6 +172,9 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
           if (catalog) {
             catalog.style.gridTemplateColumns = "";
             catalog.style.gridAutoRows = "";
+            catalog.style.columnGap = "";
+            catalog.style.rowGap = "";
+            catalog.style.padding = "";
             catalog.style.width = "";
           }
         };
@@ -181,12 +184,18 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         if (bh < 60) return;
         const rowH = Math.floor(bh / 4);
         rowEls.forEach((r) => { r.style.height = rowH + "px"; });
-        // Grid: one big row of two images at a time (cell = half the width)
+        // Grid: one big row of two images, vertically centered. Rows are spaced
+        // a full body-height apart so only one shows at rest; center-snapping
+        // keeps the visible row in the middle.
         const gap = 5;
         const cell = Math.floor((bw - gap) / 2);
         if (catalog) {
+          const vgap = Math.max(0, bh - cell);
           catalog.style.gridTemplateColumns = `repeat(2, ${cell}px)`;
           catalog.style.gridAutoRows = `${cell}px`;
+          catalog.style.columnGap = `${gap}px`;
+          catalog.style.rowGap = `${vgap}px`;
+          catalog.style.padding = `${Math.floor(vgap / 2)}px 0`;
           catalog.style.width = cell * 2 + gap + "px";
         }
       };
