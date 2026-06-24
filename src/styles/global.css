@@ -141,30 +141,38 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 }
 
 
-/* Site header — menu left, name right; stays put while content scrolls */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  background: var(--paper);
-  padding: 0.5rem 0 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-  flex-wrap: nowrap;
+/* Fixed corner header — menu top-left, name top-right. No background;
+   sits over whatever is below and takes the page's text color. */
+.corners {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  color: var(--ink);
 }
 
-.site-header__name {
+.corners__nav {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  pointer-events: auto;
+}
+
+.corners__name {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  pointer-events: auto;
   font-family: var(--font-mono);
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--ink-faint);
   text-align: right;
 }
 
-.site-header__name a { display: inline-block; }
+.corners__name a { display: inline-block; }
+
+.corners .site-nav { color: var(--ink); }
 
 .site-nav {
   display: flex;
@@ -658,9 +666,9 @@ p { margin: 1rem 0; max-width: 68ch; }
 @media (max-width: 640px) {
   .index__head { grid-template-columns: repeat(3, 1fr); }
   .index__row { grid-template-columns: 0.6fr 2.4fr 0.9fr; }
-  .site-header { gap: 0.75rem; }
-  .site-nav { gap: 0.8rem; font-size: 0.7rem; }
-  .site-header__name { font-size: 0.5rem; letter-spacing: 0.04em; }
+  .corners__nav { top: 12px; left: 12px; }
+  .corners__name { top: 12px; right: 12px; font-size: 0.5rem; letter-spacing: 0.04em; }
+  .corners .site-nav { gap: 0.8rem; font-size: 0.7rem; }
   .index__title { font-size: 0.9rem; }
   .index__subtitle { display: none; }
   .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 4px; }
