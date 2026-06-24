@@ -94,7 +94,13 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
 
     <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
       <button class="lightbox__close" type="button" aria-label="Close">×</button>
-      <img src="" alt="" />
+      <figure class="lightbox__figure">
+        <img src="" alt="" />
+        <figcaption class="lightbox__caption">
+          <h3 class="lightbox__title"></h3>
+          <p class="lightbox__desc"></p>
+        </figcaption>
+      </figure>
     </div>
 
     <script>
@@ -286,14 +292,28 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         });
       }
 
-      // ---- Lightbox --------------------------------------------------------
+      // ---- Lightbox gallery viewer ----------------------------------------
       function initLightbox() {
         const box = document.getElementById("lightbox");
         if (!box) return;
         const img = box.querySelector("img");
-        const open = (src, alt) => {
-          img.src = src || "";
-          img.alt = alt || "";
+        const titleEl = box.querySelector(".lightbox__title");
+        const descEl = box.querySelector(".lightbox__desc");
+        let items = [];
+        let idx = 0;
+
+        const render = () => {
+          const it = items[idx];
+          if (!it) return;
+          img.src = it.src || "";
+          img.alt = it.alt || "";
+          titleEl.textContent = it.title || "";
+          descEl.textContent = it.desc || "";
+        };
+        const open = (list, start) => {
+          items = list;
+          idx = start;
+          render();
           box.classList.add("is-open");
           box.setAttribute("aria-hidden", "false");
         };
@@ -302,17 +322,65 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           box.setAttribute("aria-hidden", "true");
           img.src = "";
         };
-        document.querySelectorAll("[data-lightbox]").forEach((a) => {
-          a.addEventListener("click", (e) => {
-            e.preventDefault();
-            open(a.getAttribute("href"), a.getAttribute("data-alt"));
+        const move = (d) => {
+          if (!items.length) return;
+          idx = (idx + d + items.length) % items.length;
+          render();
+        };
+
+        // Build a list per gallery from its (non-clone) thumbnails
+        document.querySelectorAll("[data-carousel]").forEach((c) => {
+          const links = Array.from(c.querySelectorAll(".carousel__item")).filter(
+            (a) => !a.hasAttribute("data-clone")
+          );
+          const list = links.map((a) => ({
+            src: a.getAttribute("href"),
+            alt: a.getAttribute("data-alt") || "",
+            title: a.getAttribute("data-title") || "",
+            desc: a.getAttribute("data-desc") || "",
+          }));
+          links.forEach((a, i) => {
+            a.addEventListener("click", (e) => {
+              e.preventDefault();
+              open(list, i);
+            });
           });
         });
+
+        // Click on the dark backdrop (not the image/caption) closes
         box.addEventListener("click", (e) => {
-          if (e.target !== img) close();
+          if (e.target.closest(".lightbox__figure")) return;
+          close();
         });
+
+        // Scroll / swipe to advance to the next image
+        box.addEventListener(
+          "wheel",
+          (e) => {
+            if (!box.classList.contains("is-open")) return;
+            e.preventDefault();
+            move(e.deltaY > 0 ? 1 : -1);
+          },
+          { passive: false }
+        );
+        let sy = null;
+        box.addEventListener("touchstart", (e) => { sy = e.touches[0].clientY; }, { passive: true });
+        box.addEventListener(
+          "touchmove",
+          (e) => {
+            if (sy === null) return;
+            const dy = sy - e.touches[0].clientY;
+            if (Math.abs(dy) > 40) { move(dy > 0 ? 1 : -1); sy = e.touches[0].clientY; }
+            e.preventDefault();
+          },
+          { passive: false }
+        );
+
         document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && box.classList.contains("is-open")) close();
+          if (!box.classList.contains("is-open")) return;
+          if (e.key === "Escape") close();
+          else if (e.key === "ArrowDown" || e.key === "ArrowRight") move(1);
+          else if (e.key === "ArrowUp" || e.key === "ArrowLeft") move(-1);
         });
       }
 

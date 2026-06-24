@@ -18,6 +18,8 @@ const { slug, images, alt = "" } = Astro.props;
           href={`/images/${slug}/full/${file}`}
           data-lightbox
           data-alt={label}
+          data-title={`Plate ${n}`}
+          data-desc={`Placeholder description for image ${i + 1} — a short note about this drawing or photograph will go here.`}
           aria-label={label}
         >
           <img
