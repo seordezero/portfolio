@@ -69,6 +69,11 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
       {layout === "split" ? (
         <div class="squares">
           <section class="square square--content">
+            <a class="back-btn" href="/" aria-label="Back to index">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
             <div class="square__scroll">
               <main>
                 <slot />
