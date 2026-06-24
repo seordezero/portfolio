@@ -11,18 +11,11 @@ const year = new Date().getFullYear();
     Parametric systems, sonic landscapes, and architectural research from <em>Madrid &amp; Lima</em>.
   </p>
 
-  <div class="index__sort" role="group" aria-label="Sort projects">
-    <span>Sort</span>
-    <button type="button" data-sort="year" aria-pressed="true">Year</button>
-    <button type="button" data-sort="title" aria-pressed="false">Name</button>
-    <button type="button" data-sort="category" aria-pressed="false">Category</button>
-  </div>
-
   <section class="index" aria-label="Project index">
     <div class="index__head">
-      <div>Year</div>
-      <div>Project</div>
-      <div>Category</div>
+      <div role="button" tabindex="0" data-sort="year" aria-pressed="true">Year</div>
+      <div role="button" tabindex="0" data-sort="title" aria-pressed="false">Project</div>
+      <div role="button" tabindex="0" data-sort="category" aria-pressed="false">Category</div>
     </div>
 
     <div class="index__list" data-list>
@@ -56,14 +49,14 @@ const year = new Date().getFullYear();
 
   <script>
     function initSort() {
-      const controls = document.querySelector(".index__sort");
+      const head = document.querySelector(".index__head");
       const list = document.querySelector("[data-list]");
-      if (!controls || !list || list.dataset.ready) return;
+      if (!head || !list || list.dataset.ready) return;
       list.dataset.ready = "1";
 
       const rows = Array.from(list.children);
       let key = "year";
-      let dir = -1; // year defaults to descending
+      let dir = -1;
 
       const valueOf = (el, k) =>
         k === "year" ? Number(el.dataset.year) : el.dataset[k];
@@ -80,19 +73,22 @@ const year = new Date().getFullYear();
           .forEach((row) => list.appendChild(row));
       };
 
-      controls.querySelectorAll("button").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const k = btn.dataset.sort;
+      head.querySelectorAll("[data-sort]").forEach((col) => {
+        col.addEventListener("click", () => {
+          const k = col.dataset.sort;
           if (k === key) {
             dir *= -1;
           } else {
             key = k;
             dir = k === "year" ? -1 : 1;
           }
-          controls.querySelectorAll("button").forEach((b) =>
-            b.setAttribute("aria-pressed", b === btn ? "true" : "false")
+          head.querySelectorAll("[data-sort]").forEach((c) =>
+            c.setAttribute("aria-pressed", c === col ? "true" : "false")
           );
           apply();
+        });
+        col.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); col.click(); }
         });
       });
     }

@@ -164,16 +164,14 @@ const year = new Date().getFullYear();
         const canvas = document.getElementById("fx");
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
-        const CELL = 18; // dot/cell size in px
+        const CELL = 18;
 
-        // Fresh seed, scale, duration and offset every visit → no two
-        // transitions are ever the same.
         const seed = (Math.random() * 4294967295) >>> 0;
         const noise = makeNoise(seed);
-        const SCALE = 0.035 + Math.random() * 0.03; // low scale → big waves
+        const SCALE = 0.035 + Math.random() * 0.03;
         const OFFX = Math.random() * 1000;
         const OFFY = Math.random() * 1000;
-        const DURATION = 6000 + Math.random() * 4000; // 6–10s
+        const DURATION = 6000 + Math.random() * 4000;
         const EDGE = 0.16;
 
         const newBackdrop =
@@ -181,8 +179,14 @@ const year = new Date().getFullYear();
             getComputedStyle(document.body).getPropertyValue("--backdrop")).trim();
 
         let prevBackdrop = null;
+        let cellSnapshot = null; // per-cell RGB from mid-dissolve
         try {
           prevBackdrop = sessionStorage.getItem("fxBackdrop");
+          const snap = sessionStorage.getItem("fxCells");
+          if (snap) {
+            cellSnapshot = JSON.parse(snap);
+            sessionStorage.removeItem("fxCells");
+          }
         } catch (e) {}
         try {
           sessionStorage.setItem("fxBackdrop", newBackdrop);
@@ -212,15 +216,42 @@ const year = new Date().getFullYear();
           return t * t * (3 - 2 * t);
         };
 
-        const animate = (from, to) => {
-          const a = hexToRgb(from), b = hexToRgb(to);
+        // Save per-cell pixel state so the next page can resume from here.
+        const saveSnapshot = () => {
+          if (!cols || !rows) return;
+          const cells = [];
+          for (let j = 0; j < rows; j++) {
+            for (let i = 0; i < cols; i++) {
+              const px = ctx.getImageData(i * CELL + (CELL >> 1), j * CELL + (CELL >> 1), 1, 1).data;
+              cells.push(px[0] + "," + px[1] + "," + px[2]);
+            }
+          }
+          try { sessionStorage.setItem("fxCells", JSON.stringify(cells)); } catch (e) {}
+        };
+
+        let rafId = null;
+
+        // animate supports:
+        //  - from as a hex string (uniform start color)
+        //  - fromCells as a string[] per cell (mid-dissolve snapshot)
+        const animate = (from, to, fromCells) => {
+          const b = hexToRgb(to);
+          const uniformA = from ? hexToRgb(from) : null;
           const start = performance.now();
           const frame = (now) => {
             const p = Math.min(1, (now - start) / DURATION);
             const pp = p * (1 + 2 * EDGE);
             for (let j = 0; j < rows; j++) {
               for (let i = 0; i < cols; i++) {
-                const n = field[j * cols + i];
+                const idx = j * cols + i;
+                let a;
+                if (fromCells && idx < fromCells.length) {
+                  const parts = fromCells[idx].split(",");
+                  a = [+parts[0], +parts[1], +parts[2]];
+                } else {
+                  a = uniformA || [b[0], b[1], b[2]];
+                }
+                const n = field[idx];
                 const t = smooth(n - EDGE, n + EDGE, pp);
                 const r = (a[0] + (b[0] - a[0]) * t) | 0;
                 const g = (a[1] + (b[1] - a[1]) * t) | 0;
@@ -229,16 +260,22 @@ const year = new Date().getFullYear();
                 ctx.fillRect(i * CELL, j * CELL, CELL + 1, CELL + 1);
               }
             }
-            if (p < 1) requestAnimationFrame(frame);
-            else fill(to);
+            if (p < 1) { rafId = requestAnimationFrame(frame); }
+            else { rafId = null; fill(to); }
           };
-          requestAnimationFrame(frame);
+          rafId = requestAnimationFrame(frame);
         };
 
         const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
         sizeCanvas();
-        if (prevBackdrop && prevBackdrop !== newBackdrop && !reduced)
-          animate(prevBackdrop, newBackdrop);
+
+        // Snapshot canvas cells just before page unloads so next page can
+        // continue from the actual mid-dissolve pixel state.
+        window.addEventListener("pagehide", saveSnapshot);
+        window.addEventListener("beforeunload", saveSnapshot);
+
+        if (!reduced && (cellSnapshot || (prevBackdrop && prevBackdrop !== newBackdrop)))
+          animate(prevBackdrop, newBackdrop, cellSnapshot);
         else fill(newBackdrop);
 
         let rt;
