@@ -260,7 +260,7 @@ p { margin: 1rem 0; max-width: 68ch; }
 .index__head,
 .index__row {
   display: grid;
-  grid-template-columns: 0.6fr 3fr 0.9fr;
+  grid-template-columns: 1fr 2fr 1fr;
   column-gap: 1.75rem;
   align-items: baseline;
 }
@@ -273,15 +273,19 @@ p { margin: 1rem 0; max-width: 68ch; }
   color: var(--ink-faint);
   padding-bottom: 0.5rem;
   border-bottom: none;
-  text-align: center;
 }
 
 .index__head [data-sort] {
   cursor: pointer;
   user-select: none;
   transition: color 0.12s ease;
-  justify-self: center;
 }
+
+/* Year meets the left margin, Project centers on the page axis,
+   Category meets the right margin — independent of content. */
+.index__head [data-sort]:nth-child(1) { justify-self: start; }
+.index__head [data-sort]:nth-child(2) { justify-self: center; }
+.index__head [data-sort]:nth-child(3) { justify-self: end; }
 
 .index__head [data-sort]:hover { color: var(--ink); }
 
@@ -587,7 +591,7 @@ p { margin: 1rem 0; max-width: 68ch; }
 
 @media (max-width: 640px) {
   .index__head,
-  .index__row { grid-template-columns: 0.6fr 2.4fr 0.9fr; }
+  .index__row { grid-template-columns: 1fr 2fr 1fr; }
   .index__title { font-size: 0.9rem; }
   .index__subtitle { display: none; }
   .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 4px; }
