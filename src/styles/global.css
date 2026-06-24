@@ -921,10 +921,10 @@ p { margin: 1rem 0; max-width: 68ch; }
     right: auto;
     transform: translateX(-50%);
     text-align: center;
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
+    white-space: nowrap;
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
   }
-  .corners__name { font-size: 0.82rem; }
   .corners .site-nav { gap: 1.2rem; font-size: 1.2rem; }
   .index__title { font-size: 1.25rem; }
   .index__year { font-size: 1.1rem; }
