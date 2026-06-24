@@ -138,22 +138,23 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 }
 
 
-/* Site header */
+/* Site header — menu left, name right */
 .site-header {
   padding: 0 0 2.5rem;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 2rem;
-  flex-wrap: wrap;
+  gap: 1rem;
+  flex-wrap: nowrap;
 }
 
 .site-header__name {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--ink-faint);
+  text-align: right;
 }
 
 .site-header__name a { display: inline-block; }
@@ -260,12 +261,19 @@ p { margin: 1rem 0; max-width: 68ch; }
 .index__head,
 .index__row {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  column-gap: 1.75rem;
   align-items: baseline;
 }
 
+/* Rows keep their tuned proportions and content spacing */
+.index__row {
+  grid-template-columns: 0.6fr 3fr 0.9fr;
+  column-gap: 1.75rem;
+}
+
+/* Headers use their own three-equal-column grid so they anchor to the
+   page axis / margins independently of the row content */
 .index__head {
+  grid-template-columns: repeat(3, 1fr);
   font-family: var(--font-mono);
   font-size: 0.66rem;
   text-transform: uppercase;
@@ -590,8 +598,11 @@ p { margin: 1rem 0; max-width: 68ch; }
 }
 
 @media (max-width: 640px) {
-  .index__head,
-  .index__row { grid-template-columns: 1fr 2fr 1fr; }
+  .index__head { grid-template-columns: repeat(3, 1fr); }
+  .index__row { grid-template-columns: 0.6fr 2.4fr 0.9fr; }
+  .site-header { gap: 0.75rem; }
+  .site-nav { gap: 0.8rem; font-size: 0.7rem; }
+  .site-header__name { font-size: 0.5rem; letter-spacing: 0.04em; }
   .index__title { font-size: 0.9rem; }
   .index__subtitle { display: none; }
   .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 4px; }

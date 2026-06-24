@@ -59,14 +59,14 @@ const year = new Date().getFullYear();
           <section class="square square--content">
             <div class="square__scroll">
               <header class="site-header">
-                <div class="site-header__name">
-                  <a href="/">Sebastián Ortiz de Zevallos</a>
-                </div>
                 <nav class="site-nav">
                   <a href="/" aria-current={currentPage === "index" ? "page" : undefined}>Index</a>
                   <a href="/about" aria-current={currentPage === "about" ? "page" : undefined}>About</a>
                   <a href="/contact" aria-current={currentPage === "contact" ? "page" : undefined}>Contact</a>
                 </nav>
+                <div class="site-header__name">
+                  <a href="/">Sebastián Ortiz de Zevallos</a>
+                </div>
               </header>
               <main>
                 <slot />
@@ -87,14 +87,14 @@ const year = new Date().getFullYear();
         <section class="square square--single">
           <div class="square__scroll">
             <header class="site-header">
-              <div class="site-header__name">
-                <a href="/">Sebastián Ortiz de Zevallos</a>
-              </div>
               <nav class="site-nav">
                 <a href="/" aria-current={currentPage === "index" ? "page" : undefined}>Index</a>
                 <a href="/about" aria-current={currentPage === "about" ? "page" : undefined}>About</a>
                 <a href="/contact" aria-current={currentPage === "contact" ? "page" : undefined}>Contact</a>
               </nav>
+              <div class="site-header__name">
+                <a href="/">Sebastián Ortiz de Zevallos</a>
+              </div>
             </header>
             <main>
               <slot />
@@ -170,6 +170,7 @@ const year = new Date().getFullYear();
 
         let prevBackdrop = null;
         let cellSnapshot = null; // per-cell RGB from mid-dissolve
+        let samePage = false;    // reload / re-click of the current page
         try {
           prevBackdrop = sessionStorage.getItem("fxBackdrop");
           const snap = sessionStorage.getItem("fxCells");
@@ -177,6 +178,9 @@ const year = new Date().getFullYear();
             cellSnapshot = JSON.parse(snap);
             sessionStorage.removeItem("fxCells");
           }
+          const prevPath = sessionStorage.getItem("fxPath");
+          samePage = prevPath === location.pathname;
+          sessionStorage.setItem("fxPath", location.pathname);
         } catch (e) {}
         try {
           sessionStorage.setItem("fxBackdrop", newBackdrop);
@@ -284,7 +288,7 @@ const year = new Date().getFullYear();
         window.addEventListener("pagehide", saveSnapshot);
         window.addEventListener("beforeunload", saveSnapshot);
 
-        if (!reduced && (cellSnapshot || (prevBackdrop && prevBackdrop !== newBackdrop)))
+        if (!reduced && !samePage && (cellSnapshot || (prevBackdrop && prevBackdrop !== newBackdrop)))
           animate(prevBackdrop, newBackdrop, cellSnapshot);
         else fill(newBackdrop);
 
