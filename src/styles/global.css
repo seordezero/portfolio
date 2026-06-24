@@ -226,10 +226,41 @@ p { margin: 1rem 0; max-width: 68ch; }
 /* Index / project list */
 .index { margin: 1rem 0 0; }
 
+/* View toggle (list / catalog) */
+.index__views {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.index__views button {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: var(--ink-faint);
+  display: inline-flex;
+  transition: color 0.12s ease;
+}
+
+.index__views button:hover { color: var(--ink); }
+.index__views button[aria-pressed="true"] { color: var(--ink); }
+
+.index__views svg {
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.index__views svg rect { fill: currentColor; stroke: none; }
+
+/* Equal side columns so the centered Project column lines up with the site */
 .index__head,
 .index__row {
   display: grid;
-  grid-template-columns: 90px 1fr 150px;
+  grid-template-columns: 1fr 1.7fr 1fr;
   gap: 0;
   align-items: baseline;
 }
@@ -242,12 +273,14 @@ p { margin: 1rem 0; max-width: 68ch; }
   color: var(--ink-faint);
   padding-bottom: 0.5rem;
   border-bottom: none;
+  text-align: center;
 }
 
 .index__head [data-sort] {
   cursor: pointer;
   user-select: none;
   transition: color 0.12s ease;
+  justify-self: center;
 }
 
 .index__head [data-sort]:hover { color: var(--ink); }
@@ -262,13 +295,13 @@ p { margin: 1rem 0; max-width: 68ch; }
 .index__row {
   padding: 1.1rem 0.5rem;
   border-bottom: none;
-  transition: background 0.12s ease, color 0.12s ease, padding-left 0.15s ease;
+  text-align: center;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
 .index__row:hover {
   background: var(--ink);
   color: var(--paper);
-  padding-left: 1rem;
 }
 
 .index__year {
@@ -276,6 +309,8 @@ p { margin: 1rem 0; max-width: 68ch; }
   font-variant-numeric: tabular-nums;
   font-size: 0.85rem;
 }
+
+.index__name { text-align: center; }
 
 .index__title {
   font-family: var(--font-display);
@@ -302,6 +337,42 @@ p { margin: 1rem 0; max-width: 68ch; }
 }
 
 .index__row a { display: contents; }
+
+/* Catalog (grid) view */
+.index__catalog {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.catalog__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.catalog__thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  transition: transform 0.25s ease, opacity 0.15s ease;
+}
+
+.catalog__item:hover .catalog__thumb { transform: scale(1.02); }
+
+.catalog__title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: -0.01em;
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* Toggle visibility between the two views */
+.index[data-view="list"] .index__catalog { display: none; }
+.index[data-view="grid"] .index__list { display: none; }
 
 /* Page meta */
 .meta {
@@ -497,9 +568,11 @@ p { margin: 1rem 0; max-width: 68ch; }
 
 @media (max-width: 640px) {
   .index__head,
-  .index__row { grid-template-columns: 56px 1fr; }
-  .index__category { display: none; }
-  .lede { margin: 2rem 0 3rem; }
+  .index__row { grid-template-columns: 1fr 1.4fr 1fr; }
+  .index__title { font-size: 0.9rem; }
+  .index__subtitle { display: none; }
+  .index__catalog { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .lede { margin: 2rem auto 3rem; }
   .project__body { font-size: 1.1rem; }
   .square--single { width: min(92vmin, calc(100dvh - 32px)); }
 }

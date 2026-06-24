@@ -11,7 +11,25 @@ const year = new Date().getFullYear();
     Parametric systems, sonic landscapes, and architectural research from <em>Madrid &amp; Lima</em>.
   </p>
 
-  <section class="index" aria-label="Project index">
+  <section class="index" aria-label="Project index" data-view="list">
+    <div class="index__views" role="group" aria-label="View mode">
+      <button type="button" data-view-btn="list" aria-pressed="true" aria-label="List view" title="List view">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="17" x2="20" y2="17" />
+        </svg>
+      </button>
+      <button type="button" data-view-btn="grid" aria-pressed="false" aria-label="Catalog view" title="Catalog view">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <rect x="4" y="4" width="6.5" height="6.5" />
+          <rect x="13.5" y="4" width="6.5" height="6.5" />
+          <rect x="4" y="13.5" width="6.5" height="6.5" />
+          <rect x="13.5" y="13.5" width="6.5" height="6.5" />
+        </svg>
+      </button>
+    </div>
+
     <div class="index__head">
       <div role="button" tabindex="0" data-sort="year" aria-pressed="true">Year</div>
       <div role="button" tabindex="0" data-sort="title" aria-pressed="false">Project</div>
@@ -29,13 +47,37 @@ const year = new Date().getFullYear();
             data-category={project.category.toLowerCase()}
           >
             <div class="index__year">{project.year}</div>
-            <div>
+            <div class="index__name">
               <span class="index__title">{project.title}</span>
               {project.subtitle && (
                 <span class="index__subtitle">— {project.subtitle}</span>
               )}
             </div>
             <div class="index__category">{project.category}</div>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="index__catalog" data-catalog>
+      {
+        sorted.map((project) => (
+          <a
+            class="catalog__item"
+            href={`/projects/${project.slug}`}
+            data-year={project.year}
+            data-title={project.title.toLowerCase()}
+            data-category={project.category.toLowerCase()}
+          >
+            <img
+              class="catalog__thumb"
+              src={`/images/${project.slug}/thumb/01.jpg`}
+              alt={project.title}
+              width="512"
+              height="512"
+              loading="lazy"
+            />
+            <span class="catalog__title">{project.title}</span>
           </a>
         ))
       }
@@ -48,21 +90,22 @@ const year = new Date().getFullYear();
   </div>
 
   <script>
-    function initSort() {
+    function initIndex() {
+      const index = document.querySelector(".index");
       const head = document.querySelector(".index__head");
       const list = document.querySelector("[data-list]");
-      if (!head || !list || list.dataset.ready) return;
-      list.dataset.ready = "1";
+      const catalog = document.querySelector("[data-catalog]");
+      if (!index || !head || !list || index.dataset.ready) return;
+      index.dataset.ready = "1";
 
-      const rows = Array.from(list.children);
       let key = "year";
       let dir = -1;
 
       const valueOf = (el, k) =>
         k === "year" ? Number(el.dataset.year) : el.dataset[k];
 
-      const apply = () => {
-        [...rows]
+      const sortContainer = (container) => {
+        Array.from(container.children)
           .sort((a, b) => {
             const va = valueOf(a, key);
             const vb = valueOf(b, key);
@@ -70,7 +113,12 @@ const year = new Date().getFullYear();
             if (va > vb) return 1 * dir;
             return 0;
           })
-          .forEach((row) => list.appendChild(row));
+          .forEach((el) => container.appendChild(el));
+      };
+
+      const apply = () => {
+        sortContainer(list);
+        if (catalog) sortContainer(catalog);
       };
 
       head.querySelectorAll("[data-sort]").forEach((col) => {
@@ -91,9 +139,20 @@ const year = new Date().getFullYear();
           if (e.key === "Enter" || e.key === " ") { e.preventDefault(); col.click(); }
         });
       });
+
+      // View toggle: list (detail) vs grid (catalog)
+      index.querySelectorAll("[data-view-btn]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const view = btn.dataset.viewBtn;
+          index.dataset.view = view;
+          index.querySelectorAll("[data-view-btn]").forEach((b) =>
+            b.setAttribute("aria-pressed", b === btn ? "true" : "false")
+          );
+        });
+      });
     }
     if (document.readyState === "loading")
-      document.addEventListener("DOMContentLoaded", initSort);
-    else initSort();
+      document.addEventListener("DOMContentLoaded", initIndex);
+    else initIndex();
   </script>
 </Base>
