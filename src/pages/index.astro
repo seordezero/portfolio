@@ -19,27 +19,26 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
 
   <section class="index" aria-label="Project index" data-view="list">
     <div class="index__top">
-      <div class="index__views" role="group" aria-label="View mode">
-        <button type="button" data-view-btn="list" aria-pressed="true" aria-label="List view" title="List view">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <line x1="4" y1="7" x2="20" y2="7" />
-            <line x1="4" y1="12" x2="20" y2="12" />
-            <line x1="4" y1="17" x2="20" y2="17" />
-          </svg>
-        </button>
-        <button type="button" data-view-btn="grid" aria-pressed="false" aria-label="Catalog view" title="Catalog view">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <rect x="4" y="4" width="6.5" height="6.5" />
-            <rect x="13.5" y="4" width="6.5" height="6.5" />
-            <rect x="4" y="13.5" width="6.5" height="6.5" />
-            <rect x="13.5" y="13.5" width="6.5" height="6.5" />
-          </svg>
-        </button>
-      </div>
+      <button type="button" class="index__viewbtn index__viewbtn--list" data-view-btn="list" aria-pressed="true" aria-label="List view" title="List view">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="17" x2="20" y2="17" />
+        </svg>
+      </button>
 
       <button class="scroll-cue scroll-cue--up" data-cue-up type="button" aria-label="Back to intro">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d="M5 15l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+
+      <button type="button" class="index__viewbtn index__viewbtn--grid" data-view-btn="grid" aria-pressed="false" aria-label="Catalog view" title="Catalog view">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <rect x="4" y="4" width="6.5" height="6.5" />
+          <rect x="13.5" y="4" width="6.5" height="6.5" />
+          <rect x="4" y="13.5" width="6.5" height="6.5" />
+          <rect x="13.5" y="13.5" width="6.5" height="6.5" />
         </svg>
       </button>
     </div>

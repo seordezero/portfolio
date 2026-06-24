@@ -278,11 +278,11 @@ h3 { font-size: 1.1rem; }
 
 .scroll-cue {
   position: absolute;
-  bottom: 0.5rem;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 2.8rem;
-  height: 2.8rem;
+  width: 2.6rem;
+  height: 2.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -298,15 +298,15 @@ h3 { font-size: 1.1rem; }
   pointer-events: none;
 }
 
-/* Up-arrow in the list's top bar — click to return to the intro */
+/* Up-arrow in the list's top bar — same size as the down cue, click returns */
 .scroll-cue--up {
   position: relative;
   left: auto;
   bottom: auto;
   transform: none;
   margin: 0;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.6rem;
+  height: 2.6rem;
 }
 
 .lede em { font-style: normal; color: var(--ink-muted); }
@@ -320,24 +320,37 @@ p { margin: 1rem 0; max-width: 68ch; }
   min-height: calc(min(92vmin, 1100px) - 2 * clamp(1.25rem, 3vw, 2.75rem));
 }
 
+/* Top bar mirrors the bottom: list left, up-arrow center, grid right.
+   Pinned to the top so it holds position in both list and gallery views. */
 .index__top {
-  display: flex;
-  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--paper);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   align-items: center;
-  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
 }
+
+.index__top .index__viewbtn--list { justify-self: start; }
+.index__top .scroll-cue--up { justify-self: center; }
+.index__top .index__viewbtn--grid { justify-self: end; }
 
 .index__body { flex: 1 1 auto; min-height: 0; }
 
-.index .index__head { margin-top: 1.25rem; }
-
-/* View toggle (list / catalog) */
-.index__views {
-  display: flex;
-  gap: 0.75rem;
+/* Sort columns pinned to the bottom (same position in both views) */
+.index .index__head {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  background: var(--paper);
+  margin-top: auto;
+  padding-top: 1rem;
 }
 
-.index__views button {
+/* View toggle buttons (list / catalog) */
+.index__viewbtn {
   background: none;
   border: none;
   padding: 0.25rem;
@@ -347,17 +360,17 @@ p { margin: 1rem 0; max-width: 68ch; }
   transition: color 0.12s ease;
 }
 
-.index__views button:hover { color: var(--ink); }
-.index__views button[aria-pressed="true"] { color: var(--ink); }
+.index__viewbtn:hover,
+.index__viewbtn[aria-pressed="true"] { color: var(--ink); }
 
-.index__views svg {
+.index__viewbtn svg {
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
   fill: none;
 }
 
-.index__views svg rect { fill: currentColor; stroke: none; }
+.index__viewbtn svg rect { fill: currentColor; stroke: none; }
 
 /* Equal side columns so the centered Project column lines up with the site */
 .index__head,
@@ -460,17 +473,21 @@ p { margin: 1rem 0; max-width: 68ch; }
 
 .index__row a { display: contents; }
 
-/* Catalog (grid) view */
+/* Catalog (grid) view — thumbnails sized so a 3x3 page fits between the
+   pinned top and bottom bars (centered if narrower than the body). */
 .index__catalog {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  gap: 5px;
+  width: min(100%, 68cqi);
+  margin: 0 auto;
 }
 
 /* In catalog view, scrolling snaps to each 3x3 page (every 9th item) */
 .square__scroll:has(.index[data-view="grid"]) {
   scroll-snap-type: y mandatory;
   scroll-padding-top: 3.5rem;
+  scroll-padding-bottom: 3rem;
 }
 
 .index[data-view="grid"] .catalog__item:nth-child(9n + 1) {
