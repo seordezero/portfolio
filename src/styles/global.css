@@ -260,18 +260,12 @@ h3 { font-size: 1.1rem; }
   border: 2px solid var(--ink);
   color: var(--ink);
   cursor: pointer;
-  animation: cue-bob 1.8s ease-in-out infinite;
   transition: opacity 0.35s ease;
 }
 
 .index__intro.is-hidden .scroll-cue {
   opacity: 0;
   pointer-events: none;
-}
-
-@keyframes cue-bob {
-  0%, 100% { transform: translate(-50%, 0); }
-  50% { transform: translate(-50%, 4px); }
 }
 
 .lede em { font-style: normal; color: var(--ink-muted); }
@@ -574,8 +568,11 @@ p { margin: 1rem 0; max-width: 68ch; }
   border-color: rgba(17, 17, 16, 0.7);
 }
 
+.carousel__arrow svg { display: block; }
 .carousel__arrow--prev { left: 0.5rem; }
+.carousel__arrow--prev svg { transform: rotate(90deg); }
 .carousel__arrow--next { right: 0.5rem; }
+.carousel__arrow--next svg { transform: rotate(-90deg); }
 
 /* Lightbox overlay */
 .lightbox {
