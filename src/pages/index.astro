@@ -162,11 +162,12 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
       const KEY = "indexSection";
       let section = "cover";
 
-      // Mobile: size list rows so 4 are visible and the catalog so a 2x2 fits
-      // exactly, both centered in the body, with one-row snapping.
+      // Size the list rows and catalog cells so a fixed number of rows fit the
+      // body and snap. Mobile: list 4 rows, grid 2 cols / 1 centered row.
+      // Web: list 10 rows, grid 3 cols / 3 rows (a 3x3 page).
       const isMobile = () => matchMedia("(max-width: 640px)").matches;
       const rowEls = list ? Array.from(list.children) : [];
-      const layoutMobile = () => {
+      const layoutSizes = () => {
         const clear = () => {
           rowEls.forEach((r) => { r.style.height = ""; });
           if (catalog) {
@@ -178,25 +179,30 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
             catalog.style.width = "";
           }
         };
-        if (!body || !isMobile() || section !== "list") { clear(); return; }
+        if (!body || section !== "list") { clear(); return; }
         const bh = body.clientHeight;
         const bw = body.clientWidth;
         if (bh < 60) return;
-        const rowH = Math.floor(bh / 4);
-        rowEls.forEach((r) => { r.style.height = rowH + "px"; });
-        // Grid: one big row of two images, vertically centered. Rows are spaced
-        // a full body-height apart so only one shows at rest; center-snapping
-        // keeps the visible row in the middle.
+        const mobile = isMobile();
+        const listRows = mobile ? 4 : 10;
+        const cols = mobile ? 2 : 3;
+        const gridRows = mobile ? 1 : 3;
         const gap = 5;
-        const cell = Math.floor((bw - gap) / 2);
+
+        const rowH = Math.floor(bh / listRows);
+        rowEls.forEach((r) => { r.style.height = rowH + "px"; });
+
         if (catalog) {
-          const vgap = Math.max(0, bh - cell);
-          catalog.style.gridTemplateColumns = `repeat(2, ${cell}px)`;
+          const pitch = bh / gridRows;
+          const cellByW = (bw - (cols - 1) * gap) / cols;
+          const cell = Math.floor(Math.min(cellByW, pitch));
+          const vgap = Math.max(0, Math.floor(pitch - cell));
+          catalog.style.gridTemplateColumns = `repeat(${cols}, ${cell}px)`;
           catalog.style.gridAutoRows = `${cell}px`;
           catalog.style.columnGap = `${gap}px`;
           catalog.style.rowGap = `${vgap}px`;
           catalog.style.padding = `${Math.floor(vgap / 2)}px 0`;
-          catalog.style.width = cell * 2 + gap + "px";
+          catalog.style.width = cell * cols + (cols - 1) * gap + "px";
         }
       };
 
@@ -206,7 +212,7 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         if (intro) intro.style.display = "";
         index.style.display = "none";
         remember("cover");
-        layoutMobile();
+        layoutSizes();
       };
       const showList = () => {
         section = "list";
@@ -214,7 +220,7 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         index.style.display = "";
         if (body) body.scrollTop = 0;
         remember("list");
-        layoutMobile();
+        layoutSizes();
       };
 
       let saved = null;
@@ -236,14 +242,14 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
             b.setAttribute("aria-pressed", b === btn ? "true" : "false")
           );
           if (body) body.scrollTop = 0;
-          layoutMobile();
+          layoutSizes();
         });
       });
 
       let rt;
       window.addEventListener("resize", () => {
         clearTimeout(rt);
-        rt = setTimeout(layoutMobile, 120);
+        rt = setTimeout(layoutSizes, 120);
       });
     }
     if (document.readyState === "loading")

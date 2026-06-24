@@ -501,12 +501,10 @@ p { margin: 1rem 0; max-width: 68ch; }
   margin: auto;
 }
 
-/* Desktop: scrolling snaps to each 3x3 page (every 9th item) */
-.index[data-view="grid"] .index__body { scroll-snap-type: y mandatory; }
-
-.index[data-view="grid"] .catalog__item:nth-child(9n + 1) {
-  scroll-snap-align: start;
-}
+/* Row snapping (web + mobile): list rows top-aligned, grid rows centered */
+.index__body { scroll-snap-type: y mandatory; }
+.index__row { scroll-snap-align: start; align-items: center; }
+.index[data-view="grid"] .catalog__item { scroll-snap-align: center; }
 
 .catalog__item {
   position: relative;
@@ -690,17 +688,18 @@ p { margin: 1rem 0; max-width: 68ch; }
 .lightbox.is-open { opacity: 1; pointer-events: auto; }
 
 .lightbox__figure {
-  position: relative;
-  display: inline-block;
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
   margin: 0;
-  max-width: 68vw;
-  max-height: 84vh;
+  max-width: 92vw;
+  max-height: 86vh;
   cursor: default;
 }
 
 .lightbox__figure img {
-  max-width: 68vw;
-  max-height: 84vh;
+  max-width: 60vw;
+  max-height: 86vh;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -708,13 +707,12 @@ p { margin: 1rem 0; max-width: 68ch; }
   box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
 }
 
-/* Title + description at the image's bottom-right, just outside it */
+/* Title + description beside the image's bottom-right, kept in the viewport */
 .lightbox__caption {
-  position: absolute;
-  left: 100%;
-  bottom: 0;
-  margin-left: 1.5rem;
-  width: min(300px, 22vw);
+  flex: 0 0 auto;
+  width: min(260px, 24vw);
+  max-height: 86vh;
+  overflow-y: auto;
   text-align: left;
   cursor: default;
 }
@@ -902,26 +900,19 @@ p { margin: 1rem 0; max-width: 68ch; }
   .index__year { font-size: 0.95rem; }
   .index__category { font-size: 0.82rem; }
   .index__subtitle { display: none; }
-  /* Catalog columns + cell size are set by JS (layoutMobile) for an exact fit */
+  /* Catalog columns + cell size are set by JS (layoutSizes) for an exact fit */
   .index__catalog { gap: 5px; }
-
-  /* Snap one row at a time (list = top-aligned 4 rows, grid = centered row) */
-  .index__body { scroll-snap-type: y mandatory; }
-  .index__row { scroll-snap-align: start; align-items: center; }
-  .index[data-view="grid"] .catalog__item:nth-child(9n + 1) { scroll-snap-align: none; }
-  .index[data-view="grid"] .catalog__item:nth-child(2n + 1) { scroll-snap-align: center; }
   .lede { margin: 0 auto; font-size: clamp(1.4rem, 6.5cqi, 2rem); }
   .project__body { font-size: 1.1rem; }
 
   /* Lightbox caption drops below the image on small screens */
-  .lightbox__figure { max-width: 90vw; max-height: 64vh; }
-  .lightbox__figure img { max-width: 90vw; max-height: 64vh; }
-  .lightbox__caption {
-    left: 0;
-    bottom: auto;
-    top: 100%;
-    margin-left: 0;
-    margin-top: 1rem;
-    width: 100%;
+  .lightbox__figure {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    max-width: 90vw;
+    max-height: 86vh;
   }
+  .lightbox__figure img { max-width: 90vw; max-height: 60vh; }
+  .lightbox__caption { width: 100%; max-height: 22vh; }
 }
