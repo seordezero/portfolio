@@ -631,7 +631,6 @@ p { margin: 1rem 0; max-width: 68ch; }
   aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
-  cursor: zoom-in;
   transition: transform 0.3s ease;
 }
 
@@ -697,6 +696,14 @@ p { margin: 1rem 0; max-width: 68ch; }
   cursor: default;
 }
 
+.lightbox__imgwrap {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  max-width: 60vw;
+  max-height: 86vh;
+}
+
 .lightbox__figure img {
   max-width: 60vw;
   max-height: 86vh;
@@ -705,7 +712,29 @@ p { margin: 1rem 0; max-width: 68ch; }
   object-fit: contain;
   display: block;
   box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease;
 }
+
+.lightbox__imgwrap.is-zoomed { cursor: crosshair; }
+.lightbox__imgwrap.is-zoomed img { transform: scale(2.4); }
+
+.lightbox__zoom {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 9, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.lightbox__zoom:hover { background: rgba(10, 10, 9, 0.8); }
 
 /* Title + description beside the image's bottom-right, kept in the viewport */
 .lightbox__caption {
@@ -929,6 +958,8 @@ p { margin: 1rem 0; max-width: 68ch; }
     max-width: 90vw;
     max-height: 86vh;
   }
+  .lightbox__imgwrap { max-width: 90vw; max-height: 60vh; }
   .lightbox__figure img { max-width: 90vw; max-height: 60vh; }
   .lightbox__caption { width: 100%; max-height: 22vh; }
+  .lightbox__zoom { display: none; } /* cursor-pan zoom is desktop only */
 }

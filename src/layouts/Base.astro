@@ -100,7 +100,17 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
     <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
       <button class="lightbox__close" type="button" aria-label="Close">×</button>
       <figure class="lightbox__figure">
-        <img src="" alt="" />
+        <div class="lightbox__imgwrap">
+          <img src="" alt="" />
+          <button class="lightbox__zoom" type="button" aria-label="Zoom image">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
+              <line x1="16" y1="16" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <line x1="11" y1="8" x2="11" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <line x1="8" y1="11" x2="14" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
         <figcaption class="lightbox__caption">
           <h3 class="lightbox__title"></h3>
           <p class="lightbox__desc"></p>
@@ -318,14 +328,24 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         const box = document.getElementById("lightbox");
         if (!box) return;
         const img = box.querySelector("img");
+        const wrap = box.querySelector(".lightbox__imgwrap");
+        const zoomBtn = box.querySelector(".lightbox__zoom");
         const titleEl = box.querySelector(".lightbox__title");
         const descEl = box.querySelector(".lightbox__desc");
         let items = [];
         let idx = 0;
+        let zoomed = false;
+
+        const setZoom = (on) => {
+          zoomed = on;
+          if (wrap) wrap.classList.toggle("is-zoomed", on);
+          if (!on) img.style.transformOrigin = "center center";
+        };
 
         const render = () => {
           const it = items[idx];
           if (!it) return;
+          setZoom(false);
           img.src = it.src || "";
           img.alt = it.alt || "";
           titleEl.textContent = it.title || "";
@@ -339,6 +359,7 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           box.setAttribute("aria-hidden", "false");
         };
         const close = () => {
+          setZoom(false);
           box.classList.remove("is-open");
           box.setAttribute("aria-hidden", "true");
           img.src = "";
@@ -348,6 +369,20 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           idx = (idx + d + items.length) % items.length;
           render();
         };
+
+        // Zoom: the magnifier toggles; moving the cursor over the image pans it
+        zoomBtn?.addEventListener("click", (e) => { e.stopPropagation(); setZoom(!zoomed); });
+        wrap?.addEventListener("click", (e) => {
+          if (e.target.closest(".lightbox__zoom")) return;
+          if (zoomed) setZoom(false);
+        });
+        wrap?.addEventListener("mousemove", (e) => {
+          if (!zoomed) return;
+          const r = wrap.getBoundingClientRect();
+          const px = ((e.clientX - r.left) / r.width) * 100;
+          const py = ((e.clientY - r.top) / r.height) * 100;
+          img.style.transformOrigin = `${px}% ${py}%`;
+        });
 
         // Build a list per gallery from its (non-clone) thumbnails
         document.querySelectorAll("[data-carousel]").forEach((c) => {
