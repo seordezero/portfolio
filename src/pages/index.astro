@@ -193,15 +193,26 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         rowEls.forEach((r) => { r.style.height = rowH + "px"; });
 
         if (catalog) {
-          const pitch = bh / gridRows;
-          const cellByW = (bw - (cols - 1) * gap) / cols;
-          const cell = Math.floor(Math.min(cellByW, pitch));
-          const vgap = Math.max(0, Math.floor(pitch - cell));
+          let cell, rowGap, padV;
+          if (gridRows === 1) {
+            // one centered row: neighbours spaced a full body-height apart
+            const cellByW = (bw - (cols - 1) * gap) / cols;
+            cell = Math.floor(Math.min(cellByW, bh));
+            rowGap = Math.max(0, Math.floor(bh - cell));
+            padV = Math.floor(rowGap / 2);
+          } else {
+            // square page (e.g. 3x3) with equal gaps both directions, centered
+            const side = Math.min(bw, bh);
+            cell = Math.floor((side - (cols - 1) * gap) / cols);
+            rowGap = gap;
+            const pageH = cell * gridRows + (gridRows - 1) * gap;
+            padV = Math.max(0, Math.floor((bh - pageH) / 2));
+          }
           catalog.style.gridTemplateColumns = `repeat(${cols}, ${cell}px)`;
           catalog.style.gridAutoRows = `${cell}px`;
           catalog.style.columnGap = `${gap}px`;
-          catalog.style.rowGap = `${vgap}px`;
-          catalog.style.padding = `${Math.floor(vgap / 2)}px 0`;
+          catalog.style.rowGap = `${rowGap}px`;
+          catalog.style.padding = `${padV}px 0`;
           catalog.style.width = cell * cols + (cols - 1) * gap + "px";
         }
       };
