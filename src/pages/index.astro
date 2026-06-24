@@ -18,6 +18,12 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
   </div>
 
   <section class="index" aria-label="Project index" data-view="list">
+    <button class="scroll-cue scroll-cue--up" data-cue-up type="button" aria-label="Back to intro">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path d="M5 15l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+
     <div class="index__views" role="group" aria-label="View mode">
       <button type="button" data-view-btn="list" aria-pressed="true" aria-label="List view" title="List view">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
@@ -146,10 +152,17 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
       const scroller = document.querySelector(".square__scroll");
       const intro = document.querySelector("[data-intro]");
       const cue = document.querySelector("[data-cue]");
+      const cueUp = document.querySelector("[data-cue-up]");
       const collapse = () => {
         if (!intro || intro.dataset.collapsed) return;
         intro.dataset.collapsed = "1";
         intro.style.display = "none";
+        if (scroller) scroller.scrollTop = 0;
+      };
+      const expand = () => {
+        if (!intro) return;
+        intro.dataset.collapsed = "";
+        intro.style.display = "";
         if (scroller) scroller.scrollTop = 0;
       };
       if (scroller) {
@@ -158,6 +171,7 @@ const sorted = [...projects].sort((a, b) => b.year - a.year);
         });
       }
       cue?.addEventListener("click", collapse);
+      cueUp?.addEventListener("click", expand);
 
       // View toggle: list (detail) vs grid (catalog)
       index.querySelectorAll("[data-view-btn]").forEach((btn) => {

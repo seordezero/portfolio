@@ -411,10 +411,15 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         if (!scroller) return;
 
         const inGallery = (t) => t && t.closest && t.closest(".carousel__track");
+        const lightbox = document.getElementById("lightbox");
+        const lightboxOpen = () => lightbox && lightbox.classList.contains("is-open");
 
         window.addEventListener(
           "wheel",
           (e) => {
+            // Lightbox is open → its own handler advances images; don't move
+            // the page behind it.
+            if (lightboxOpen()) return;
             if (inGallery(e.target)) return;
             scroller.scrollTop += e.deltaY;
             e.preventDefault();
@@ -426,14 +431,14 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         window.addEventListener(
           "touchstart",
           (e) => {
-            startY = inGallery(e.target) ? null : e.touches[0].clientY;
+            startY = inGallery(e.target) || lightboxOpen() ? null : e.touches[0].clientY;
           },
           { passive: true }
         );
         window.addEventListener(
           "touchmove",
           (e) => {
-            if (startY === null) return;
+            if (startY === null || lightboxOpen()) return;
             const y = e.touches[0].clientY;
             scroller.scrollTop += startY - y;
             startY = y;
@@ -441,6 +446,36 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           },
           { passive: false }
         );
+
+        // Middle-button (wheel click) autoscroll that works anywhere on the
+        // page, not just over a natively scrollable element. Click to start,
+        // move the mouse up/down to scroll, click again to stop.
+        let auto = null;
+        const stopAuto = () => {
+          if (!auto) return;
+          cancelAnimationFrame(auto.raf);
+          window.removeEventListener("mousemove", auto.onMove);
+          document.body.style.cursor = "";
+          auto = null;
+        };
+        window.addEventListener("mousedown", (e) => {
+          if (auto) { stopAuto(); if (e.button === 1) e.preventDefault(); return; }
+          if (e.button !== 1) return;
+          if (inGallery(e.target) || lightboxOpen() || (e.target.closest && e.target.closest("a")))
+            return;
+          e.preventDefault();
+          const anchor = e.clientY;
+          const a = { raf: 0, cur: anchor, onMove: (ev) => { a.cur = ev.clientY; } };
+          window.addEventListener("mousemove", a.onMove);
+          document.body.style.cursor = "ns-resize";
+          const tick = () => {
+            const dy = a.cur - anchor;
+            if (Math.abs(dy) > 8) scroller.scrollTop += dy * 0.08;
+            a.raf = requestAnimationFrame(tick);
+          };
+          a.raf = requestAnimationFrame(tick);
+          auto = a;
+        });
       }
 
       function boot() {
