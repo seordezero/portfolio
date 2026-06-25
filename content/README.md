@@ -8,8 +8,10 @@ remove a project you only touch these folders — never the code.
 1. Create a folder `content/projects/<slug>/` (the `<slug>` becomes the URL,
    e.g. `my-new-project` → `/projects/my-new-project`). Use lowercase and
    dashes, no spaces.
-2. Drop the images inside (`.jpg`, `.jpeg`, or `.png`). They are shown in
-   filename order, so name them `01.jpg`, `02.jpg`, … if order matters.
+2. Drop the media inside — images (`.jpg`, `.jpeg`, `.png`) and/or videos
+   (`.mp4`, `.webm`, `.mov`). They are shown in filename order, so name them
+   `01.jpg`, `02.mp4`, … if order matters. For a **video**, also drop an image
+   with the same name as its thumbnail/poster (e.g. `02.mp4` + `02.jpg`).
 3. (Optional) For any image add a text file with the **same name** for its
    caption, e.g. `01.txt`:
 
@@ -44,12 +46,12 @@ remove a project you only touch these folders — never the code.
 - Edit the `.txt` files or swap images in a folder to change a project.
 - Delete a folder to remove a project.
 
-## Regenerate (done before pushing)
+## How it deploys
 
-```
-npm run content      # processes images + rebuilds content.json
-```
+Every push triggers a Cloudflare build that runs `npm run build`, which first
+processes all the media (512×512 thumbnails + capped full-res) and regenerates
+`src/data/content.json`, then builds the site. **You don't have to run anything
+— just push.**
 
-This writes the 512×512 thumbnails and capped full-res images into
-`public/images/` and regenerates `src/data/content.json`. The site renders
-entirely from that file.
+To preview locally before pushing you can run `npm run content` (it does the
+same processing) and then `npm run dev`.
