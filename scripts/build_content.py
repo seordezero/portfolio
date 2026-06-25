@@ -33,7 +33,10 @@ projects never change colour and new ones get the next free palette pair.
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from PIL import Image, ImageOps, ImageFile
@@ -47,7 +50,9 @@ DATA_JSON = ROOT / "src" / "data" / "content.json"
 ASSIGN_JSON = ROOT / "content" / "assignments.json"
 
 IMG_EXT = {".jpg", ".jpeg", ".png"}
+VIDEO_EXT = {".mp4", ".webm", ".mov", ".m4v"}
 CATEGORIES = {"Architecture", "Design", "Parametric", "Audiovisual", "Research"}
+HAS_FFMPEG = shutil.which("ffmpeg") is not None
 
 THUMB = 512
 FULL_MAX = 2200
@@ -149,6 +154,48 @@ def process_image(src: Path, slug: str, n: int):
     return full_name
 
 
+def save_thumb_from_image(im, slug: str, n: int):
+    nn = f"{n:02d}"
+    thumb_dir = OUT_IMAGES / slug / "thumb"
+    thumb_dir.mkdir(parents=True, exist_ok=True)
+    thumb = ImageOps.fit(im.convert("RGB"), (THUMB, THUMB), Image.LANCZOS)
+    thumb.save(thumb_dir / f"{nn}.jpg", "JPEG", quality=85)
+
+
+def process_video(src: Path, poster: Path, slug: str, n: int):
+    """Copy the video to full/ and build a 512 poster thumbnail."""
+    nn = f"{n:02d}"
+    ext = src.suffix.lower()
+    if ext == ".m4v":
+        ext = ".mp4"
+    full_dir = OUT_IMAGES / slug / "full"
+    full_dir.mkdir(parents=True, exist_ok=True)
+    full_name = f"{nn}{ext}"
+    shutil.copyfile(src, full_dir / full_name)
+
+    if poster is not None:
+        with Image.open(poster) as im:
+            save_thumb_from_image(ImageOps.exif_transpose(im), slug, n)
+    elif HAS_FFMPEG:
+        with tempfile.TemporaryDirectory() as tmp:
+            frame = Path(tmp) / "frame.png"
+            subprocess.run(
+                ["ffmpeg", "-y", "-ss", "1", "-i", str(src), "-frames:v", "1", str(frame)],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
+            if frame.exists():
+                with Image.open(frame) as im:
+                    save_thumb_from_image(im, slug, n)
+            else:
+                Image.new("RGB", (THUMB, THUMB), (20, 20, 19)).save(
+                    OUT_IMAGES / slug / "thumb" / f"{nn}.jpg", "JPEG", quality=85)
+    else:
+        (OUT_IMAGES / slug / "thumb").mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (THUMB, THUMB), (20, 20, 19)).save(
+            OUT_IMAGES / slug / "thumb" / f"{nn}.jpg", "JPEG", quality=85)
+    return full_name
+
+
 def load_assignments():
     if ASSIGN_JSON.exists():
         return json.loads(ASSIGN_JSON.read_text(encoding="utf-8"))
@@ -190,19 +237,32 @@ def main():
         if category not in CATEGORIES:
             category = "Architecture"
 
-        images = sorted(
-            [f for f in folder.iterdir() if f.suffix.lower() in IMG_EXT],
-            key=lambda f: f.name.lower(),
-        )
+        # Group media by stem so a video can share a name with its poster
+        # image and its caption (01.mp4 + 01.jpg + 01.txt -> one video item).
+        groups = {}
+        for f in folder.iterdir():
+            if not f.is_file():
+                continue
+            ext = f.suffix.lower()
+            if ext in VIDEO_EXT:
+                groups.setdefault(f.stem, {})["video"] = f
+            elif ext in IMG_EXT:
+                groups.setdefault(f.stem, {})["image"] = f
+
         image_data = []
-        for n, src in enumerate(images, start=1):
-            full_name = process_image(src, slug, n)
-            cap_file = src.with_suffix(".txt")
+        for n, (stem, group) in enumerate(sorted(groups.items(), key=lambda kv: kv[0].lower()), start=1):
+            if "video" in group:
+                full_name = process_video(group["video"], group.get("image"), slug, n)
+                media_type = "video"
+            else:
+                full_name = process_image(group["image"], slug, n)
+                media_type = "image"
+            cap_file = folder / f"{stem}.txt"
             if cap_file.exists():
                 title, desc = parse_image_txt(cap_file.read_text(encoding="utf-8"))
             else:
                 title, desc = f"Plate {n:02d}", ""
-            image_data.append({"file": full_name, "title": title, "desc": desc})
+            image_data.append({"file": full_name, "type": media_type, "title": title, "desc": desc})
 
         square, backdrop = assign_colors(slug, assignments)
         collaborators = [

@@ -110,6 +110,7 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
       <figure class="lightbox__figure">
         <div class="lightbox__imgwrap">
           <img src="" alt="" />
+          <video class="lightbox__video" controls playsinline preload="metadata" style="display:none"></video>
           <button class="lightbox__zoom" type="button" aria-label="Zoom image">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
               <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
@@ -336,6 +337,7 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         const box = document.getElementById("lightbox");
         if (!box) return;
         const img = box.querySelector("img");
+        const video = box.querySelector(".lightbox__video");
         const wrap = box.querySelector(".lightbox__imgwrap");
         const zoomBtn = box.querySelector(".lightbox__zoom");
         const titleEl = box.querySelector(".lightbox__title");
@@ -349,15 +351,33 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           if (wrap) wrap.classList.toggle("is-zoomed", on);
           if (!on) img.style.transformOrigin = "center center";
         };
+        const stopVideo = () => {
+          if (!video) return;
+          video.pause();
+          video.removeAttribute("src");
+          video.load();
+        };
 
         const render = () => {
           const it = items[idx];
           if (!it) return;
           setZoom(false);
-          img.src = it.src || "";
-          img.alt = it.alt || "";
           titleEl.textContent = it.title || "";
           descEl.textContent = it.desc || "";
+          if (it.type === "video" && video) {
+            img.style.display = "none";
+            if (zoomBtn) zoomBtn.style.display = "none";
+            video.style.display = "";
+            video.src = it.src || "";
+            video.load();
+          } else {
+            stopVideo();
+            if (video) video.style.display = "none";
+            img.style.display = "";
+            if (zoomBtn) zoomBtn.style.display = "";
+            img.src = it.src || "";
+            img.alt = it.alt || "";
+          }
         };
         const open = (list, start) => {
           items = list;
@@ -368,6 +388,7 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         };
         const close = () => {
           setZoom(false);
+          stopVideo();
           box.classList.remove("is-open");
           box.setAttribute("aria-hidden", "true");
           img.src = "";
@@ -399,6 +420,7 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
           );
           const list = links.map((a) => ({
             src: a.getAttribute("href"),
+            type: a.getAttribute("data-type") || "image",
             alt: a.getAttribute("data-alt") || "",
             title: a.getAttribute("data-title") || "",
             desc: a.getAttribute("data-desc") || "",

@@ -28,11 +28,13 @@
       "images": [
         {
           "file": "01.png",
+          "type": "image",
           "title": "Plate 01",
           "desc": ""
         },
         {
           "file": "02.png",
+          "type": "image",
           "title": "Plate 02",
           "desc": ""
         }
@@ -76,21 +78,25 @@
       "images": [
         {
           "file": "01.png",
+          "type": "image",
           "title": "Plate 01",
           "desc": ""
         },
         {
           "file": "02.png",
+          "type": "image",
           "title": "Plate 02",
           "desc": ""
         },
         {
           "file": "03.png",
+          "type": "image",
           "title": "Plate 03",
           "desc": ""
         },
         {
           "file": "04.png",
+          "type": "image",
           "title": "Plate 04",
           "desc": ""
         }
@@ -118,21 +124,25 @@
       "images": [
         {
           "file": "01.jpg",
+          "type": "image",
           "title": "Plate 01",
           "desc": ""
         },
         {
           "file": "02.jpg",
+          "type": "image",
           "title": "Plate 02",
           "desc": ""
         },
         {
           "file": "03.jpg",
+          "type": "image",
           "title": "Plate 03",
           "desc": ""
         },
         {
           "file": "04.png",
+          "type": "image",
           "title": "Plate 04",
           "desc": ""
         }
@@ -180,21 +190,25 @@
       "images": [
         {
           "file": "01.png",
+          "type": "image",
           "title": "Plate 01",
           "desc": ""
         },
         {
           "file": "02.png",
+          "type": "image",
           "title": "Plate 02",
           "desc": ""
         },
         {
           "file": "03.jpg",
+          "type": "image",
           "title": "Plate 03",
           "desc": ""
         },
         {
           "file": "04.png",
+          "type": "image",
           "title": "Plate 04",
           "desc": ""
         }
@@ -228,16 +242,19 @@
       "images": [
         {
           "file": "01.jpg",
+          "type": "image",
           "title": "Plate 01",
           "desc": ""
         },
         {
           "file": "02.jpg",
+          "type": "image",
           "title": "Plate 02",
           "desc": ""
         },
         {
           "file": "03.jpg",
+          "type": "image",
           "title": "Plate 03",
           "desc": ""
         }
@@ -271,11 +288,13 @@
       "images": [
         {
           "file": "01.png",
+          "type": "image",
           "title": "Plate 01",
           "desc": ""
         },
         {
           "file": "02.jpg",
+          "type": "image",
           "title": "Plate 02",
           "desc": ""
         }
@@ -307,6 +326,7 @@
       "images": [
         {
           "file": "01.png",
+          "type": "image",
           "title": "Plate 01",
           "desc": ""
         }
@@ -340,21 +360,25 @@
       "images": [
         {
           "file": "01.jpg",
+          "type": "image",
           "title": "Plate 01",
           "desc": ""
         },
         {
           "file": "02.jpg",
+          "type": "image",
           "title": "Plate 02",
           "desc": ""
         },
         {
           "file": "03.jpg",
+          "type": "image",
           "title": "Plate 03",
           "desc": ""
         },
         {
           "file": "04.jpg",
+          "type": "image",
           "title": "Plate 04",
           "desc": ""
         }
@@ -398,21 +422,25 @@
       "images": [
         {
           "file": "01.jpg",
+          "type": "image",
           "title": "Plate 01",
           "desc": ""
         },
         {
           "file": "02.jpg",
+          "type": "image",
           "title": "Plate 02",
           "desc": ""
         },
         {
           "file": "03.jpg",
+          "type": "image",
           "title": "Plate 03",
           "desc": ""
         },
         {
           "file": "04.png",
+          "type": "image",
           "title": "Plate 04",
           "desc": ""
         }

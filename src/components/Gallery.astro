@@ -1,6 +1,7 @@
 ---
 interface GalleryImage {
   file: string; // full-res filename with extension
+  type?: "image" | "video";
   title?: string;
   desc?: string;
 }
@@ -13,40 +14,49 @@ const { slug, images, alt = "" } = Astro.props;
 ---
 
 <div class="carousel" data-carousel>
-  <div class="carousel__track" data-track>
-    {images.map((image, i) => {
-      const n = String(i + 1).padStart(2, "0");
-      const label = `${alt} — image ${i + 1}`;
-      return (
-        <a
-          class="carousel__item"
-          href={`/images/${slug}/full/${image.file}`}
-          data-lightbox
-          data-alt={label}
-          data-title={image.title || `Plate ${n}`}
-          data-desc={image.desc || ""}
-          aria-label={label}
-        >
-          <img
-            src={`/images/${slug}/thumb/${n}.jpg`}
-            alt={label}
-            width="512"
-            height="512"
-            loading="lazy"
-          />
-        </a>
-      );
-    })}
+  <div class="carousel__viewport" data-viewport>
+    <div class="carousel__track" data-track>
+      {images.map((image, i) => {
+        const n = String(i + 1).padStart(2, "0");
+        const label = `${alt} — ${i + 1}`;
+        const isVideo = image.type === "video";
+        return (
+          <a
+            class={`carousel__item${isVideo ? " carousel__item--video" : ""}`}
+            href={`/images/${slug}/full/${image.file}`}
+            data-lightbox
+            data-type={isVideo ? "video" : "image"}
+            data-alt={label}
+            data-title={image.title || `Plate ${n}`}
+            data-desc={image.desc || ""}
+            aria-label={label}
+          >
+            <img
+              src={`/images/${slug}/thumb/${n}.jpg`}
+              alt={label}
+              width="512"
+              height="512"
+              loading="lazy"
+            />
+            {isVideo && (
+              <span class="carousel__play" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="34" height="34"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+              </span>
+            )}
+          </a>
+        );
+      })}
+    </div>
   </div>
 
   {images.length > 1 && (
     <>
-      <button class="carousel__arrow carousel__arrow--prev" data-prev aria-label="Previous image">
+      <button class="carousel__arrow carousel__arrow--prev" data-prev aria-label="Previous">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </button>
-      <button class="carousel__arrow carousel__arrow--next" data-next aria-label="Next image">
+      <button class="carousel__arrow carousel__arrow--next" data-next aria-label="Next">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
@@ -62,55 +72,50 @@ const { slug, images, alt = "" } = Astro.props;
       c.dataset.ready = "1";
       const track = c.querySelector("[data-track]");
       if (!track) return;
+      const items = Array.from(track.children);
+      const count = items.length;
+      if (count < 1) return;
+      let idx = 0;
 
-      const step = () => track.clientWidth;
-      const reals = Array.from(track.children);
-      const n = reals.length;
+      const apply = () => { track.style.transform = `translateX(${-idx * 100}%)`; };
+      const go = (d) => { idx = (idx + d + count) % count; apply(); };
+      apply();
 
-      if (n > 1) {
-        // Seamless infinite loop: clone last before first and first after
-        // last, so moving past either end continues in the same direction.
-        const firstClone = reals[0].cloneNode(true);
-        const lastClone = reals[n - 1].cloneNode(true);
-        firstClone.setAttribute("data-clone", "");
-        lastClone.setAttribute("data-clone", "");
-        track.insertBefore(lastClone, reals[0]);
-        track.appendChild(firstClone);
+      c.querySelector("[data-prev]")?.addEventListener("click", () => go(-1));
+      c.querySelector("[data-next]")?.addEventListener("click", () => go(1));
 
-        const toFirst = () => { track.scrollLeft = step(); };
-        requestAnimationFrame(toFirst);
-        window.addEventListener("resize", toFirst);
+      // Wheel advances one slide per gesture (debounced)
+      let wheelLock = false;
+      c.addEventListener("wheel", (e) => {
+        if (count < 2) return;
+        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        if (Math.abs(delta) < 6) return;
+        e.preventDefault();
+        if (wheelLock) return;
+        wheelLock = true;
+        go(delta > 0 ? 1 : -1);
+        setTimeout(() => { wheelLock = false; }, 320);
+      }, { passive: false });
 
-        let normTimer;
-        track.addEventListener("scroll", () => {
-          clearTimeout(normTimer);
-          normTimer = setTimeout(() => {
-            const w = step();
-            const x = track.scrollLeft;
-            if (x < w * 0.5) track.scrollLeft = w * n;        // last clone -> real last
-            else if (x > w * (n + 0.5)) track.scrollLeft = w; // first clone -> real first
-          }, 90);
-        });
-
-        c.querySelector("[data-prev]")?.addEventListener("click", () =>
-          track.scrollBy({ left: -step(), behavior: "smooth" })
-        );
-        c.querySelector("[data-next]")?.addEventListener("click", () =>
-          track.scrollBy({ left: step(), behavior: "smooth" })
-        );
-      }
-
-      // Vertical wheel / trackpad → horizontal scroll (Instagram-style)
-      track.addEventListener(
-        "wheel",
-        (e) => {
-          if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-            track.scrollLeft += e.deltaY;
-            e.preventDefault();
-          }
-        },
-        { passive: false }
-      );
+      // Touch: swipe one slide left/right
+      let sx = null, sy = null, swiping = false;
+      const vp = c.querySelector("[data-viewport]") || c;
+      vp.addEventListener("touchstart", (e) => {
+        sx = e.touches[0].clientX; sy = e.touches[0].clientY; swiping = false;
+      }, { passive: true });
+      vp.addEventListener("touchmove", (e) => {
+        if (sx === null) return;
+        const dx = e.touches[0].clientX - sx;
+        const dy = e.touches[0].clientY - sy;
+        if (!swiping && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) swiping = true;
+        if (swiping) e.preventDefault();
+      }, { passive: false });
+      vp.addEventListener("touchend", (e) => {
+        if (sx === null) return;
+        const dx = e.changedTouches[0].clientX - sx;
+        if (swiping && Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+        sx = sy = null; swiping = false;
+      }, { passive: true });
     });
   }
   if (document.readyState === "loading")
