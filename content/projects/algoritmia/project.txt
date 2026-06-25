@@ -1,0 +1,19 @@
+Year: 2021
+Category: Research
+Title: Algoritmia
+Subtitle: final year project, PUCP
+
+One of the most relevant problems of Lima in terms of urbanism is the unplanned expansion of the city that started in the late 1950s. This urban phenomenon is known as Auto-Urbanization, which means that people live while urbanizing instead of after. This has brought many problems to the whole city and especially to the ones who live in the expansion. The main risk is structural because of the seismic activity that threatens the integrity of houses and the lives of their dwellers, but there are other risks such as the lack of public and green spaces, the lack of infrastructure and services, and the delinquency and bad habits that degrade the quality of life in these places.
+
+Thus, I wanted to make a proposal that attended to both structural and urban-social risks. I was aware that the modern paradigm of standardized urban planning was not going to be helpful for such a complex reality and that I needed to understand the city in more recent terms to be able to offer a solution. The work of Yona Friedman and the GEAM was helpful in this sense because their concept of mobile architecture adapted quite well to what was already happening on the other side of the world during the same period. As a result, I decided that I needed to work from a parametric approach to read the city first and then modify it according to its dynamics.
+
+# Site
+The project takes place in one of the first expansions of Lima that continues to grow to the south of the bay in the district of Chorrillos, called Alto Perú. After a profound data collection from city plans, aerial photography, and site visits I was able to determine which houses presented the most risk and define a series of groups. Since tearing down what already existed was not an option because of the social, economic, and cultural implications, I decided to work from the outside.
+
+# Method
+I started to sketch different outer structures that could contain the building in a seismic event and serve as support for upper new levels. Then, I wrote an algorithm that would take different building footprints and create outer structures for each one maintaining the same coherence and principles through them.
+
+For the design of these new structures, I considered that a floor would be used as a common area for the inhabitants since most of these houses are shared with more than one family and become multi-familiar houses over time. Moreover, I coded an algorithm that would determine the number of new levels each house could grow so that they don't generate many shadows at ground level. Finally, I decided that some of the upper levels were going to be used for public spaces or services, such as gyms, kindergartens, art galleries, and meeting centers. For that, I also wrote an algorithm that mapped the existing services and distributed the new ones to match up the areas that did not have any public programs nearby.
+
+# Outcome
+Overall, this project helped me to understand a complex situation and to come up with creative strategies that considered the reality and worked with its dynamics instead of against them. I believe that this preliminary work settles the ground for new ways of addressing this sort of problem in Lima and Latin America since the danger they face is imminent and the current way in which they are being addressed by governments is just outdated and useless for the broader scale.

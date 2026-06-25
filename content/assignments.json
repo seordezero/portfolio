@@ -1,0 +1,38 @@
+{
+  "secciones-de-sonido": [
+    "#6a1b9a",
+    "#f2b705"
+  ],
+  "cph-mothership": [
+    "#0d8a8a",
+    "#ff4d8d"
+  ],
+  "master-advanced-architecture": [
+    "#f25c05",
+    "#1b2ed6"
+  ],
+  "algoritmia": [
+    "#0f8a3d",
+    "#f4f1ea"
+  ],
+  "la-bienvenida": [
+    "#ff4d8d",
+    "#0d8a8a"
+  ],
+  "jiron-tumbes": [
+    "#3d1e8a",
+    "#f25c05"
+  ],
+  "foldable-breakfast-table": [
+    "#b5d400",
+    "#6a1b9a"
+  ],
+  "fable": [
+    "#111110",
+    "#e2231a"
+  ],
+  "workshop-pucp-eth-zurich": [
+    "#f4f1ea",
+    "#0f8a3d"
+  ]
+}

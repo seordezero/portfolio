@@ -1,0 +1,422 @@
+{
+  "projects": [
+    {
+      "slug": "secciones-de-sonido",
+      "title": "Secciones de Sonido",
+      "subtitle": "un experimento en tres tiempos",
+      "year": 2026,
+      "category": "Audiovisual",
+      "cover": 1,
+      "link": "",
+      "square": "#6a1b9a",
+      "backdrop": "#f2b705",
+      "ink": "#ffffff",
+      "inkBackdrop": "#111110",
+      "collaborators": [
+        "Mariano Gómez Luque"
+      ],
+      "body": [
+        {
+          "type": "p",
+          "text": "Audiovisual exhibition piece using Suno AI, Demucs stem separation, and Grasshopper/Rhino to computationally analyze and visualize three musical compositions."
+        },
+        {
+          "type": "p",
+          "text": "The pipeline reads MP3 stems, extracts waveform and pitch data using librosa's pYIN algorithm via a custom Python script, and drives 3D mesh deformations synchronized to a time slider."
+        }
+      ],
+      "images": [
+        {
+          "file": "01.png",
+          "title": "Plate 01",
+          "desc": ""
+        },
+        {
+          "file": "02.png",
+          "title": "Plate 02",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "slug": "cph-mothership",
+      "title": "CPH Mothership",
+      "subtitle": "X-Urban Studio, IAAC",
+      "year": 2023,
+      "category": "Architecture",
+      "cover": 1,
+      "link": "",
+      "square": "#0d8a8a",
+      "backdrop": "#ff4d8d",
+      "ink": "#ffffff",
+      "inkBackdrop": "#ffffff",
+      "collaborators": [
+        "Mu-Huai Liu",
+        "Aikaterini Marinaki",
+        "Yang Xiao"
+      ],
+      "body": [
+        {
+          "type": "p",
+          "text": "This project is a critique and an invitation to rethink how a future city-expansion such as Copenhagen's island \"Lynetteholm\" can be thought. Rem Koolhaas coined the term BIGNESS in 1995 to describe a scale in which the project exceeds architecture itself as the conception of a single building."
+        },
+        {
+          "type": "p",
+          "text": "From this idea, we intend to radicalize the separation between the envelope and the organs of the project, proposing a multi-scalar system that acts as a system of systems, a \"Mothership\" of sorts, blurring the edges of the individual and the collective."
+        },
+        {
+          "type": "p",
+          "text": "Its modules come from three experimental precedent projects that challenge the vertical typology of the skyscraper. Thus, this counter proposal to Lynetteholm does not pretend to offer a better alternative nor to describe a dystopian future scenario. It dwells in-between these two poles, focusing on creating a new fertile ground for the design of future cities through the radicalization of typology."
+        },
+        {
+          "type": "h2",
+          "text": "Method\nFor the module connections we used the Monoceros plugin for Grasshopper by Sub.Digital. This way we could define the connections between buildings that we wanted and try different combinations."
+        }
+      ],
+      "images": [
+        {
+          "file": "01.png",
+          "title": "Plate 01",
+          "desc": ""
+        },
+        {
+          "file": "02.png",
+          "title": "Plate 02",
+          "desc": ""
+        },
+        {
+          "file": "03.png",
+          "title": "Plate 03",
+          "desc": ""
+        },
+        {
+          "file": "04.png",
+          "title": "Plate 04",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "slug": "master-advanced-architecture",
+      "title": "Master in Advanced Architecture",
+      "subtitle": "IAAC, Barcelona",
+      "year": 2023,
+      "category": "Research",
+      "cover": 4,
+      "link": "",
+      "square": "#f25c05",
+      "backdrop": "#1b2ed6",
+      "ink": "#ffffff",
+      "inkBackdrop": "#ffffff",
+      "collaborators": [],
+      "body": [
+        {
+          "type": "p",
+          "text": "These projects are part of the process and outcomes of the multiple courses and workshops I took during my time at IAAC, where I studied and explored \"advanced\" techniques and methodologies for architecture, such as: 3D printing, CNC, laser cutting, algorithmic design and new ways of thinking of structures."
+        }
+      ],
+      "images": [
+        {
+          "file": "01.jpg",
+          "title": "Plate 01",
+          "desc": ""
+        },
+        {
+          "file": "02.jpg",
+          "title": "Plate 02",
+          "desc": ""
+        },
+        {
+          "file": "03.jpg",
+          "title": "Plate 03",
+          "desc": ""
+        },
+        {
+          "file": "04.png",
+          "title": "Plate 04",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "slug": "algoritmia",
+      "title": "Algoritmia",
+      "subtitle": "final year project, PUCP",
+      "year": 2021,
+      "category": "Research",
+      "cover": 1,
+      "link": "",
+      "square": "#0f8a3d",
+      "backdrop": "#f4f1ea",
+      "ink": "#ffffff",
+      "inkBackdrop": "#111110",
+      "collaborators": [],
+      "body": [
+        {
+          "type": "p",
+          "text": "One of the most relevant problems of Lima in terms of urbanism is the unplanned expansion of the city that started in the late 1950s. This urban phenomenon is known as Auto-Urbanization, which means that people live while urbanizing instead of after. This has brought many problems to the whole city and especially to the ones who live in the expansion. The main risk is structural because of the seismic activity that threatens the integrity of houses and the lives of their dwellers, but there are other risks such as the lack of public and green spaces, the lack of infrastructure and services, and the delinquency and bad habits that degrade the quality of life in these places."
+        },
+        {
+          "type": "p",
+          "text": "Thus, I wanted to make a proposal that attended to both structural and urban-social risks. I was aware that the modern paradigm of standardized urban planning was not going to be helpful for such a complex reality and that I needed to understand the city in more recent terms to be able to offer a solution. The work of Yona Friedman and the GEAM was helpful in this sense because their concept of mobile architecture adapted quite well to what was already happening on the other side of the world during the same period. As a result, I decided that I needed to work from a parametric approach to read the city first and then modify it according to its dynamics."
+        },
+        {
+          "type": "h2",
+          "text": "Site\nThe project takes place in one of the first expansions of Lima that continues to grow to the south of the bay in the district of Chorrillos, called Alto Perú. After a profound data collection from city plans, aerial photography, and site visits I was able to determine which houses presented the most risk and define a series of groups. Since tearing down what already existed was not an option because of the social, economic, and cultural implications, I decided to work from the outside."
+        },
+        {
+          "type": "h2",
+          "text": "Method\nI started to sketch different outer structures that could contain the building in a seismic event and serve as support for upper new levels. Then, I wrote an algorithm that would take different building footprints and create outer structures for each one maintaining the same coherence and principles through them."
+        },
+        {
+          "type": "p",
+          "text": "For the design of these new structures, I considered that a floor would be used as a common area for the inhabitants since most of these houses are shared with more than one family and become multi-familiar houses over time. Moreover, I coded an algorithm that would determine the number of new levels each house could grow so that they don't generate many shadows at ground level. Finally, I decided that some of the upper levels were going to be used for public spaces or services, such as gyms, kindergartens, art galleries, and meeting centers. For that, I also wrote an algorithm that mapped the existing services and distributed the new ones to match up the areas that did not have any public programs nearby."
+        },
+        {
+          "type": "h2",
+          "text": "Outcome\nOverall, this project helped me to understand a complex situation and to come up with creative strategies that considered the reality and worked with its dynamics instead of against them. I believe that this preliminary work settles the ground for new ways of addressing this sort of problem in Lima and Latin America since the danger they face is imminent and the current way in which they are being addressed by governments is just outdated and useless for the broader scale."
+        }
+      ],
+      "images": [
+        {
+          "file": "01.png",
+          "title": "Plate 01",
+          "desc": ""
+        },
+        {
+          "file": "02.png",
+          "title": "Plate 02",
+          "desc": ""
+        },
+        {
+          "file": "03.jpg",
+          "title": "Plate 03",
+          "desc": ""
+        },
+        {
+          "file": "04.png",
+          "title": "Plate 04",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "slug": "foldable-breakfast-table",
+      "title": "Foldable Breakfast Table",
+      "subtitle": "furniture for a 25 m² apartment",
+      "year": 2021,
+      "category": "Design",
+      "cover": 1,
+      "link": "",
+      "square": "#b5d400",
+      "backdrop": "#6a1b9a",
+      "ink": "#111110",
+      "inkBackdrop": "#ffffff",
+      "collaborators": [
+        "Carolina Rivera"
+      ],
+      "body": [
+        {
+          "type": "p",
+          "text": "This set of one table and two chairs was part of a bigger project that included the whole interior design of a 25-square-meter apartment that would be mainly rented for Airbnb. The place would only consist of a bed that merged into a closet with cabinets for basic storage and a desk; the terrace only had a small bar and a bench, and there was a preexisting kitchenette and bathroom design."
+        },
+        {
+          "type": "p",
+          "text": "Therefore, we wanted to create a piece of furniture that could turn this minimal and ultra-efficient design into something cozier and more homelike."
+        }
+      ],
+      "images": [
+        {
+          "file": "01.jpg",
+          "title": "Plate 01",
+          "desc": ""
+        },
+        {
+          "file": "02.jpg",
+          "title": "Plate 02",
+          "desc": ""
+        },
+        {
+          "file": "03.jpg",
+          "title": "Plate 03",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "slug": "jiron-tumbes",
+      "title": "Jirón Tumbes",
+      "subtitle": "studio restoration, Barranco",
+      "year": 2021,
+      "category": "Architecture",
+      "cover": 2,
+      "link": "",
+      "square": "#3d1e8a",
+      "backdrop": "#f25c05",
+      "ink": "#ffffff",
+      "inkBackdrop": "#ffffff",
+      "collaborators": [
+        "Carolina Rivera"
+      ],
+      "body": [
+        {
+          "type": "p",
+          "text": "I was hired to propose a restoration of an interior courtyard in an old adobe house in Barranco, where different artists would have their studios. The space would hold a loft studio with a mezzanine."
+        },
+        {
+          "type": "p",
+          "text": "Therefore I decided to contain and revive the existing adobe walls with a wood frame structure, that supported a new roof while bracing the existing walls and giving this interesting spatiality."
+        }
+      ],
+      "images": [
+        {
+          "file": "01.png",
+          "title": "Plate 01",
+          "desc": ""
+        },
+        {
+          "file": "02.jpg",
+          "title": "Plate 02",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "slug": "la-bienvenida",
+      "title": "La Bienvenida",
+      "subtitle": "club house & condo, Peru",
+      "year": 2021,
+      "category": "Architecture",
+      "cover": 1,
+      "link": "",
+      "square": "#ff4d8d",
+      "backdrop": "#0d8a8a",
+      "ink": "#ffffff",
+      "inkBackdrop": "#ffffff",
+      "collaborators": [],
+      "body": [
+        {
+          "type": "p",
+          "text": "As part of a country/beach condo I was commissioned to design the base plans for a club house, as well as images of the condo, base plans for example houses and renders that would interest buyers in purchasing a plot. The overall spirit of the project was to create a leisure space with natural low-cost materials, such as wood, adobe and brick."
+        },
+        {
+          "type": "p",
+          "text": "I decided to include this project in my portfolio since it shows my experience dealing with clients and meeting their needs. For them, the design was not the most important issue; they needed simple structures, drawings and renders to get customers."
+        }
+      ],
+      "images": [
+        {
+          "file": "01.png",
+          "title": "Plate 01",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "slug": "fable",
+      "title": "faBle",
+      "subtitle": "self-assembling CNC furniture",
+      "year": 2020,
+      "category": "Design",
+      "cover": 1,
+      "link": "https://www.difable.xyz/",
+      "square": "#111110",
+      "backdrop": "#e2231a",
+      "ink": "#ffffff",
+      "inkBackdrop": "#ffffff",
+      "collaborators": [
+        "Moisés Lázaro Gonzáles"
+      ],
+      "body": [
+        {
+          "type": "p",
+          "text": "faBle started during the pandemic to offer a solution to the increasing demand for furniture that could easily adapt regular house spaces into remote working stations."
+        },
+        {
+          "type": "p",
+          "text": "We wanted to design interesting and complex self-assembling furniture that we could produce locally with a CNC in a small workshop. We dedicated a lot of time to creating unique designs and getting the most benefits out of this unfamiliar technology."
+        }
+      ],
+      "images": [
+        {
+          "file": "01.jpg",
+          "title": "Plate 01",
+          "desc": ""
+        },
+        {
+          "file": "02.jpg",
+          "title": "Plate 02",
+          "desc": ""
+        },
+        {
+          "file": "03.jpg",
+          "title": "Plate 03",
+          "desc": ""
+        },
+        {
+          "file": "04.jpg",
+          "title": "Plate 04",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "slug": "workshop-pucp-eth-zurich",
+      "title": "Workshop PUCP — ETH Zürich",
+      "subtitle": "A Room for Archeologists and Kids",
+      "year": 2018,
+      "category": "Architecture",
+      "cover": 1,
+      "link": "",
+      "square": "#f4f1ea",
+      "backdrop": "#0f8a3d",
+      "ink": "#111110",
+      "inkBackdrop": "#ffffff",
+      "collaborators": [],
+      "body": [
+        {
+          "type": "p",
+          "text": "The archeological complex of Pachacamac is the most important prehispanic center in the Peruvian coast. Sanctuaries were built on top of their predecessors throughout many cultures. The architectural topics are similar: symmetry, hierarchy, long ramps and terraces."
+        },
+        {
+          "type": "p",
+          "text": "I was particularly attracted to this relation between control mechanisms and architecture. The impact these buildings have while you walk through them varies and intensifies according to your point of view. The Incas used these effects in order to appear powerful and divine to the common folk. This is what I tried to capture in drawings of different ruins of the sanctuary by changing perspectives."
+        },
+        {
+          "type": "h2",
+          "text": "Workshop with ETH Zürich\nThe second part of the studio consisted of a Workshop in collaboration with the Tom Emerson Studio from ETH Zürich. We had two first weeks to define the design of a Pavilion for archeologists and kids and make prototypes through the process. After this period, we had three weeks to build the Pavilion on-site while still defining the final details of it. We split into groups with different tasks; I participated in the ground team, even though we all participated in every team at the end."
+        },
+        {
+          "type": "p",
+          "text": "My work in this team involved everything from digging the foundations to laying the adobe bricks for the floor once the structure was finished. For the foundations, we decided to dig one-meter-deep conical holes on the ground that we later filled with sand to bury the wooden structure that was inserted into them. The reason for this was the possibility of undiscovered archeological remains under the construction, which demanded superficial and light foundations. The next task was the layout of the adobe bricks that would serve as the ground for the outdoor archeological exhibition. The inspiration for the pattern came out of the weaving of Quincha, a material made from cane and mud that dates from the precolonial era."
+        },
+        {
+          "type": "p",
+          "text": "This workshop was a great experience to learn from the ETH professors and students and their methodologies, as well as from the ancient architecture of my homeland. The next year after we finished the Pavilion, it was awarded Small Building of the Year by the Dezeen Awards 2019."
+        }
+      ],
+      "images": [
+        {
+          "file": "01.jpg",
+          "title": "Plate 01",
+          "desc": ""
+        },
+        {
+          "file": "02.jpg",
+          "title": "Plate 02",
+          "desc": ""
+        },
+        {
+          "file": "03.jpg",
+          "title": "Plate 03",
+          "desc": ""
+        },
+        {
+          "file": "04.png",
+          "title": "Plate 04",
+          "desc": ""
+        }
+      ]
+    }
+  ]
+}

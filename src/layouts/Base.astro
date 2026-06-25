@@ -1,12 +1,15 @@
 ---
 import "../styles/global.css";
-import { pageColors } from "../data/colors";
+import { pageColors, readableInk } from "../data/colors";
 
 interface Props {
   title: string;
   description?: string;
   currentPage?: "index" | "projects" | "about" | "contact";
   colorIndex?: number;
+  square?: string;
+  backdrop?: string;
+  ink?: string;
   layout?: "square" | "split";
   staticFit?: boolean;
 }
@@ -20,7 +23,12 @@ const {
   staticFit = false,
 } = Astro.props;
 
-const { square, backdrop, ink, inkBackdrop } = pageColors(colorIndex);
+// Projects pass explicit colours; the main pages use the palette by index.
+const base = pageColors(colorIndex);
+const square = Astro.props.square ?? base.square;
+const backdrop = Astro.props.backdrop ?? base.backdrop;
+const ink = Astro.props.ink ?? base.ink;
+const inkBackdrop = readableInk(backdrop);
 const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
 ---
 

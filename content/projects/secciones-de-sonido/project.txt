@@ -1,0 +1,9 @@
+Year: 2026
+Category: Audiovisual
+Title: Secciones de Sonido
+Subtitle: un experimento en tres tiempos
+Collaborators: Mariano Gómez Luque
+
+Audiovisual exhibition piece using Suno AI, Demucs stem separation, and Grasshopper/Rhino to computationally analyze and visualize three musical compositions.
+
+The pipeline reads MP3 stems, extracts waveform and pitch data using librosa's pYIN algorithm via a custom Python script, and drives 3D mesh deformations synchronized to a time slider.

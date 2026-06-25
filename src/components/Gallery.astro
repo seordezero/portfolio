@@ -1,7 +1,12 @@
 ---
+interface GalleryImage {
+  file: string; // full-res filename with extension
+  title?: string;
+  desc?: string;
+}
 interface Props {
   slug: string;
-  images: string[]; // full-res filenames with extension, in order
+  images: GalleryImage[];
   alt?: string;
 }
 const { slug, images, alt = "" } = Astro.props;
@@ -9,17 +14,17 @@ const { slug, images, alt = "" } = Astro.props;
 
 <div class="carousel" data-carousel>
   <div class="carousel__track" data-track>
-    {images.map((file, i) => {
+    {images.map((image, i) => {
       const n = String(i + 1).padStart(2, "0");
       const label = `${alt} — image ${i + 1}`;
       return (
         <a
           class="carousel__item"
-          href={`/images/${slug}/full/${file}`}
+          href={`/images/${slug}/full/${image.file}`}
           data-lightbox
           data-alt={label}
-          data-title={`Plate ${n}`}
-          data-desc={`Placeholder description for image ${i + 1} — a short note about this drawing or photograph will go here.`}
+          data-title={image.title || `Plate ${n}`}
+          data-desc={image.desc || ""}
           aria-label={label}
         >
           <img

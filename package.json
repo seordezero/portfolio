@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "content": "python scripts/build_content.py",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"

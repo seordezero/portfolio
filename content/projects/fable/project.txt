@@ -1,0 +1,10 @@
+Year: 2020
+Category: Design
+Title: faBle
+Subtitle: self-assembling CNC furniture
+Collaborators: Moisés Lázaro Gonzáles
+Link: https://www.difable.xyz/
+
+faBle started during the pandemic to offer a solution to the increasing demand for furniture that could easily adapt regular house spaces into remote working stations.
+
+We wanted to design interesting and complex self-assembling furniture that we could produce locally with a CNC in a small workshop. We dedicated a lot of time to creating unique designs and getting the most benefits out of this unfamiliar technology.

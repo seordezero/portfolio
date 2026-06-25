@@ -1,0 +1,7 @@
+Year: 2023
+Category: Research
+Title: Master in Advanced Architecture
+Subtitle: IAAC, Barcelona
+Cover: 4
+
+These projects are part of the process and outcomes of the multiple courses and workshops I took during my time at IAAC, where I studied and explored "advanced" techniques and methodologies for architecture, such as: 3D printing, CNC, laser cutting, algorithmic design and new ways of thinking of structures.
