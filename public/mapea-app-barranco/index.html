@@ -2,12 +2,20 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>MAPEA App (Barranco)</title>
-<meta name="description" content="Catastro de Barranco: 3.534 lotes con zonificacion, valor, altura permitida y accesibilidad.">
+<meta name="description" content="Catastro de Barranco: 3.534 lotes con zonificacion, valor, altura permitida y accesibilidad. Prototipo de investigacion con datos simulados.">
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🗺</text></svg>">
-<style>html,body{margin:0;padding:0;background:#000;color-scheme:dark}img{max-width:100%}[hidden]{display:none!important}</style>
+<meta name="theme-color" content="#1A1A1A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MAPEA">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>html,body{margin:0;padding:0;background:#000;color-scheme:dark;overscroll-behavior:none}
+img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
 :root{
   --black:#000000; --panel:#1A1A1A; --panel-2:#242424; --sunk:#2E2E2E;
@@ -814,6 +822,13 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   window.addEventListener("orientationchange", function(){ setTimeout(function(){ resize(); fit(); }, 250); });
   resize(); fit(); leyenda(); ficha(); apply();
 })();
+</script>
+<script>
+if("serviceWorker" in navigator){
+  addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+}
 </script>
 </body>
 </html>
