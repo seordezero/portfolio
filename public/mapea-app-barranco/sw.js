@@ -1,4 +1,4 @@
-const CACHE = "mapea-barranco-1435";
+const CACHE = "mapea-barranco-1460";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest",
                 "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
