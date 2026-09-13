@@ -1,5 +1,5 @@
-const CACHE = "mapea-barranco-1460";
-const ASSETS = ["./", "./index.html", "./manifest.webmanifest",
+const CACHE = "mapea-barranco-1461";
+const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png",
                 "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", e => {

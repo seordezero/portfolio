@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="MAPEA">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <style>html,body{margin:0;padding:0;background:#000;color-scheme:dark;overscroll-behavior:none}
 img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
@@ -33,11 +33,13 @@ img{max-width:100%}[hidden]{display:none!important}</style>
 body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font);
   font-size:13.5px; line-height:1.4; -webkit-font-smoothing:antialiased}
 .num{font-variant-numeric:tabular-nums; letter-spacing:.01em}
-.app{display:grid; grid-template-columns:300px minmax(0,1fr) 322px; height:100vh; overflow:hidden}
+.app{display:grid; grid-template-columns:300px minmax(0,1fr) 322px;
+  height:100vh; height:100dvh; overflow:hidden}
 .rail{background:var(--panel); display:flex; flex-direction:column; overflow:hidden; min-width:0}
 .rail.izq{border-right:1px solid var(--line)}
 .rail.der{border-left:1px solid var(--line)}
-.mast{padding:15px 17px 12px; border-bottom:1px solid var(--line)}
+.mast{padding:calc(15px + env(safe-area-inset-top)) 17px 12px;
+  padding-left:calc(17px + env(safe-area-inset-left)); border-bottom:1px solid var(--line)}
 .mast h1{font-weight:600; font-size:18px; margin:0; letter-spacing:.01em}
 .mast .sub{color:var(--muted); font-size:10.5px; margin-top:3px}
 
@@ -77,7 +79,8 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 .duo button[aria-pressed="true"]{background:var(--gold); border-color:var(--gold); color:#140F00; font-weight:600}
 .duo button:focus-visible{outline:2px solid var(--gold); outline-offset:1px}
 
-.foot{padding:10px 17px 13px; border-top:1px solid var(--line)}
+.foot{padding:10px 17px calc(13px + env(safe-area-inset-bottom));
+  padding-left:calc(17px + env(safe-area-inset-left)); border-top:1px solid var(--line)}
 .pair{display:flex; gap:6px; margin-bottom:7px}
 .btn{padding:7px 10px; border:1px solid var(--line-2); border-radius:4px; background:var(--panel-2);
   color:var(--ink); font:inherit; font-size:12px; cursor:pointer; width:100%}
@@ -129,7 +132,8 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   background:var(--panel-2); color:var(--off); font:inherit; font-size:11px; cursor:pointer}
 .tabs button[aria-selected="true"]{background:var(--sunk); color:var(--ink)}
 .tabs button:focus-visible{outline:2px solid var(--gold); outline-offset:1px}
-.selbody{flex:1; overflow-y:auto; padding:0 15px 14px; -webkit-overflow-scrolling:touch}
+.selbody{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:0 calc(15px + env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) 15px}
 .selbody h3{margin:0 0 1px; font-size:14px; font-weight:600; color:var(--rojo-ink); line-height:1.25}
 .selbody .who{font-size:10.5px; color:var(--muted); margin-bottom:9px}
 .selbody dl{display:grid; grid-template-columns:auto 1fr; gap:2px 10px; margin:0}
@@ -151,6 +155,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 /* ---------- teléfono en vertical: filtros arriba, mapa al centro, listas abajo ---------- */
 @media (orientation:portrait) and (max-width:820px){
   .app{grid-template-columns:1fr; grid-template-rows:25vh 50vh 25vh; height:100vh}
+  @supports (height:100dvh){ .app{grid-template-rows:25dvh 50dvh 25dvh; height:100dvh} }
   .rail.izq{border-right:0; border-bottom:1px solid var(--line-2); order:1;
     display:grid; grid-template-rows:auto minmax(0,1fr) auto}
   .main{order:2}
