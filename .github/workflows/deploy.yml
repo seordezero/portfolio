@@ -1,0 +1,58 @@
+# Publica el sitio en GitHub Pages.
+#
+# Se sale de Cloudflare porque sus IPs compartidas (188.114.96.0/22) caen dentro
+# de los bloqueos por IP que ordena la Sentencia de 18-12-2024 del Juzgado de lo
+# Mercantil nº 6 de Barcelona (LaLiga / Telefonica): durante los partidos el ISP
+# espanol devuelve un certificado autofirmado y el navegador marca el dominio como
+# inseguro. Las IPs de GitHub Pages no estan en esas listas.
+#
+# El build corre scripts/build-content.mjs, que redimensiona las imagenes de
+# content/projects/ con sharp y regenera src/data/content.json. Por eso basta con
+# subir una imagen nueva y hacer push.
+name: Desplegar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # permite lanzarlo a mano desde la pestana Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si se empujan dos commits seguidos, que termine el ultimo y no se pisen.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
