@@ -67,6 +67,9 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         <a href="/" aria-current={currentPage === "index" ? "page" : undefined}>Index</a>
         <a href="/about" aria-current={currentPage === "about" ? "page" : undefined}>About</a>
         <a href="/contact" aria-current={currentPage === "contact" ? "page" : undefined}>Contact</a>
+        {/* Pagina estatica en public/, fuera del enrutado de Astro: enlace normal,
+            sin currentPage y fuera del swipe (alli no hay handler al que volver). */}
+        <a href="/mapea-app/">Mapea</a>
       </nav>
       <div class="corners__name">
         <a href="/">Sebastián Ortiz de Zevallos</a>
