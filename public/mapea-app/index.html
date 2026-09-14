@@ -25,8 +25,9 @@
 ::selection{background:var(--acc); color:var(--paper)}
 html,body{margin:0;padding:0;background:var(--paper);color-scheme:light}
 body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
-  -webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;
+  -webkit-font-smoothing:antialiased;height:100vh;height:100dvh;overflow:hidden;
   display:flex;flex-direction:column}
+@media (max-height:620px){ #trama{display:none} }
 .bar{border-bottom:1px solid var(--acc);
   padding:0 calc(20px + env(safe-area-inset-left));
   padding-top:env(safe-area-inset-top);
@@ -38,35 +39,36 @@ body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
 .bar nav a{padding:13px 12px;color:var(--acc);text-decoration:none;font-size:12.5px;
   letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
 .bar nav a:hover{border-bottom-color:var(--acc)}
-/* El cuadro de trama va SOBRE el rotulo y se ata a su mismo ancho, para que
-   marca y grafico lean como una sola pieza. */
+/* El cuadro va SOBRE el rotulo y se ata a su mismo ancho, para que marca y
+   grafico lean como una sola pieza. El tamano lo limita la ALTURA disponible,
+   no el ancho: la portada tiene que caber en una pantalla sin scroll. */
 .marca-bloque{display:inline-flex;flex-direction:column;align-items:stretch}
-/* se apunta al svg hijo y no a una clase: trama_svg() no emite class */
-.marca-bloque > svg{display:block;width:100%;height:auto;margin-bottom:16px}
+#trama{display:block;width:100%;aspect-ratio:1;max-height:34dvh;margin:0 auto 14px;
+  background:#0B0B0B}
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:44px calc(20px + env(safe-area-inset-left)) 52px;text-align:center;
-  position:relative;z-index:1}
+  padding:16px calc(20px + env(safe-area-inset-left)) 18px;text-align:center;
+  position:relative;z-index:1;min-height:0}
 h1{margin:0;font-family:var(--rotulo);font-weight:400;
-  font-size:clamp(56px,13vw,132px);line-height:.9;letter-spacing:-.02em;
+  font-size:clamp(38px,7.2dvh,82px);line-height:.9;letter-spacing:-.02em;
   color:var(--acc);text-transform:uppercase}
-.lema{margin:18px 0 0;color:var(--ink);font-size:16px;max-width:34ch;font-weight:500}
-.nota{margin:10px 0 0;color:var(--acc);font-size:11px;letter-spacing:.14em;
+.lema{margin:12px 0 0;color:var(--ink);font-size:15px;max-width:34ch;font-weight:500}
+.nota{margin:7px 0 0;color:var(--acc);font-size:10.5px;letter-spacing:.14em;
   text-transform:uppercase}
-.ciudades{margin-top:42px;display:grid;gap:14px;width:100%;max-width:760px}
+.ciudades{margin-top:20px;display:grid;gap:11px;width:100%;max-width:760px}
 @media (min-width:720px){ .ciudades{grid-template-columns:1fr 1fr} }
-.ciudad{display:flex;gap:15px;align-items:center;text-align:left;text-decoration:none;
+.ciudad{display:flex;gap:13px;align-items:center;text-align:left;text-decoration:none;
   color:inherit;background:rgba(255,255,255,.5);border:1px solid var(--acc);
-  padding:16px 18px;backdrop-filter:blur(2px)}
+  padding:11px 14px}
 .ciudad:hover{background:var(--acc)}
 .ciudad:hover .pais,.ciudad:hover h2,.ciudad:hover p{color:var(--paper)}
 .ciudad img{flex:none}
 .ciudad .pais{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.ciudad h2{margin:2px 0 4px;font-family:var(--rotulo);font-weight:400;font-size:19px;
+.ciudad h2{margin:1px 0 3px;font-family:var(--rotulo);font-weight:400;font-size:17px;
   letter-spacing:-.01em;color:var(--acc)}
-.ciudad p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.ciudad p{margin:0;font-size:11.5px;color:var(--ink-2);line-height:1.4}
 footer{border-top:1px solid var(--acc);
-  padding:14px 20px calc(14px + env(safe-area-inset-bottom));
-  color:var(--ink-2);font-size:11.5px;text-align:center;position:relative;z-index:1}
+  padding:9px 20px calc(9px + env(safe-area-inset-bottom));
+  color:var(--ink-2);font-size:10.5px;text-align:center;position:relative;z-index:1}
 /* Iba en 11,5 px y sin area propia: dificil de ver y de acertar. Ahora tiene
    tamano de enlace y su propio recuadro clicable. */
 .volver{position:fixed;left:calc(18px + env(safe-area-inset-left));
@@ -76,7 +78,8 @@ footer{border-top:1px solid var(--acc);
   color:var(--acc);font-size:14px;font-weight:500;letter-spacing:.01em;text-decoration:none}
 .volver:hover{background:var(--acc);color:var(--paper)}
 @media (max-width:760px){
-  .volver{position:static;margin:22px auto 0}
+  .volver{position:static;margin:14px auto 0;font-size:13px;padding:8px 12px}
+  body{height:auto;min-height:100dvh;overflow:auto}
 }
 </style>
 </head>
@@ -90,14 +93,14 @@ footer{border-top:1px solid var(--acc);
   </header>
   <main>
     <div class="marca-bloque">
-      <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="600" height="600" fill="#0B0B0B"/><g fill="#EAE4D9"><rect x="29.3" y="277.2" width="6.5" height="6.5"/><rect x="68.5" y="303.3" width="6.5" height="6.5"/><rect x="82.0" y="329.9" width="5.5" height="5.5"/><rect x="108.7" y="265.2" width="4.4" height="4.4"/><rect x="132.9" y="263.3" width="8.1" height="8.1"/><rect x="147.3" y="238.6" width="5.5" height="5.5"/><rect x="147.3" y="264.7" width="5.5" height="5.5"/><rect x="146.0" y="315.5" width="8.1" height="8.1"/><rect x="159.8" y="238.0" width="6.5" height="6.5"/><rect x="159.8" y="277.2" width="6.5" height="6.5"/><rect x="160.8" y="317.3" width="4.4" height="4.4"/><rect x="160.3" y="408.1" width="5.5" height="5.5"/><rect x="173.3" y="316.8" width="5.5" height="5.5"/><rect x="172.8" y="355.4" width="6.5" height="6.5"/><rect x="173.9" y="395.6" width="4.4" height="4.4"/><rect x="172.0" y="419.9" width="8.1" height="8.1"/><rect x="186.4" y="264.7" width="5.5" height="5.5"/><rect x="186.4" y="342.9" width="5.5" height="5.5"/><rect x="185.9" y="368.5" width="6.5" height="6.5"/><rect x="186.9" y="382.6" width="4.4" height="4.4"/><rect x="200.0" y="265.2" width="4.4" height="4.4"/><rect x="199.4" y="303.8" width="5.5" height="5.5"/><rect x="198.9" y="316.3" width="6.5" height="6.5"/><rect x="198.9" y="368.5" width="6.5" height="6.5"/><rect x="212.5" y="264.7" width="5.5" height="5.5"/><rect x="212.0" y="303.3" width="6.5" height="6.5"/><rect x="211.2" y="315.5" width="8.1" height="8.1"/><rect x="213.0" y="343.4" width="4.4" height="4.4"/><rect x="213.0" y="356.5" width="4.4" height="4.4"/><rect x="212.5" y="369.0" width="5.5" height="5.5"/><rect x="212.5" y="421.2" width="5.5" height="5.5"/><rect x="224.2" y="211.2" width="8.1" height="8.1"/><rect x="225.5" y="225.5" width="5.5" height="5.5"/><rect x="226.0" y="252.1" width="4.4" height="4.4"/><rect x="226.0" y="265.2" width="4.4" height="4.4"/><rect x="225.0" y="277.2" width="6.5" height="6.5"/><rect x="225.5" y="290.7" width="5.5" height="5.5"/><rect x="225.5" y="316.8" width="5.5" height="5.5"/><rect x="225.5" y="329.9" width="5.5" height="5.5"/><rect x="226.0" y="356.5" width="4.4" height="4.4"/><rect x="239.1" y="213.0" width="4.4" height="4.4"/><rect x="238.6" y="264.7" width="5.5" height="5.5"/><rect x="238.6" y="277.7" width="5.5" height="5.5"/><rect x="238.0" y="290.2" width="6.5" height="6.5"/><rect x="237.3" y="302.5" width="8.1" height="8.1"/><rect x="238.6" y="316.8" width="5.5" height="5.5"/><rect x="239.1" y="330.4" width="4.4" height="4.4"/><rect x="238.6" y="342.9" width="5.5" height="5.5"/><rect x="237.3" y="393.8" width="8.1" height="8.1"/><rect x="238.6" y="421.2" width="5.5" height="5.5"/><rect x="251.6" y="160.3" width="5.5" height="5.5"/><rect x="252.1" y="213.0" width="4.4" height="4.4"/><rect x="251.6" y="251.6" width="5.5" height="5.5"/><rect x="251.1" y="277.2" width="6.5" height="6.5"/><rect x="251.1" y="290.2" width="6.5" height="6.5"/><rect x="251.6" y="303.8" width="5.5" height="5.5"/><rect x="252.1" y="317.3" width="4.4" height="4.4"/><rect x="251.1" y="329.3" width="6.5" height="6.5"/><rect x="251.6" y="356.0" width="5.5" height="5.5"/><rect x="251.1" y="407.6" width="6.5" height="6.5"/><rect x="251.6" y="421.2" width="5.5" height="5.5"/><rect x="264.7" y="69.0" width="5.5" height="5.5"/><rect x="264.7" y="186.4" width="5.5" height="5.5"/><rect x="264.1" y="225.0" width="6.5" height="6.5"/><rect x="263.3" y="237.3" width="8.1" height="8.1"/><rect x="264.7" y="251.6" width="5.5" height="5.5"/><rect x="264.1" y="264.1" width="6.5" height="6.5"/><rect x="263.3" y="276.4" width="8.1" height="8.1"/><rect x="264.7" y="290.7" width="5.5" height="5.5"/><rect x="264.7" y="303.8" width="5.5" height="5.5"/><rect x="264.7" y="316.8" width="5.5" height="5.5"/><rect x="263.3" y="328.6" width="8.1" height="8.1"/><rect x="264.7" y="356.0" width="5.5" height="5.5"/><rect x="265.2" y="369.5" width="4.4" height="4.4"/><rect x="265.2" y="382.6" width="4.4" height="4.4"/><rect x="276.4" y="198.1" width="8.1" height="8.1"/><rect x="276.4" y="224.2" width="8.1" height="8.1"/><rect x="277.2" y="238.0" width="6.5" height="6.5"/><rect x="277.2" y="264.1" width="6.5" height="6.5"/><rect x="276.4" y="276.4" width="8.1" height="8.1"/><rect x="278.2" y="291.3" width="4.4" height="4.4"/><rect x="277.2" y="303.3" width="6.5" height="6.5"/><rect x="278.2" y="317.3" width="4.4" height="4.4"/><rect x="277.7" y="329.9" width="5.5" height="5.5"/><rect x="277.2" y="342.4" width="6.5" height="6.5"/><rect x="277.2" y="368.5" width="6.5" height="6.5"/><rect x="277.7" y="395.1" width="5.5" height="5.5"/><rect x="277.7" y="408.1" width="5.5" height="5.5"/><rect x="290.2" y="120.7" width="6.5" height="6.5"/><rect x="290.7" y="134.2" width="5.5" height="5.5"/><rect x="290.7" y="160.3" width="5.5" height="5.5"/><rect x="290.7" y="173.3" width="5.5" height="5.5"/><rect x="291.3" y="200.0" width="4.4" height="4.4"/><rect x="290.2" y="225.0" width="6.5" height="6.5"/><rect x="290.7" y="238.6" width="5.5" height="5.5"/><rect x="290.7" y="251.6" width="5.5" height="5.5"/><rect x="289.4" y="263.3" width="8.1" height="8.1"/><rect x="289.4" y="276.4" width="8.1" height="8.1"/><rect x="290.7" y="290.7" width="5.5" height="5.5"/><rect x="291.3" y="304.3" width="4.4" height="4.4"/><rect x="291.3" y="317.3" width="4.4" height="4.4"/><rect x="290.7" y="329.9" width="5.5" height="5.5"/><rect x="291.3" y="343.4" width="4.4" height="4.4"/><rect x="290.2" y="355.4" width="6.5" height="6.5"/><rect x="291.3" y="369.5" width="4.4" height="4.4"/><rect x="290.2" y="394.6" width="6.5" height="6.5"/><rect x="290.7" y="421.2" width="5.5" height="5.5"/><rect x="290.2" y="433.7" width="6.5" height="6.5"/><rect x="289.4" y="459.0" width="8.1" height="8.1"/><rect x="289.4" y="472.0" width="8.1" height="8.1"/><rect x="290.7" y="512.5" width="5.5" height="5.5"/><rect x="303.3" y="212.0" width="6.5" height="6.5"/><rect x="304.3" y="239.1" width="4.4" height="4.4"/><rect x="304.3" y="252.1" width="4.4" height="4.4"/><rect x="302.5" y="263.3" width="8.1" height="8.1"/><rect x="303.8" y="277.7" width="5.5" height="5.5"/><rect x="304.3" y="291.3" width="4.4" height="4.4"/><rect x="303.8" y="303.8" width="5.5" height="5.5"/><rect x="304.3" y="317.3" width="4.4" height="4.4"/><rect x="303.8" y="329.9" width="5.5" height="5.5"/><rect x="303.8" y="342.9" width="5.5" height="5.5"/><rect x="303.8" y="356.0" width="5.5" height="5.5"/><rect x="303.8" y="369.0" width="5.5" height="5.5"/><rect x="303.8" y="395.1" width="5.5" height="5.5"/><rect x="302.5" y="406.8" width="8.1" height="8.1"/><rect x="303.3" y="420.7" width="6.5" height="6.5"/><rect x="303.8" y="447.3" width="5.5" height="5.5"/><rect x="316.3" y="146.7" width="6.5" height="6.5"/><rect x="315.5" y="198.1" width="8.1" height="8.1"/><rect x="316.8" y="212.5" width="5.5" height="5.5"/><rect x="315.5" y="224.2" width="8.1" height="8.1"/><rect x="316.3" y="238.0" width="6.5" height="6.5"/><rect x="317.3" y="252.1" width="4.4" height="4.4"/><rect x="316.8" y="264.7" width="5.5" height="5.5"/><rect x="315.5" y="276.4" width="8.1" height="8.1"/><rect x="315.5" y="289.4" width="8.1" height="8.1"/><rect x="316.8" y="303.8" width="5.5" height="5.5"/><rect x="316.3" y="316.3" width="6.5" height="6.5"/><rect x="316.8" y="329.9" width="5.5" height="5.5"/><rect x="315.5" y="354.7" width="8.1" height="8.1"/><rect x="316.3" y="381.5" width="6.5" height="6.5"/><rect x="316.8" y="395.1" width="5.5" height="5.5"/><rect x="316.8" y="408.1" width="5.5" height="5.5"/><rect x="315.5" y="446.0" width="8.1" height="8.1"/><rect x="330.4" y="173.9" width="4.4" height="4.4"/><rect x="329.9" y="212.5" width="5.5" height="5.5"/><rect x="328.6" y="224.2" width="8.1" height="8.1"/><rect x="329.9" y="251.6" width="5.5" height="5.5"/><rect x="329.9" y="277.7" width="5.5" height="5.5"/><rect x="330.4" y="291.3" width="4.4" height="4.4"/><rect x="329.9" y="303.8" width="5.5" height="5.5"/><rect x="329.9" y="316.8" width="5.5" height="5.5"/><rect x="330.4" y="343.4" width="4.4" height="4.4"/><rect x="329.9" y="356.0" width="5.5" height="5.5"/><rect x="329.3" y="368.5" width="6.5" height="6.5"/><rect x="328.6" y="380.7" width="8.1" height="8.1"/><rect x="329.3" y="394.6" width="6.5" height="6.5"/><rect x="341.6" y="185.1" width="8.1" height="8.1"/><rect x="343.4" y="239.1" width="4.4" height="4.4"/><rect x="343.4" y="278.2" width="4.4" height="4.4"/><rect x="341.6" y="289.4" width="8.1" height="8.1"/><rect x="342.4" y="303.3" width="6.5" height="6.5"/><rect x="341.6" y="315.5" width="8.1" height="8.1"/><rect x="342.9" y="329.9" width="5.5" height="5.5"/><rect x="342.9" y="356.0" width="5.5" height="5.5"/><rect x="342.9" y="395.1" width="5.5" height="5.5"/><rect x="356.5" y="252.1" width="4.4" height="4.4"/><rect x="355.4" y="264.1" width="6.5" height="6.5"/><rect x="356.5" y="278.2" width="4.4" height="4.4"/><rect x="354.7" y="289.4" width="8.1" height="8.1"/><rect x="354.7" y="315.5" width="8.1" height="8.1"/><rect x="354.7" y="328.6" width="8.1" height="8.1"/><rect x="356.0" y="342.9" width="5.5" height="5.5"/><rect x="356.5" y="369.5" width="4.4" height="4.4"/><rect x="355.4" y="446.7" width="6.5" height="6.5"/><rect x="368.5" y="238.0" width="6.5" height="6.5"/><rect x="369.0" y="264.7" width="5.5" height="5.5"/><rect x="368.5" y="277.2" width="6.5" height="6.5"/><rect x="369.0" y="290.7" width="5.5" height="5.5"/><rect x="369.5" y="304.3" width="4.4" height="4.4"/><rect x="368.5" y="316.3" width="6.5" height="6.5"/><rect x="368.5" y="342.4" width="6.5" height="6.5"/><rect x="369.5" y="369.5" width="4.4" height="4.4"/><rect x="381.5" y="198.9" width="6.5" height="6.5"/><rect x="381.5" y="264.1" width="6.5" height="6.5"/><rect x="380.7" y="276.4" width="8.1" height="8.1"/><rect x="382.6" y="317.3" width="4.4" height="4.4"/><rect x="380.7" y="341.6" width="8.1" height="8.1"/><rect x="380.7" y="367.7" width="8.1" height="8.1"/><rect x="382.0" y="382.0" width="5.5" height="5.5"/><rect x="381.5" y="407.6" width="6.5" height="6.5"/><rect x="395.1" y="264.7" width="5.5" height="5.5"/><rect x="395.1" y="277.7" width="5.5" height="5.5"/><rect x="395.1" y="290.7" width="5.5" height="5.5"/><rect x="394.6" y="342.4" width="6.5" height="6.5"/><rect x="408.1" y="199.4" width="5.5" height="5.5"/><rect x="407.6" y="264.1" width="6.5" height="6.5"/><rect x="408.1" y="277.7" width="5.5" height="5.5"/><rect x="408.7" y="369.5" width="4.4" height="4.4"/><rect x="421.2" y="199.4" width="5.5" height="5.5"/><rect x="420.7" y="212.0" width="6.5" height="6.5"/><rect x="419.9" y="224.2" width="8.1" height="8.1"/><rect x="421.2" y="303.8" width="5.5" height="5.5"/><rect x="421.2" y="329.9" width="5.5" height="5.5"/><rect x="419.9" y="367.7" width="8.1" height="8.1"/><rect x="434.2" y="199.4" width="5.5" height="5.5"/><rect x="433.7" y="225.0" width="6.5" height="6.5"/><rect x="446.0" y="224.2" width="8.1" height="8.1"/><rect x="447.3" y="303.8" width="5.5" height="5.5"/></g></svg>
+      <canvas id="trama" width="184" height="184" aria-hidden="true"></canvas>
       <h1>MAPEA</h1>
     </div>
     <p class="lema">Herramientas de inversión inmobiliaria con cabeza de urbanista.</p>
     <p class="nota">Prototipo de investigación</p>
     <div class="ciudades">
       <a class="ciudad" href="peru-lima-barranco/">
-        <img src="peru-lima-barranco/icon-512.png" alt="" width="64" height="64">
+        <img src="peru-lima-barranco/icon-512.png" alt="" width="46" height="46">
         <div class="txt">
           <span class="pais">Perú · Lima</span>
           <h2>Barranco</h2>
@@ -105,7 +108,7 @@ footer{border-top:1px solid var(--acc);
         </div>
       </a>
       <a class="ciudad" href="spain-madrid-carabanchel/">
-        <img src="spain-madrid-carabanchel/icon-512.png" alt="" width="64" height="64">
+        <img src="spain-madrid-carabanchel/icon-512.png" alt="" width="46" height="46">
         <div class="txt">
           <span class="pais">España · Madrid</span>
           <h2>Carabanchel</h2>
@@ -119,5 +122,56 @@ footer{border-top:1px solid var(--acc);
     Trabajo en desarrollo, publicado con fines de investigación y demostración.
     No es una fuente catastral oficial ni un servicio de tasación.
   </footer>
+<script>
+(function(){
+  var c=document.getElementById("trama"); if(!c) return;
+  var x=c.getContext("2d"), N=46, cel=c.width/N;
+  var mask=new Float32Array(N*N), a=new Uint8Array(N*N), b=new Uint8Array(N*N);
+  var mid=(N-1)/2;
+  for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+    var dx=(i-mid)/mid, dy=(j-mid)/mid, d=Math.sqrt(dx*dx+dy*dy);
+    var p=Math.pow(Math.max(0,1-d*1.55),1.5);
+    p+=Math.max(0,1-Math.abs(dx)*7)*Math.max(0,1-Math.abs(dy)*1.05)*0.5;
+    p+=Math.max(0,1-Math.abs(dy)*7)*Math.max(0,1-Math.abs(dx)*1.05)*0.5;
+    mask[i*N+j]=Math.min(p,0.97);
+    a[i*N+j]=Math.random()<mask[i*N+j]?1:0;
+  }
+  function paso(){
+    for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+      var n=0;
+      for(var u=-1;u<=1;u++)for(var v=-1;v<=1;v++){
+        if(!u&&!v) continue;
+        var p=i+u, q=j+v;
+        if(p<0||q<0||p>=N||q>=N) continue;
+        n+=a[p*N+q];
+      }
+      var vivo=a[i*N+j], m=mask[i*N+j];
+      // vecindad al estilo Life, pero la mascara manda: fuera del rombo se apaga
+      var nuevo = vivo ? (n===2||n===3?1:0) : (n===3?1:0);
+      if(Math.random()<0.055) nuevo = Math.random()<m?1:0;   // chispa
+      b[i*N+j] = m<0.02 ? 0 : nuevo;
+    }
+    var t=a; a=b; b=t;
+  }
+  function pinta(){
+    x.fillStyle="#0B0B0B"; x.fillRect(0,0,c.width,c.height);
+    x.fillStyle="#EAE4D9";
+    for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+      if(!a[i*N+j]) continue;
+      var t=cel*(mask[i*N+j]>0.5?0.62:0.42);
+      x.fillRect(i*cel+(cel-t)/2, j*cel+(cel-t)/2, t, t);
+    }
+  }
+  pinta();
+  // Respeta a quien pide menos movimiento: se deja el primer fotograma quieto.
+  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var ultimo=0;
+  (function bucle(ts){
+    requestAnimationFrame(bucle);
+    if(ts-ultimo<83) return;               // ~12 fps
+    ultimo=ts; paso(); pinta();
+  })(0);
+})();
+</script>
 </body>
 </html>
