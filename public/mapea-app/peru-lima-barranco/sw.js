@@ -1,4 +1,4 @@
-const CACHE = "mapea-barranco-1461";
+const CACHE = "mapea-peru-lima-barranco-1451";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png",
                 "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
@@ -19,7 +19,6 @@ self.addEventListener("fetch", e => {
   e.respondWith(
     caches.match(e.request, {ignoreSearch: true}).then(hit => {
       if (hit) {
-        // refresca en segundo plano para la proxima apertura
         fetch(e.request).then(r => {
           if (r && r.ok) caches.open(CACHE).then(c => c.put(e.request, r.clone()));
         }).catch(() => {});

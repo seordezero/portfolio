@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MAPEA App</title>
+<meta name="description" content="MAPEA App: Catastro, norma y accesibilidad, lote a lote. Prototipo de investigacion sobre catastro urbano.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1A1A1A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<style>
+:root{
+  --black:#000; --panel:#1A1A1A; --panel-2:#242424; --line:#333; --line-2:#3F3F3F;
+  --ink:#F2F2F2; --ink-2:#B8B8B8; --muted:#7E7E7E;
+  --gold:#A98A45; --gold-ink:#C6A868;
+  --font:"Aptos","Aptos Display","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--black);color-scheme:dark}
+body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;
+  display:flex;flex-direction:column}
+.bar{border-bottom:1px solid var(--line);background:var(--panel);
+  padding:0 calc(20px + env(safe-area-inset-left)) 0 calc(20px + env(safe-area-inset-left));
+  padding-top:env(safe-area-inset-top);
+  display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.bar .marca{font-weight:600;font-size:15px;letter-spacing:.02em;padding:13px 0;color:var(--ink)}
+.bar nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.bar nav a{padding:13px 12px;color:var(--muted);text-decoration:none;font-size:12.5px;
+  letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
+.bar nav a:hover{color:var(--gold-ink);border-bottom-color:var(--gold)}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:44px calc(20px + env(safe-area-inset-left)) 52px;text-align:center}
+.logo{width:96px;height:96px;border-radius:16px;margin-bottom:22px}
+h1{margin:0;font-size:40px;font-weight:600;letter-spacing:.16em}
+.lema{margin:12px 0 0;color:var(--ink-2);font-size:15px;max-width:38ch}
+.nota{margin:9px 0 0;color:var(--muted);font-size:11.5px;letter-spacing:.05em;
+  text-transform:uppercase}
+.ciudades{margin-top:40px;display:grid;gap:14px;width:100%;max-width:760px}
+@media (min-width:720px){ .ciudades{grid-template-columns:1fr 1fr} }
+.ciudad{display:flex;gap:15px;align-items:center;text-align:left;text-decoration:none;
+  color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:17px 18px}
+.ciudad:hover{border-color:var(--gold);background:var(--panel-2)}
+.ciudad img{border-radius:8px;flex:none}
+.ciudad .pais{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ciudad h2{margin:2px 0 4px;font-size:19px;font-weight:600;color:var(--gold-ink)}
+.ciudad p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+footer{border-top:1px solid var(--line);padding:15px 20px calc(15px + env(safe-area-inset-bottom));
+  color:var(--muted);font-size:11.5px;text-align:center}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+  <header class="bar">
+    <span class="marca">MAPEA</span>
+    <nav>
+      <a href="peru-lima-barranco/">Barranco</a>
+      <a href="spain-madrid-carabanchel/">Carabanchel</a>
+    </nav>
+  </header>
+  <main>
+    <img class="logo" src="icon-512.png" alt="MAPEA" width="96" height="96">
+    <h1>MAPEA</h1>
+    <p class="lema">Catastro, norma y accesibilidad, lote a lote.</p>
+    <p class="nota">Prototipo de investigación</p>
+    <div class="ciudades">
+      <a class="ciudad" href="peru-lima-barranco/">
+        <img src="peru-lima-barranco/icon-512.png" alt="" width="72" height="72">
+        <div class="txt">
+          <span class="pais">Perú · Lima</span>
+          <h2>Barranco</h2>
+          <p>3.534 lotes · zonificación, altura permitida, accesibilidad y un modelo de valor simulado.</p>
+        </div>
+      </a>
+      <a class="ciudad" href="spain-madrid-carabanchel/">
+        <img src="spain-madrid-carabanchel/icon-512.png" alt="" width="72" height="72">
+        <div class="txt">
+          <span class="pais">España · Madrid</span>
+          <h2>Carabanchel</h2>
+          <p>9.979 lotes · norma zonal, altura permitida y edificación real, todo con dato oficial del Catastro.</p>
+        </div>
+      </a>
+    </div>
+  </main>
+  <footer>
+    Trabajo en desarrollo, publicado con fines de investigación y demostración.
+    No es una fuente catastral oficial ni un servicio de tasación.
+  </footer>
+</body>
+</html>
