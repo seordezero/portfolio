@@ -608,30 +608,41 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   /* Vuelo suave hasta un lote. Se hace al pulsar en la LISTA, no al pulsar en el
      mapa: ahi el lote ya esta a la vista y moverlo desorienta. */
   var vuelo=null;
+  function cortarVuelo(){
+    if(vuelo){ cancelAnimationFrame(vuelo); vuelo=null; }
+  }
+  /* Centro de la vista en coordenadas del mundo. sx(x)=x*k+tx y sy(y)=-y*k+ty,
+     asi que se despeja al reves. */
+  function centro(){
+    return [(W/2-view.tx)/view.k, (view.ty-H/2)/view.k];
+  }
+  function encuadrar(cx,cy,k){
+    view.k=k; view.tx=W/2-cx*k; view.ty=H/2+cy*k;
+  }
   function volarA(l){
     if(!l || !W){ draw(); return; }
     var b=l.b, w=Math.max(b[2]-b[0],10), h=Math.max(b[3]-b[1],10);
     var pad=Math.min(W,H)*0.30;
     // se encuadra el lote pero sin pasarse: si no, una parcela pequena llena la
     // pantalla y se pierde de vista donde esta
-    var k=Math.min((W-pad*2)/w, (H-pad*2)/h);
-    k=Math.max(Math.min(k, 9), 0.2);
-    var cx=(b[0]+b[2])/2, cy=(b[1]+b[3])/2;
-    var destino={k:k, tx:W/2-cx*k, ty:H/2+cy*k};
-    var desde={k:view.k, tx:view.tx, ty:view.ty}, t0=0;
-    if(vuelo) cancelAnimationFrame(vuelo);
+    var k1=Math.max(Math.min(Math.min((W-pad*2)/w, (H-pad*2)/h), 9), 0.2);
+    var cx1=(b[0]+b[2])/2, cy1=(b[1]+b[3])/2;
+    var c0=centro(), cx0=c0[0], cy0=c0[1], k0=view.k;
+
+    cortarVuelo();
+    if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches){
+      encuadrar(cx1,cy1,k1); draw(); return;
+    }
+    var lk0=Math.log(k0), lk1=Math.log(k1), t0=0;
     function paso(ts){
       if(!t0) t0=ts;
-      var u=Math.min(1,(ts-t0)/380);
-      var e=u<.5 ? 4*u*u*u : 1-Math.pow(-2*u+2,3)/2;   // suave al entrar y al salir
-      view.k=desde.k+(destino.k-desde.k)*e;
-      view.tx=desde.tx+(destino.tx-desde.tx)*e;
-      view.ty=desde.ty+(destino.ty-desde.ty)*e;
+      var u=Math.min(1,(ts-t0)/520);
+      var e=1-Math.pow(1-u,3);                 // frena al llegar, sin rebote
+      // La ESCALA se interpola en logaritmo: de 1 a 2 se percibe igual que de 2 a
+      // 4. En lineal el zoom parece acelerar al principio y atascarse al final.
+      encuadrar(cx0+(cx1-cx0)*e, cy0+(cy1-cy0)*e, Math.exp(lk0+(lk1-lk0)*e));
       draw();
-      if(u<1) vuelo=requestAnimationFrame(paso); else vuelo=null;
-    }
-    if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches){
-      view.k=destino.k; view.tx=destino.tx; view.ty=destino.ty; draw(); return;
+      vuelo = u<1 ? requestAnimationFrame(paso) : null;
     }
     vuelo=requestAnimationFrame(paso);
   }
@@ -857,7 +868,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   document.getElementById("modo").addEventListener("change",function(){ st.modo=this.value; leyenda(); draw(); });
 
   var drag=null;
-  cv.addEventListener("mousedown",function(e){ drag={x:e.clientX,y:e.clientY,tx:view.tx,ty:view.ty,moved:false}; });
+  cv.addEventListener("mousedown",function(e){ cortarVuelo(); drag={x:e.clientX,y:e.clientY,tx:view.tx,ty:view.ty,moved:false}; });
   window.addEventListener("mousemove",function(e){
     if(!drag) return;
     var dx=e.clientX-drag.x, dy=e.clientY-drag.y;
@@ -867,14 +878,15 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   window.addEventListener("mouseup",function(e){ if(drag&&!drag.moved) pick(e); drag=null; });
   cv.addEventListener("wheel",function(e){
     e.preventDefault();
+    cortarVuelo();          // si el usuario toca la rueda, manda el
     var r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
     var f=e.deltaY<0?1.16:1/1.16;
     view.tx=mx-(mx-view.tx)*f; view.ty=my-(my-view.ty)*f; view.k*=f; draw();
   },{passive:false});
   function zoomAt(f){ var mx=W/2,my=H/2; view.tx=mx-(mx-view.tx)*f; view.ty=my-(my-view.ty)*f; view.k*=f; draw(); }
-  document.getElementById("zIn").onclick=function(){ zoomAt(1.3); };
-  document.getElementById("zOut").onclick=function(){ zoomAt(1/1.3); };
-  document.getElementById("zFit").onclick=fit;
+  document.getElementById("zIn").onclick=function(){ cortarVuelo(); zoomAt(1.3); };
+  document.getElementById("zOut").onclick=function(){ cortarVuelo(); zoomAt(1/1.3); };
+  document.getElementById("zFit").onclick=function(){ cortarVuelo(); fit(); };
 
   function inside(p,x,y){
     var c=false;
@@ -900,6 +912,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   var tch=null;
   function sep(t){ return Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY); }
   cv.addEventListener("touchstart", function(e){
+    cortarVuelo();
     if(e.touches.length===1){
       tch={n:1,x:e.touches[0].clientX,y:e.touches[0].clientY,tx:view.tx,ty:view.ty,moved:false};
     }else if(e.touches.length===2){
@@ -934,7 +947,11 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   document.getElementById("avisoBtn").onclick=function(){ modal.hidden=false; };
   document.getElementById("modalX").onclick=function(){ modal.hidden=true; };
   modal.addEventListener("click", function(e){ if(e.target===modal) modal.hidden=true; });
-  window.addEventListener("keydown", function(e){ if(e.key==="Escape") modal.hidden=true; });
+  window.addEventListener("keydown", function(e){
+    if(e.key!=="Escape") return;
+    if(!modal.hidden){ modal.hidden=true; return; }   // el aviso se cierra primero
+    if(st.sel){ st.sel=null; cortarVuelo(); ficha(); lista(); draw(); }
+  });
 
   window.addEventListener("resize", resize);
   window.addEventListener("orientationchange", function(){ setTimeout(function(){ resize(); fit(); }, 250); });
