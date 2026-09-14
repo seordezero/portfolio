@@ -204,6 +204,26 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 .corners .site-nav { color: var(--ink-corner); }
 .corners .site-nav a[aria-current="page"] { color: var(--ink-corner); }
 
+/* MAPEA: esquina inferior izquierda, con su marca. Fuera del menu a proposito. */
+.corners__mapea {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-corner);
+  opacity: 0.72;
+}
+
+.corners__mapea:hover { opacity: 1; }
+.corners__mapea svg { width: 1.05em; height: 1.05em; fill: currentColor; display: block; }
+
 .site-nav {
   display: flex;
   gap: 1.25rem;
@@ -952,6 +972,9 @@ p { margin: 1rem 0; max-width: 68ch; }
     font-size: 0.7rem;
     letter-spacing: 0.04em;
   }
+  /* en movil el nombre ocupa el centro abajo, asi que MAPEA sube a la izquierda
+     para no montarse encima */
+  .corners__mapea { bottom: 40px; left: 12px; font-size: 0.68rem; }
   .corners .site-nav { gap: 1.2rem; font-size: 1.2rem; }
   .index__title { font-size: 1.25rem; }
   .index__year { font-size: 1.1rem; }

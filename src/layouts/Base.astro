@@ -67,13 +67,19 @@ const inkClass = ink === "#ffffff" ? "ink-light" : "ink-dark";
         <a href="/" aria-current={currentPage === "index" ? "page" : undefined}>Index</a>
         <a href="/about" aria-current={currentPage === "about" ? "page" : undefined}>About</a>
         <a href="/contact" aria-current={currentPage === "contact" ? "page" : undefined}>Contact</a>
-        {/* Pagina estatica en public/, fuera del enrutado de Astro: enlace normal,
-            sin currentPage y fuera del swipe (alli no hay handler al que volver). */}
-        <a href="/mapea-app/">Mapea</a>
       </nav>
       <div class="corners__name">
         <a href="/">Sebastián Ortiz de Zevallos</a>
       </div>
+      {/* MAPEA vive fuera del menu: es un proyecto propio, no una seccion del
+          portfolio. Pagina estatica en public/, asi que enlace normal y fuera
+          del ciclo de swipe del movil (alli no hay handler que devuelva). */}
+      <a class="corners__mapea" href="/mapea-app/" aria-label="MAPEA App">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M2 21V3h3.4L12 13.2 18.6 3H22v18h-3.6V9.6L12 19.4 5.6 9.6V21z"/>
+        </svg>
+        <span>Mapea</span>
+      </a>
     </div>
 
     <div class="frame">
