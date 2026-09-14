@@ -8,8 +8,9 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#EAE4D9">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" href="icon-192.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap" rel="stylesheet">
@@ -43,15 +44,15 @@ body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
    grafico lean como una sola pieza. El tamano lo limita la ALTURA disponible,
    no el ancho: la portada tiene que caber en una pantalla sin scroll. */
 .marca-bloque{display:inline-flex;flex-direction:column;align-items:stretch}
-#trama{display:block;width:100%;aspect-ratio:1;max-height:34dvh;margin:0 auto 14px;
+#trama{display:block;width:100%;aspect-ratio:1;max-height:41dvh;margin:0 auto 16px;
   background:#0B0B0B}
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:16px calc(20px + env(safe-area-inset-left)) 18px;text-align:center;
+  padding:14px calc(20px + env(safe-area-inset-left)) 16px;text-align:center;
   position:relative;z-index:1;min-height:0}
 h1{margin:0;font-family:var(--rotulo);font-weight:400;
-  font-size:clamp(38px,7.2dvh,82px);line-height:.9;letter-spacing:-.02em;
+  font-size:clamp(42px,8.4dvh,104px);line-height:.9;letter-spacing:-.02em;
   color:var(--acc);text-transform:uppercase}
-.lema{margin:12px 0 0;color:var(--ink);font-size:15px;max-width:34ch;font-weight:500}
+.lema{margin:13px 0 0;color:var(--ink);font-size:16px;max-width:34ch;font-weight:500}
 .nota{margin:7px 0 0;color:var(--acc);font-size:10.5px;letter-spacing:.14em;
   text-transform:uppercase}
 .ciudades{margin-top:20px;display:grid;gap:11px;width:100%;max-width:760px}
@@ -66,9 +67,10 @@ h1{margin:0;font-family:var(--rotulo);font-weight:400;
 .ciudad h2{margin:1px 0 3px;font-family:var(--rotulo);font-weight:400;font-size:17px;
   letter-spacing:-.01em;color:var(--acc)}
 .ciudad p{margin:0;font-size:11.5px;color:var(--ink-2);line-height:1.4}
-footer{border-top:1px solid var(--acc);
-  padding:9px 20px calc(9px + env(safe-area-inset-bottom));
-  color:var(--ink-2);font-size:10.5px;text-align:center;position:relative;z-index:1}
+/* El aviso va suelto al pie, sin regla que lo separe: es una nota, no una
+   seccion. */
+.aviso-pie{margin:18px auto 0;max-width:62ch;color:var(--ink-2);font-size:10.5px;
+  line-height:1.45;text-align:center;opacity:.8}
 /* Iba en 11,5 px y sin area propia: dificil de ver y de acertar. Ahora tiene
    tamano de enlace y su propio recuadro clicable. */
 .volver{position:fixed;left:calc(18px + env(safe-area-inset-left));
@@ -93,7 +95,7 @@ footer{border-top:1px solid var(--acc);
   </header>
   <main>
     <div class="marca-bloque">
-      <canvas id="trama" width="184" height="184" aria-hidden="true"></canvas>
+      <canvas id="trama" width="260" height="260" aria-hidden="true"></canvas>
       <h1>MAPEA</h1>
     </div>
     <p class="lema">Herramientas de inversión inmobiliaria con cabeza de urbanista.</p>
@@ -116,61 +118,69 @@ footer{border-top:1px solid var(--acc);
         </div>
       </a>
     </div>
+    <p class="aviso-pie">Trabajo en desarrollo, publicado con fines de
+    investigación y demostración. No es una fuente catastral oficial
+    ni un servicio de tasación.</p>
     <a class="volver" href="/">← sebastianortizdezevallos.com</a>
   </main>
-  <footer>
-    Trabajo en desarrollo, publicado con fines de investigación y demostración.
-    No es una fuente catastral oficial ni un servicio de tasación.
-  </footer>
 <script>
 (function(){
   var c=document.getElementById("trama"); if(!c) return;
-  var x=c.getContext("2d"), N=46, cel=c.width/N;
-  var mask=new Float32Array(N*N), a=new Uint8Array(N*N), b=new Uint8Array(N*N);
-  var mid=(N-1)/2;
+  var x=c.getContext("2d"), N=52, cel=c.width/N, mid=(N-1)/2;
+
+  // Ruido de valor en 3D: hash entero por celda + interpolacion suave. La tercera
+  // dimension es el TIEMPO, asi que el campo no salta entre fotogramas: cada celda
+  // sube y baja de intensidad de forma continua. Eso es lo que se lee como
+  // movimiento; un automata celular cambiaria de golpe.
+  function h3(i,j,k){
+    var n=i*374761393+j*668265263+k*1274126177;
+    n=(n^(n>>13))*1274126177;
+    return ((n^(n>>16))>>>0)/4294967295;
+  }
+  function suave(t){ return t*t*(3-2*t); }
+  function ruido(px,py,pz){
+    var i=Math.floor(px), j=Math.floor(py), k=Math.floor(pz);
+    var fx=suave(px-i), fy=suave(py-j), fz=suave(pz-k);
+    function L(a,b,t){ return a+(b-a)*t; }
+    var c00=L(h3(i,j,k),     h3(i+1,j,k),     fx);
+    var c10=L(h3(i,j+1,k),   h3(i+1,j+1,k),   fx);
+    var c01=L(h3(i,j,k+1),   h3(i+1,j,k+1),   fx);
+    var c11=L(h3(i,j+1,k+1), h3(i+1,j+1,k+1), fx);
+    return L(L(c00,c10,fy), L(c01,c11,fy), fz);
+  }
+
+  // Mascara del rombo: nucleo denso y dos ejes que se estiran mas que el nucleo.
+  var mask=new Float32Array(N*N);
   for(var i=0;i<N;i++)for(var j=0;j<N;j++){
     var dx=(i-mid)/mid, dy=(j-mid)/mid, d=Math.sqrt(dx*dx+dy*dy);
-    var p=Math.pow(Math.max(0,1-d*1.55),1.5);
-    p+=Math.max(0,1-Math.abs(dx)*7)*Math.max(0,1-Math.abs(dy)*1.05)*0.5;
-    p+=Math.max(0,1-Math.abs(dy)*7)*Math.max(0,1-Math.abs(dx)*1.05)*0.5;
-    mask[i*N+j]=Math.min(p,0.97);
-    a[i*N+j]=Math.random()<mask[i*N+j]?1:0;
+    var p=Math.pow(Math.max(0,1-d*1.5),1.4);
+    p+=Math.max(0,1-Math.abs(dx)*8)*Math.max(0,1-Math.abs(dy)*1.05)*0.55;
+    p+=Math.max(0,1-Math.abs(dy)*8)*Math.max(0,1-Math.abs(dx)*1.05)*0.55;
+    mask[i*N+j]=Math.min(p,1);
   }
-  function paso(){
-    for(var i=0;i<N;i++)for(var j=0;j<N;j++){
-      var n=0;
-      for(var u=-1;u<=1;u++)for(var v=-1;v<=1;v++){
-        if(!u&&!v) continue;
-        var p=i+u, q=j+v;
-        if(p<0||q<0||p>=N||q>=N) continue;
-        n+=a[p*N+q];
-      }
-      var vivo=a[i*N+j], m=mask[i*N+j];
-      // vecindad al estilo Life, pero la mascara manda: fuera del rombo se apaga
-      var nuevo = vivo ? (n===2||n===3?1:0) : (n===3?1:0);
-      if(Math.random()<0.055) nuevo = Math.random()<m?1:0;   // chispa
-      b[i*N+j] = m<0.02 ? 0 : nuevo;
-    }
-    var t=a; a=b; b=t;
-  }
-  function pinta(){
+
+  // VEL medida en el navegador: a 0,00022 el campo apenas se movia y a 0,0018
+  // ya saturaba. 0,0007 deja que una celda de ruido cicle en ~1,4 s, que es el
+  // punto donde se lee como flujo y no como parpadeo.
+  var ESC=0.19, VEL=0.0007, UMBRAL=0.46;
+  function pinta(t){
     x.fillStyle="#0B0B0B"; x.fillRect(0,0,c.width,c.height);
     x.fillStyle="#EAE4D9";
+    var z=t*VEL;
     for(var i=0;i<N;i++)for(var j=0;j<N;j++){
-      if(!a[i*N+j]) continue;
-      var t=cel*(mask[i*N+j]>0.5?0.62:0.42);
-      x.fillRect(i*cel+(cel-t)/2, j*cel+(cel-t)/2, t, t);
+      var m=mask[i*N+j];
+      if(m<0.02) continue;
+      var v=ruido(i*ESC, j*ESC, z)*0.65 + m*0.6;
+      if(v<UMBRAL) continue;
+      var f=Math.min(1,(v-UMBRAL)/0.5);
+      var s=cel*(0.3+0.52*f);
+      x.fillRect(i*cel+(cel-s)/2, j*cel+(cel-s)/2, s, s);
     }
   }
-  pinta();
-  // Respeta a quien pide menos movimiento: se deja el primer fotograma quieto.
+
+  pinta(0);
   if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  var ultimo=0;
-  (function bucle(ts){
-    requestAnimationFrame(bucle);
-    if(ts-ultimo<83) return;               // ~12 fps
-    ultimo=ts; paso(); pinta();
-  })(0);
+  (function bucle(ts){ requestAnimationFrame(bucle); pinta(ts); })(0);
 })();
 </script>
 </body>
