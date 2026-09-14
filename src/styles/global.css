@@ -222,7 +222,10 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 }
 
 .corners__mapea:hover { opacity: 1; }
-.corners__mapea svg { width: 1.05em; height: 1.05em; fill: currentColor; display: block; }
+/* El isotipo lleva sus propios colores de marca, no hereda la tinta de la pagina:
+   el cuadro indigo con la M en papel es la marca y no debe cambiar de color segun
+   el proyecto que se este viendo. */
+.corners__mapea svg { width: 1.5em; height: 1.5em; display: block; }
 
 .site-nav {
   display: flex;

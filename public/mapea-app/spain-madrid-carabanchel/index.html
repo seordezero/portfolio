@@ -6,25 +6,32 @@
 <title>MAPEA App (Carabanchel)</title>
 <meta name="description" content="Catastro de Carabanchel: 9.979 lotes con norma zonal, altura permitida, edificacion y accesibilidad. Datos oficiales del Catastro y del PGOUM-97.">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#1A1A1A">
+<meta name="theme-color" content="#EAE4D9">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="MAPEA">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<style>html,body{margin:0;padding:0;background:#000;color-scheme:dark;overscroll-behavior:none}
+<style>html,body{margin:0;padding:0;background:#EAE4D9;color-scheme:light;overscroll-behavior:none}
 img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
 :root{
-  --black:#000000; --panel:#1A1A1A; --panel-2:#242424; --sunk:#2E2E2E;
-  --line:#333333; --line-2:#3F3F3F;
-  --ink:#F2F2F2; --ink-2:#B8B8B8; --muted:#7E7E7E; --off:#5A5A5A;
-  /* crema del muro, indigo del rotulo */
-  --acc:#E4DBC6; --acc-soft:#2B2722; --acc-ink:#F4EEDF;
-  --sel:#0F56DB; --sel-ink:#5C8CF7; --gris-sel:#123A96;
-  --verde:#6FAE55; --verde-soft:#27391D;
+  /* --- interfaz: papel crema, tinta indigo --- */
+  --paper:#EAE4D9; --panel:#EAE4D9; --panel-2:#E1D9CA; --sunk:#D3CAB7;
+  --line:#CEC4AF; --line-2:#B9AE95;
+  --ink:#16223F; --ink-2:#47526A; --muted:#7D8596; --off:#A8A191;
+  --acc:#1B54E0; --acc-soft:#C6D4F7; --acc-ink:#123BB0;
+  --sel:#1B54E0; --sel-ink:#0B3ABF; --gris-sel:#1B54E0;
+  --verde:#3E6B3A; --verde-soft:#CCD9C5;
+  /* --- lienzo del mapa: negro. Aqui el crema es "cumple el filtro" y el
+     indigo "seleccionado". Van aparte de los colores de panel. --- */
+  --black:#000000;
+  --map-bg:#000000; --map-hit:#E4DBC6; --map-hit-soft:#4A4436; --map-miss:#242424;
+  --map-line:#333333; --map-line-2:#3F3F3F; --map-street:#1B1B1B;
+  --map-sel:#1B54E0; --map-sel-ink:#7BA0FF;
+  --map-verde:#4E7F45; --map-verde-soft:#1B2A18; --map-none:#3A3A3A;
   --z-RDM:#E8D77A; --z-CZ:#D4614F; --z-RDA:#D99B3C; --z-RDB:#E0B98A;
   --z-CV:#D98A82; --z-VT:#C97FA8; --z-E1:#5FA8CE; --z-E3:#3F72B0;
   --z-H2:#63C4C4; --z-OU:#B9B5AC; --z-ZRP:#8AA84A; --z-none:#3A3A3A;
@@ -32,7 +39,7 @@ img{max-width:100%}[hidden]{display:none!important}</style>
 }
 *{box-sizing:border-box}
 ::selection{background:var(--sel); color:var(--acc-ink)}
-body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font);
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font);
   font-size:13.5px; line-height:1.4; -webkit-font-smoothing:antialiased}
 .num{font-variant-numeric:tabular-nums; letter-spacing:.01em}
 .app{display:grid; grid-template-columns:300px minmax(0,1fr) 322px;
@@ -81,7 +88,7 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 .duo button{flex:1; padding:5px 4px; border:1px solid var(--line-2); border-radius:4px;
   background:var(--panel-2); color:var(--off); font:inherit; font-size:11.5px; cursor:pointer}
 .duo button:hover{color:var(--ink-2)}
-.duo button[aria-pressed="true"]{background:var(--acc); border-color:var(--acc); color:#15120C; font-weight:600}
+.duo button[aria-pressed="true"]{background:var(--acc); border-color:var(--acc); color:var(--paper); font-weight:600}
 .duo button:focus-visible{outline:2px solid var(--acc); outline-offset:1px}
 
 .foot{padding:10px 17px calc(13px + env(safe-area-inset-bottom));
@@ -102,14 +109,16 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .stat .v{font-size:18px; font-weight:600; margin-top:1px; color:var(--acc)}
 .stat .u{font-size:10px; color:var(--muted); margin-left:3px; font-weight:400}
-.canvaswrap{position:relative; flex:1; min-height:0; background:var(--black)}
+.canvaswrap{position:relative; flex:1; min-height:0; background:var(--map-bg)}
 canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:none}
-.legend{position:absolute; left:12px; bottom:12px; background:var(--panel); border:1px solid var(--line);
+.legend{position:absolute; left:12px; bottom:12px; background:var(--panel);
+  box-shadow:0 2px 14px rgba(0,0,0,.5); border:1px solid var(--line);
   border-radius:5px; padding:8px 10px; font-size:10.5px; max-width:210px}
 .legend select{width:100%; margin-top:4px; padding:4px 6px; border:1px solid var(--line-2);
   border-radius:4px; background:var(--panel-2); color:var(--ink); font:inherit; font-size:11px}
 .legend .lg{display:flex; align-items:center; gap:7px; margin-top:5px; color:var(--ink-2)}
-.legend i{width:12px; height:11px; border-radius:2px; display:block; flex:none}
+.legend i{width:12px; height:11px; border-radius:2px; display:block; flex:none;
+  border:1px solid rgba(0,0,0,.25)}
 .legend .t{font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
 .tools{position:absolute; right:12px; top:12px; display:flex; flex-direction:column; gap:5px}
 .tools .btn{width:auto; background:var(--panel); padding:5px 9px}
@@ -124,7 +133,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   background:var(--panel-2); color:var(--ink); font:inherit; font-size:11.5px}
 .lista{flex:1; min-height:60px; overflow-y:auto; -webkit-overflow-scrolling:touch}
 .row{display:flex; align-items:baseline; justify-content:space-between; gap:9px;
-  padding:6px 15px; border-bottom:1px solid #262626; cursor:pointer}
+  padding:6px 15px; border-bottom:1px solid var(--line); cursor:pointer}
 .row:hover{background:var(--panel-2)}
 .row[aria-current="true"]{background:var(--panel-2); box-shadow:inset 3px 0 0 var(--sel)}
 .row .a{font-size:11.5px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -201,8 +210,8 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   .selbody h3{font-size:12px} .selbody dt,.selbody dd{font-size:10px}
   .vacio{padding:10px; font-size:10.5px}
 }
-.aviso{margin-top:6px; padding:3px 7px; border:1px solid #4A443A; border-radius:3px;
-  background:#221F1A; color:var(--acc-ink); font:inherit; font-size:9.5px; letter-spacing:.04em;
+.aviso{margin-top:6px; padding:3px 7px; border:1px solid var(--acc-soft); border-radius:3px;
+  background:#DCE4F9; color:var(--acc-ink); font:inherit; font-size:9.5px; letter-spacing:.04em;
   cursor:pointer; text-align:left; width:100%}
 .aviso:hover{border-color:var(--acc); color:var(--acc-ink)}
 .modal{position:fixed; inset:0; background:rgba(0,0,0,.78); display:flex;
@@ -677,20 +686,20 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   function rangoDe(f){ if(!RANGOS[f]) RANGOS[f]=span(f); return RANGOS[f]; }
   function colorOf(l){
     var d=l.d, m=st.modo;
-    if(m==="zona")  return (C.zonas||{})[d.z] || css("--z-none");
+    if(m==="zona")  return (C.zonas||{})[d.z] || css("--map-none");
     if(m==="valor"){ var rv=rangoDe("vm");
-      return d.vm!=null?ramp((d.vm-rv[0])/((rv[1]-rv[0])||1)):css("--z-none"); }
+      return d.vm!=null?ramp((d.vm-rv[0])/((rv[1]-rv[0])||1)):css("--map-none"); }
     if(m==="anio"){ var ra=rangoDe("ao");
-      return d.ao?ramp((d.ao-ra[0])/((ra[1]-ra[0])||1)):css("--z-none"); }
-    if(m==="iv")    return d.iv!=null?ramp(d.iv/100):css("--z-none");
-    if(m==="ic")    return d.ic!=null?ramp(d.ic/100):css("--z-none");
-    if(m==="conf")  return d.vc!=null?ramp(d.vc/100):css("--z-none");
-    if(m==="pisos") return d.pm?ramp(Math.min(d.pm,12)/12):css("--z-none");
-    if(m==="pact")  return d.pa?ramp(Math.min(d.pa,12)/12):css("--z-none");
-    if(m==="vista") return d.vi===1?css("--acc"):css("--sunk");
-    if(m==="venta") return d.ev===1?css("--sel-ink"):css("--sunk");
-    if(m==="tipo")  return d.te===2?css("--acc-ink"):(d.te===1?css("--acc-soft"):css("--sunk"));
-    return css("--acc");
+      return d.ao?ramp((d.ao-ra[0])/((ra[1]-ra[0])||1)):css("--map-none"); }
+    if(m==="iv")    return d.iv!=null?ramp(d.iv/100):css("--map-none");
+    if(m==="ic")    return d.ic!=null?ramp(d.ic/100):css("--map-none");
+    if(m==="conf")  return d.vc!=null?ramp(d.vc/100):css("--map-none");
+    if(m==="pisos") return d.pm?ramp(Math.min(d.pm,12)/12):css("--map-none");
+    if(m==="pact")  return d.pa?ramp(Math.min(d.pa,12)/12):css("--map-none");
+    if(m==="vista") return d.vi===1?css("--map-hit"):css("--map-miss");
+    if(m==="venta") return d.ev===1?css("--map-sel-ink"):css("--map-miss");
+    if(m==="tipo")  return d.te===2?css("--map-hit"):(d.te===1?css("--map-hit-soft"):css("--map-miss"));
+    return css("--map-hit");
   }
   function path(p){
     ctx.beginPath(); ctx.moveTo(sx(p[0]),sy(p[1]));
@@ -699,25 +708,25 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   }
   function draw(){
     if(!W) return;
-    ctx.fillStyle=css("--black"); ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=css("--map-bg"); ctx.fillRect(0,0,W,H);
     // El callejero oficial de Madrid son POLIGONOS de espacio publico; el de
     // Barranco son ejes. Se dibuja cada uno como lo que es.
     if(POLY){
-      ctx.fillStyle=css("--panel");
+      ctx.fillStyle=css("--map-street");
       for(var s0=0;s0<calles.length;s0++){ path(calles[s0].p); ctx.fill(); }
     }
-    ctx.strokeStyle=css("--line"); ctx.lineWidth=.5; ctx.fillStyle=css("--panel-2");
+    ctx.strokeStyle=css("--map-line"); ctx.lineWidth=.5; ctx.fillStyle=css("--map-miss");
     for(var i=0;i<lots.length;i++){ if(lots[i].on) continue; path(lots[i].p); ctx.fill(); ctx.stroke(); }
     // zona verde vacante: solo contorno, porque todavia no existe sobre el terreno
     ctx.lineWidth=.7;
     for(var v=0;v<verdes.length;v++){
-      ctx.fillStyle=css("--verde-soft"); ctx.strokeStyle=css("--verde");
+      ctx.fillStyle=css("--map-verde-soft"); ctx.strokeStyle=css("--map-verde");
       path(verdes[v].p);
       if(verdes[v].d.e !== 0) ctx.fill();
       ctx.stroke();
     }
     if(!POLY){
-      ctx.strokeStyle=css("--line-2"); ctx.lineWidth=Math.max(.6,Math.min(3,view.k*1.1));
+      ctx.strokeStyle=css("--map-line-2"); ctx.lineWidth=Math.max(.6,Math.min(3,view.k*1.1));
       for(var s2=0;s2<calles.length;s2++){
         var q=calles[s2].p;
         ctx.beginPath(); ctx.moveTo(sx(q[0]),sy(q[1]));
@@ -725,7 +734,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
         ctx.stroke();
       }
     }
-    ctx.lineWidth=.6; ctx.strokeStyle=css("--black");
+    ctx.lineWidth=.6; ctx.strokeStyle=css("--map-bg");
     for(var j=0;j<lots.length;j++){
       if(!lots[j].on) continue;
       path(lots[j].p); ctx.fillStyle=colorOf(lots[j]); ctx.fill();
@@ -734,14 +743,14 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
     if(view.k>1.6) rotular();
     if(st.sel){                                   // lote abierto: indigo, borde claro
       path(st.sel.p);
-      ctx.fillStyle=css("--gris-sel"); ctx.fill();
-      ctx.lineWidth=2.2; ctx.strokeStyle=css("--sel-ink"); ctx.stroke();
+      ctx.fillStyle=css("--map-sel"); ctx.fill();
+      ctx.lineWidth=2.2; ctx.strokeStyle=css("--map-sel-ink"); ctx.stroke();
     }
   }
   function rotular(){
     ctx.font='500 11px '+css('--font');
     ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.lineWidth=3; ctx.strokeStyle=css("--black"); ctx.fillStyle=css("--muted");
+    ctx.lineWidth=3; ctx.strokeStyle=css("--map-bg"); ctx.fillStyle="#8A8A8A";
     var puestos=[];
     for(var i=0;i<calles.length;i++){
       var c=calles[i]; if(!c.n) continue;
@@ -781,19 +790,19 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   }).join("");
   function leyenda(){
     var h="", m=st.modo;
-    if(m==="match") h=lg(css("--acc"),"Cumple el filtro")+lg(css("--panel-2"),"No cumple")+
-                      lg(css("--sel-ink"),"Lote abierto")+lg(css("--verde"),"Zona verde");
+    if(m==="match") h=lg(css("--map-hit"),"Cumple el filtro")+lg(css("--map-miss"),"No cumple")+
+                      lg(css("--map-sel"),"Lote abierto")+lg(css("--map-verde"),"Zona verde");
     else if(m==="zona") (C.zonasLeyenda||[]).forEach(function(z){
-      h+=lg((C.zonas||{})[z[0]]||css("--z-none"), z[1]); });
+      h+=lg((C.zonas||{})[z[0]]||css("--map-none"), z[1]); });
     else if(m==="valor"){ var rv=rangoDe("vm");
       h=grad(fmt(rv[0],0)+" – "+fmt(rv[1],0)+" "+(C.moneda||"")+"/m²"); }
     else if(m==="anio"){ var ra=rangoDe("ao"); h=grad(fmt(ra[0],0)+" – "+fmt(ra[1],0)); }
     else if(m==="conf") h=grad("0 – 100 fiabilidad del valor");
     else if(m==="iv") h=grad("0 – 100 cercanía a verde");
     else if(m==="ic") h=grad("0 – 100 cercanía a comercio");
-    else if(m==="vista") h=lg(css("--acc"),"Con vista al mar")+lg(css("--sunk"),"Sin vista");
-    else if(m==="venta") h=lg(css("--sel-ink"),"Con aviso de venta (simulado)")+lg(css("--sunk"),"Sin aviso");
-    else if(m==="tipo") h=lg(css("--acc-ink"),"Edificio")+lg(css("--acc-soft"),"Casa")+lg(css("--sunk"),"Otro");
+    else if(m==="vista") h=lg(css("--map-hit"),"Con vista al mar")+lg(css("--map-miss"),"Sin vista");
+    else if(m==="venta") h=lg(css("--map-sel-ink"),"Con aviso de venta (simulado)")+lg(css("--map-miss"),"Sin aviso");
+    else if(m==="tipo") h=lg(css("--map-hit"),"Edificio")+lg(css("--map-hit-soft"),"Casa")+lg(css("--map-miss"),"Otro");
     else if(m==="pact") h=grad("0 – 12 plantas construidas");
     else h=grad("0 – 12 plantas permitidas");
     document.getElementById("leyenda").innerHTML=h;

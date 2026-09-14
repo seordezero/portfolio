@@ -1,4 +1,4 @@
-const CACHE = "mapea-portada-3249ab2970";
+const CACHE = "mapea-portada-a346e3947d";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png",
                 "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
