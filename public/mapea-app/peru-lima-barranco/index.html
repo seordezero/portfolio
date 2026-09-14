@@ -593,6 +593,21 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   var COMP = {
     zona:   function(d){ return esc(d.z||"sin zona")+(d.mo===1?" · ZM":""); },
     altura: function(d){ return d.ha?fmt(d.ha,1)+" m · "+fmt(d.pa,0)+" p":"sin edificar"; },
+    /* La altura no es dato del Catastro: se deduce de las plantas con el ajuste de
+       la propia tabla del PGOUM (art. 8.4.10 -> 3:11,50 4:15,00 5:18,50 6:21,50),
+       que es h = 3,5p + 1. Por eso se marca como estimada. */
+    plantasalt: function(d){
+      if(!d.pa) return "sin edificar";
+      return fmt(d.pa,0)+" p · ~"+fmt(3.5*d.pa+1,1)+" m";
+    },
+    /* La fiabilidad viene de cuantos anuncios hay cerca; por debajo de 20 el valor
+       se apoya en muy pocos y conviene que se vea. */
+    conf: function(d){
+      var v = d.vc;
+      if(v==null) return "—";
+      var t = v>=60 ? "alta" : v>=20 ? "media" : "baja";
+      return fmt(v,0)+" / 100 · "+t;
+    },
     verde:  function(d){ return d.dv!=null?fmt(d.dv,0)+" m · idx "+fmt(d.iv,0):"—"; },
     idxcom: function(d){ return d.dc!=null?fmt(d.dc,0)+" m · idx "+fmt(d.ic,0):"idx "+fmt(d.ic,0); },
     manzlote:function(d){ return (d.m||"—")+" / "+(d.n!=null?d.n:"—"); },
@@ -667,6 +682,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
       return d.ao?ramp((d.ao-ra[0])/((ra[1]-ra[0])||1)):css("--z-none"); }
     if(m==="iv")    return d.iv!=null?ramp(d.iv/100):css("--z-none");
     if(m==="ic")    return d.ic!=null?ramp(d.ic/100):css("--z-none");
+    if(m==="conf")  return d.vc!=null?ramp(d.vc/100):css("--z-none");
     if(m==="pisos") return d.pm?ramp(Math.min(d.pm,12)/12):css("--z-none");
     if(m==="pact")  return d.pa?ramp(Math.min(d.pa,12)/12):css("--z-none");
     if(m==="vista") return d.vi===1?css("--gold"):css("--sunk");
@@ -770,6 +786,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
     else if(m==="valor"){ var rv=rangoDe("vm");
       h=grad(fmt(rv[0],0)+" – "+fmt(rv[1],0)+" "+(C.moneda||"")+"/m²"); }
     else if(m==="anio"){ var ra=rangoDe("ao"); h=grad(fmt(ra[0],0)+" – "+fmt(ra[1],0)); }
+    else if(m==="conf") h=grad("0 – 100 fiabilidad del valor");
     else if(m==="iv") h=grad("0 – 100 cercanía a verde");
     else if(m==="ic") h=grad("0 – 100 cercanía a comercio");
     else if(m==="vista") h=lg(css("--gold"),"Con vista al mar")+lg(css("--sunk"),"Sin vista");
