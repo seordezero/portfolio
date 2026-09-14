@@ -42,9 +42,9 @@ img{max-width:100%}[hidden]{display:none!important}</style>
 *{box-sizing:border-box}
 ::selection{background:var(--sel); color:var(--acc-ink)}
 body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font);
-  font-size:13.5px; line-height:1.4; -webkit-font-smoothing:antialiased}
+  font-size:15px; line-height:1.45; -webkit-font-smoothing:antialiased}
 .num{font-variant-numeric:tabular-nums; letter-spacing:.01em}
-.app{display:grid; grid-template-columns:300px minmax(0,1fr) 322px;
+.app{display:grid; grid-template-columns:332px minmax(0,1fr) 356px;
   height:100vh; height:100dvh; overflow:hidden}
 .rail{background:var(--panel); display:flex; flex-direction:column; overflow:hidden; min-width:0}
 .rail.izq{border-right:1px solid var(--line)}
@@ -54,18 +54,19 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 .volver{display:inline-block; color:var(--muted); font-size:10px; letter-spacing:.09em;
   text-transform:uppercase; text-decoration:none; margin-bottom:5px}
 .volver:hover{color:var(--acc-ink)}
-.mast h1{font-weight:600; font-size:18px; margin:0; letter-spacing:.01em}
-.mast .sub{color:var(--muted); font-size:10.5px; margin-top:3px}
+.mast h1{font-weight:600; font-size:19.5px; margin:0; letter-spacing:.01em}
+.mast .sub{color:var(--muted); font-size:12px; margin-top:3px}
 
 .filters{padding:2px 17px 0; display:flex; flex-direction:column; flex:1; min-height:0; overflow-y:auto}
-.f{padding:10px 0 8px; border-bottom:1px solid var(--line); min-width:0}
+.f{padding:8px 0 7px; border-bottom:1px solid var(--line); min-width:0}  /* 8/7 y no 10/8: con la letra mas grande, 9 filtros pasaban 6 px de la
+     altura del panel y aparecia barra de scroll */
 .f .hd{display:flex; align-items:baseline; justify-content:space-between; gap:6px}
-.f .nm{font-size:9.5px; font-weight:600; letter-spacing:.11em; text-transform:uppercase;
+.f .nm{font-size:11px; font-weight:600; letter-spacing:.11em; text-transform:uppercase;
   color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .f .rd{display:flex; align-items:baseline; gap:2px; flex:none}
-.f .sep,.f .uu{font-size:11px; color:var(--muted)}
+.f .sep,.f .uu{font-size:12.5px; color:var(--muted)}
 .ed{width:56px; padding:1px 3px; border:1px solid transparent; border-radius:3px; background:none;
-  color:var(--ink); font:inherit; font-size:12px; font-variant-numeric:tabular-nums;
+  color:var(--ink); font:inherit; font-size:13.5px; font-variant-numeric:tabular-nums;
   text-align:right; -moz-appearance:textfield}
 .ed::-webkit-outer-spin-button,.ed::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
 .ed:hover{border-color:var(--line-2)}
@@ -95,7 +96,7 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 
 .duo{display:flex; gap:6px; margin-top:6px}
 .duo button{flex:1; padding:5px 4px; border:1px solid var(--line-2); border-radius:4px;
-  background:var(--panel-2); color:var(--off); font:inherit; font-size:11.5px; cursor:pointer}
+  background:var(--panel-2); color:var(--off); font:inherit; font-size:13px; cursor:pointer}
 .duo button:hover{color:var(--ink-2)}
 .duo button[aria-pressed="true"]{background:var(--sel); border-color:var(--sel); color:var(--paper); font-weight:600}
 .duo button:focus-visible{outline:2px solid var(--acc); outline-offset:1px}
@@ -104,40 +105,40 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
   padding-left:calc(17px + env(safe-area-inset-left)); border-top:1px solid var(--line)}
 .pair{display:flex; gap:6px; margin-bottom:7px}
 .btn{padding:7px 10px; border:1px solid var(--line-2); border-radius:4px; background:var(--panel-2);
-  color:var(--ink); font:inherit; font-size:12px; cursor:pointer; width:100%}
+  color:var(--ink); font:inherit; font-size:13.5px; cursor:pointer; width:100%}
 .btn:hover{border-color:var(--sel); color:var(--sel-ink)}
 .btn:focus-visible{outline:2px solid var(--acc); outline-offset:1px}
-.btn.sm{font-size:11.5px; padding:6px 6px}
+.btn.sm{font-size:13px; padding:6px 6px}
 
 .main{display:flex; flex-direction:column; min-width:0; min-height:0; overflow:hidden}
 .strip{display:grid; grid-template-columns:repeat(5,minmax(0,1fr));
   border-bottom:1px solid var(--line); background:var(--panel)}
 .stat{padding:9px 13px; border-right:1px solid var(--line); min-width:0}
 .stat:last-child{border-right:0}
-.stat .k{font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+.stat .k{font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.stat .v{font-size:18px; font-weight:600; margin-top:1px; color:var(--acc)}
-.stat .u{font-size:10px; color:var(--muted); margin-left:3px; font-weight:400}
+.stat .v{font-size:20px; font-weight:600; margin-top:1px; color:var(--acc)}
+.stat .u{font-size:11.5px; color:var(--muted); margin-left:3px; font-weight:400}
 .canvaswrap{position:relative; flex:1; min-height:0; background:var(--map-bg)}
 canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:none}
 .legend{position:absolute; left:12px; bottom:12px; background:var(--panel); border:1px solid var(--line);
-  border-radius:5px; padding:8px 10px; font-size:10.5px; max-width:210px}
+  border-radius:5px; padding:9px 11px; font-size:12px; max-width:226px}
 .legend select{width:100%; margin-top:4px; padding:4px 6px; border:1px solid var(--line-2);
-  border-radius:4px; background:var(--panel-2); color:var(--ink); font:inherit; font-size:11px}
+  border-radius:4px; background:var(--panel-2); color:var(--ink); font:inherit; font-size:12.5px}
 .legend .lg{display:flex; align-items:center; gap:7px; margin-top:5px; color:var(--ink-2)}
 .legend i{width:12px; height:11px; border-radius:2px; display:block; flex:none}
-.legend .t{font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--sel-ink)}
+.legend .t{font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--sel-ink)}
 .tools{position:absolute; right:12px; top:12px; display:flex; flex-direction:column; gap:5px}
 .tools .btn{width:auto; background:var(--panel); padding:5px 9px}
 
 .sect{padding:11px 15px; border-bottom:1px solid var(--line); display:flex;
   align-items:center; justify-content:space-between; gap:8px}
-.sect h2{margin:0; font-size:9.5px; font-weight:600; letter-spacing:.11em;
+.sect h2{margin:0; font-size:11px; font-weight:600; letter-spacing:.11em;
   text-transform:uppercase; color:var(--muted)}
-.sect .cnt{font-size:12px; color:var(--sel-ink); font-weight:600}
+.sect .cnt{font-size:13.5px; color:var(--sel-ink); font-weight:600}
 .ordwrap{padding:8px 15px; border-bottom:1px solid var(--line)}
 .ordwrap select{width:100%; padding:5px 7px; border:1px solid var(--line-2); border-radius:4px;
-  background:var(--panel-2); color:var(--ink); font:inherit; font-size:11.5px}
+  background:var(--panel-2); color:var(--ink); font:inherit; font-size:13px}
 .lista{flex:1; min-height:60px; overflow-y:auto; -webkit-overflow-scrolling:touch}
 .row{display:flex; align-items:baseline; justify-content:space-between; gap:9px;
   padding:6px 15px; border-bottom:1px solid #262626; cursor:pointer}
@@ -146,24 +147,24 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .row:hover .b{color:var(--acc-ink)}
 .row[aria-current="true"] .a{color:var(--sel-ink); font-weight:600}
 .row[aria-current="true"]{background:var(--panel-2); box-shadow:inset 3px 0 0 var(--sel)}
-.row .a{font-size:11.5px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.row .b{font-size:11.5px; color:var(--acc-ink); white-space:nowrap; font-variant-numeric:tabular-nums}
-.vacio{padding:16px 15px; color:var(--off); font-size:11.5px}
+.row .a{font-size:13px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.row .b{font-size:13px; color:var(--acc-ink); white-space:nowrap; font-variant-numeric:tabular-nums}
+.vacio{padding:16px 15px; color:var(--off); font-size:12.5px}
 .selbox{border-top:1px solid var(--line-2); display:flex; flex-direction:column;
   height:46%; min-height:200px; overflow:hidden; background:var(--panel)}
 .tabs{display:flex; gap:2px; padding:0 15px 9px}
 .tabs button{padding:4px 9px; border:1px solid var(--line-2); border-radius:4px;
-  background:var(--panel-2); color:var(--off); font:inherit; font-size:11px; cursor:pointer}
+  background:var(--panel-2); color:var(--off); font:inherit; font-size:12.5px; cursor:pointer}
 .tabs button[aria-selected="true"]{background:var(--sunk); color:var(--sel-ink); border-color:var(--sel)}
 .tabs button:focus-visible{outline:2px solid var(--acc); outline-offset:1px}
 .selbody{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
   padding:0 calc(15px + env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) 15px}
-.selbody h3{margin:0 0 1px; font-size:14px; font-weight:600; color:var(--sel-ink); line-height:1.25}
-.selbody .who{font-size:10.5px; color:var(--muted); margin-bottom:9px}
+.selbody h3{margin:0 0 2px; font-size:15.5px; font-weight:600; color:var(--sel-ink); line-height:1.25}
+.selbody .who{font-size:11.5px; color:var(--muted); margin-bottom:9px}
 .selbody dl{display:grid; grid-template-columns:auto 1fr; gap:2px 10px; margin:0}
-.selbody dt{font-size:10.5px; color:var(--muted)}
+.selbody dt{font-size:12px; color:var(--muted)}
 .selbody dl > dd:hover{color:var(--sel-ink)}
-.selbody dd{margin:0; font-size:11.5px; text-align:right; font-variant-numeric:tabular-nums}
+.selbody dd{margin:0; font-size:13px; text-align:right; font-variant-numeric:tabular-nums}
 
 /* ---------- teléfono en horizontal: mismo reparto, todo mas angosto ---------- */
 @media (orientation:landscape) and (max-height:560px){
@@ -222,7 +223,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   .vacio{padding:10px; font-size:10.5px}
 }
 .aviso{margin-top:6px; padding:3px 7px; border:1px solid #3A4A76; border-radius:3px;
-  background:#131A2B; color:var(--sel-ink); font:inherit; font-size:9.5px; letter-spacing:.04em;
+  background:#131A2B; color:var(--sel-ink); font:inherit; font-size:11px; letter-spacing:.04em;
   cursor:pointer; text-align:left; width:100%}
 .aviso:hover{border-color:var(--acc); color:var(--acc-ink)}
 .modal{position:fixed; inset:0; background:rgba(0,0,0,.78); display:flex;
@@ -230,14 +231,14 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .modalbox{position:relative; max-width:560px; max-height:82vh; overflow-y:auto;
   background:var(--panel); border:1px solid var(--line-2); border-radius:6px; padding:22px 24px}
 .modalbox h2{margin:0 0 10px; font-size:17px; color:var(--acc-ink)}
-.modalbox p{margin:0 0 10px; color:var(--ink-2); font-size:12.5px; line-height:1.55}
-.modalbox ul{margin:0 0 12px; padding-left:17px; color:var(--ink-2); font-size:12.5px; line-height:1.55}
+.modalbox p{margin:0 0 10px; color:var(--ink-2); font-size:13.5px; line-height:1.55}
+.modalbox ul{margin:0 0 12px; padding-left:17px; color:var(--ink-2); font-size:13.5px; line-height:1.55}
 .modalbox li{margin-bottom:6px}
 .modalbox b{color:var(--ink)}
 .mono{font-family:ui-monospace,Consolas,monospace; font-size:11.5px}
 .mx{position:absolute; top:8px; right:11px; border:0; background:none; color:var(--muted);
   font-size:20px; line-height:1; cursor:pointer; padding:2px 6px}
-.links a{color:var(--acc-ink); font-size:11.5px; display:block; margin-top:6px; word-break:break-word}
+.links a{color:var(--acc-ink); font-size:13px; display:block; margin-top:6px; word-break:break-word}
 @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
 </style>
 </head>
@@ -601,8 +602,39 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   document.getElementById("lista").addEventListener("click", function(e){
     var r=e.target.closest(".row"); if(!r) return;
     st.sel = lots[+r.dataset.i];
-    lista(); ficha(); draw();
+    lista(); ficha(); volarA(st.sel);
   });
+
+  /* Vuelo suave hasta un lote. Se hace al pulsar en la LISTA, no al pulsar en el
+     mapa: ahi el lote ya esta a la vista y moverlo desorienta. */
+  var vuelo=null;
+  function volarA(l){
+    if(!l || !W){ draw(); return; }
+    var b=l.b, w=Math.max(b[2]-b[0],10), h=Math.max(b[3]-b[1],10);
+    var pad=Math.min(W,H)*0.30;
+    // se encuadra el lote pero sin pasarse: si no, una parcela pequena llena la
+    // pantalla y se pierde de vista donde esta
+    var k=Math.min((W-pad*2)/w, (H-pad*2)/h);
+    k=Math.max(Math.min(k, 9), 0.2);
+    var cx=(b[0]+b[2])/2, cy=(b[1]+b[3])/2;
+    var destino={k:k, tx:W/2-cx*k, ty:H/2+cy*k};
+    var desde={k:view.k, tx:view.tx, ty:view.ty}, t0=0;
+    if(vuelo) cancelAnimationFrame(vuelo);
+    function paso(ts){
+      if(!t0) t0=ts;
+      var u=Math.min(1,(ts-t0)/380);
+      var e=u<.5 ? 4*u*u*u : 1-Math.pow(-2*u+2,3)/2;   // suave al entrar y al salir
+      view.k=desde.k+(destino.k-desde.k)*e;
+      view.tx=desde.tx+(destino.tx-desde.tx)*e;
+      view.ty=desde.ty+(destino.ty-desde.ty)*e;
+      draw();
+      if(u<1) vuelo=requestAnimationFrame(paso); else vuelo=null;
+    }
+    if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches){
+      view.k=destino.k; view.tx=destino.tx; view.ty=destino.ty; draw(); return;
+    }
+    vuelo=requestAnimationFrame(paso);
+  }
 
   /* ---------------- panel derecho: seleccion ---------------- */
   document.getElementById("tabs").addEventListener("click", function(e){
