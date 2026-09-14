@@ -44,8 +44,11 @@ body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
    grafico lean como una sola pieza. El tamano lo limita la ALTURA disponible,
    no el ancho: la portada tiene que caber en una pantalla sin scroll. */
 .marca-bloque{display:inline-flex;flex-direction:column;align-items:stretch}
-#trama{display:block;width:100%;aspect-ratio:1;max-height:41dvh;margin:0 auto 16px;
-  background:#0B0B0B}
+/* El GIF se renderiza en SCRIPTS/trama_gif.py y se sirve como imagen: pesa 45
+   KB, se ve igual en todas partes y no gasta CPU del visitante.
+   image-rendering:pixelated mantiene el cuadradito nitido al escalar. */
+#trama{display:block;width:100%;height:auto;aspect-ratio:1;max-height:41dvh;
+  margin:0 auto 16px;background:#0B0B0B;image-rendering:pixelated}
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:14px calc(20px + env(safe-area-inset-left)) 16px;text-align:center;
   position:relative;z-index:1;min-height:0}
@@ -95,7 +98,7 @@ h1{margin:0;font-family:var(--rotulo);font-weight:400;
   </header>
   <main>
     <div class="marca-bloque">
-      <canvas id="trama" width="260" height="260" aria-hidden="true"></canvas>
+      <img id="trama" src="trama.gif" alt="" width="264" height="264">
       <h1>MAPEA</h1>
     </div>
     <p class="lema">Herramientas de inversión inmobiliaria con cabeza de urbanista.</p>
@@ -123,65 +126,5 @@ h1{margin:0;font-family:var(--rotulo);font-weight:400;
     ni un servicio de tasación.</p>
     <a class="volver" href="/">← sebastianortizdezevallos.com</a>
   </main>
-<script>
-(function(){
-  var c=document.getElementById("trama"); if(!c) return;
-  var x=c.getContext("2d"), N=52, cel=c.width/N, mid=(N-1)/2;
-
-  // Ruido de valor en 3D: hash entero por celda + interpolacion suave. La tercera
-  // dimension es el TIEMPO, asi que el campo no salta entre fotogramas: cada celda
-  // sube y baja de intensidad de forma continua. Eso es lo que se lee como
-  // movimiento; un automata celular cambiaria de golpe.
-  function h3(i,j,k){
-    var n=i*374761393+j*668265263+k*1274126177;
-    n=(n^(n>>13))*1274126177;
-    return ((n^(n>>16))>>>0)/4294967295;
-  }
-  function suave(t){ return t*t*(3-2*t); }
-  function ruido(px,py,pz){
-    var i=Math.floor(px), j=Math.floor(py), k=Math.floor(pz);
-    var fx=suave(px-i), fy=suave(py-j), fz=suave(pz-k);
-    function L(a,b,t){ return a+(b-a)*t; }
-    var c00=L(h3(i,j,k),     h3(i+1,j,k),     fx);
-    var c10=L(h3(i,j+1,k),   h3(i+1,j+1,k),   fx);
-    var c01=L(h3(i,j,k+1),   h3(i+1,j,k+1),   fx);
-    var c11=L(h3(i,j+1,k+1), h3(i+1,j+1,k+1), fx);
-    return L(L(c00,c10,fy), L(c01,c11,fy), fz);
-  }
-
-  // Mascara del rombo: nucleo denso y dos ejes que se estiran mas que el nucleo.
-  var mask=new Float32Array(N*N);
-  for(var i=0;i<N;i++)for(var j=0;j<N;j++){
-    var dx=(i-mid)/mid, dy=(j-mid)/mid, d=Math.sqrt(dx*dx+dy*dy);
-    var p=Math.pow(Math.max(0,1-d*1.5),1.4);
-    p+=Math.max(0,1-Math.abs(dx)*8)*Math.max(0,1-Math.abs(dy)*1.05)*0.55;
-    p+=Math.max(0,1-Math.abs(dy)*8)*Math.max(0,1-Math.abs(dx)*1.05)*0.55;
-    mask[i*N+j]=Math.min(p,1);
-  }
-
-  // VEL medida en el navegador: a 0,00022 el campo apenas se movia y a 0,0018
-  // ya saturaba. 0,0007 deja que una celda de ruido cicle en ~1,4 s, que es el
-  // punto donde se lee como flujo y no como parpadeo.
-  var ESC=0.19, VEL=0.0007, UMBRAL=0.46;
-  function pinta(t){
-    x.fillStyle="#0B0B0B"; x.fillRect(0,0,c.width,c.height);
-    x.fillStyle="#EAE4D9";
-    var z=t*VEL;
-    for(var i=0;i<N;i++)for(var j=0;j<N;j++){
-      var m=mask[i*N+j];
-      if(m<0.02) continue;
-      var v=ruido(i*ESC, j*ESC, z)*0.65 + m*0.6;
-      if(v<UMBRAL) continue;
-      var f=Math.min(1,(v-UMBRAL)/0.5);
-      var s=cel*(0.3+0.52*f);
-      x.fillRect(i*cel+(cel-s)/2, j*cel+(cel-s)/2, s, s);
-    }
-  }
-
-  pinta(0);
-  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  (function bucle(ts){ requestAnimationFrame(bucle); pinta(ts); })(0);
-})();
-</script>
 </body>
 </html>
