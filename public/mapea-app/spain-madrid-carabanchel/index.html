@@ -18,13 +18,15 @@
 img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
 :root{
-  /* --- interfaz: papel crema, tinta indigo --- */
-  --paper:#EAE4D9; --panel:#EAE4D9; --panel-2:#E1D9CA; --sunk:#D3CAB7;
-  --line:#CEC4AF; --line-2:#B9AE95;
-  --ink:#16223F; --ink-2:#47526A; --muted:#7D8596; --off:#A8A191;
-  --acc:#1B54E0; --acc-soft:#C6D4F7; --acc-ink:#123BB0;
-  --sel:#1B54E0; --sel-ink:#0B3ABF; --gris-sel:#1B54E0;
-  --verde:#3E6B3A; --verde-soft:#CCD9C5;
+  /* --- consola: paneles grises sobre negro. El crema y el azul entran solo
+     como acento: crema en cifras y rellenos de slider, azul en lo activo. --- */
+  --paper:#EAE4D9;
+  --panel:#1A1A1A; --panel-2:#242424; --sunk:#2E2E2E;
+  --line:#333333; --line-2:#3F3F3F;
+  --ink:#F2F2F2; --ink-2:#B8B8B8; --muted:#7E7E7E; --off:#5A5A5A;
+  --acc:#E4DBC6; --acc-soft:#2B2722; --acc-ink:#F4EEDF;
+  --sel:#1B54E0; --sel-ink:#5C8CF7; --gris-sel:#1B54E0;
+  --verde:#6FAE55; --verde-soft:#27391D;
   /* --- lienzo del mapa: negro. Aqui el crema es "cumple el filtro" y el
      indigo "seleccionado". Van aparte de los colores de panel. --- */
   --black:#000000;
@@ -39,7 +41,7 @@ img{max-width:100%}[hidden]{display:none!important}</style>
 }
 *{box-sizing:border-box}
 ::selection{background:var(--sel); color:var(--acc-ink)}
-body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font);
+body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font);
   font-size:13.5px; line-height:1.4; -webkit-font-smoothing:antialiased}
 .num{font-variant-numeric:tabular-nums; letter-spacing:.01em}
 .app{display:grid; grid-template-columns:300px minmax(0,1fr) 322px;
@@ -88,7 +90,7 @@ body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font
 .duo button{flex:1; padding:5px 4px; border:1px solid var(--line-2); border-radius:4px;
   background:var(--panel-2); color:var(--off); font:inherit; font-size:11.5px; cursor:pointer}
 .duo button:hover{color:var(--ink-2)}
-.duo button[aria-pressed="true"]{background:var(--acc); border-color:var(--acc); color:var(--paper); font-weight:600}
+.duo button[aria-pressed="true"]{background:var(--sel); border-color:var(--sel); color:var(--paper); font-weight:600}
 .duo button:focus-visible{outline:2px solid var(--acc); outline-offset:1px}
 
 .foot{padding:10px 17px calc(13px + env(safe-area-inset-bottom));
@@ -111,14 +113,12 @@ body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font
 .stat .u{font-size:10px; color:var(--muted); margin-left:3px; font-weight:400}
 .canvaswrap{position:relative; flex:1; min-height:0; background:var(--map-bg)}
 canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:none}
-.legend{position:absolute; left:12px; bottom:12px; background:var(--panel);
-  box-shadow:0 2px 14px rgba(0,0,0,.5); border:1px solid var(--line);
+.legend{position:absolute; left:12px; bottom:12px; background:var(--panel); border:1px solid var(--line);
   border-radius:5px; padding:8px 10px; font-size:10.5px; max-width:210px}
 .legend select{width:100%; margin-top:4px; padding:4px 6px; border:1px solid var(--line-2);
   border-radius:4px; background:var(--panel-2); color:var(--ink); font:inherit; font-size:11px}
 .legend .lg{display:flex; align-items:center; gap:7px; margin-top:5px; color:var(--ink-2)}
-.legend i{width:12px; height:11px; border-radius:2px; display:block; flex:none;
-  border:1px solid rgba(0,0,0,.25)}
+.legend i{width:12px; height:11px; border-radius:2px; display:block; flex:none}
 .legend .t{font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
 .tools{position:absolute; right:12px; top:12px; display:flex; flex-direction:column; gap:5px}
 .tools .btn{width:auto; background:var(--panel); padding:5px 9px}
@@ -133,7 +133,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   background:var(--panel-2); color:var(--ink); font:inherit; font-size:11.5px}
 .lista{flex:1; min-height:60px; overflow-y:auto; -webkit-overflow-scrolling:touch}
 .row{display:flex; align-items:baseline; justify-content:space-between; gap:9px;
-  padding:6px 15px; border-bottom:1px solid var(--line); cursor:pointer}
+  padding:6px 15px; border-bottom:1px solid #262626; cursor:pointer}
 .row:hover{background:var(--panel-2)}
 .row[aria-current="true"]{background:var(--panel-2); box-shadow:inset 3px 0 0 var(--sel)}
 .row .a{font-size:11.5px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -210,8 +210,8 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   .selbody h3{font-size:12px} .selbody dt,.selbody dd{font-size:10px}
   .vacio{padding:10px; font-size:10.5px}
 }
-.aviso{margin-top:6px; padding:3px 7px; border:1px solid var(--acc-soft); border-radius:3px;
-  background:#DCE4F9; color:var(--acc-ink); font:inherit; font-size:9.5px; letter-spacing:.04em;
+.aviso{margin-top:6px; padding:3px 7px; border:1px solid #3A4A76; border-radius:3px;
+  background:#131A2B; color:var(--sel-ink); font:inherit; font-size:9.5px; letter-spacing:.04em;
   cursor:pointer; text-align:left; width:100%}
 .aviso:hover{border-color:var(--acc); color:var(--acc-ink)}
 .modal{position:fixed; inset:0; background:rgba(0,0,0,.78); display:flex;
@@ -677,7 +677,9 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   }
   function sx(x){ return x*view.k+view.tx; }
   function sy(y){ return -y*view.k+view.ty; }
-  var RA=[58,58,58], RB=[228,219,198];   // gris -> crema
+  // Las rampas de color de los lotes van de indigo a crema, que son los dos
+  // colores de la marca; el gris queda para lo que no cumple el filtro.
+  var RA=[27,84,224], RB=[228,219,198];
   function ramp(t){
     t=Math.max(0,Math.min(1,t));
     return "rgb("+Math.round(RA[0]+(RB[0]-RA[0])*t)+","+Math.round(RA[1]+(RB[1]-RA[1])*t)+","+Math.round(RA[2]+(RB[2]-RA[2])*t)+")";

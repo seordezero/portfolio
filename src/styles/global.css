@@ -223,9 +223,11 @@ img, video, canvas { max-width: 100%; height: auto; display: block; }
 
 .corners__mapea:hover { opacity: 1; }
 /* El isotipo lleva sus propios colores de marca, no hereda la tinta de la pagina:
-   el cuadro indigo con la M en papel es la marca y no debe cambiar de color segun
-   el proyecto que se este viendo. */
-.corners__mapea svg { width: 1.5em; height: 1.5em; display: block; }
+   el cuadro de papel con la M indigo es la marca y no debe cambiar de color segun
+   el proyecto que se este viendo. Va en px y no en em: a 1,5em quedaba del tamano
+   del texto y no se leia como marca. */
+.corners__mapea svg { width: 58px; height: 58px; display: block; }
+.corners__mapea span { font-size: 0.72rem; }
 
 .site-nav {
   display: flex;
