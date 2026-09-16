@@ -171,10 +171,17 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   background:var(--panel)}
 .graf h3{margin:0 0 9px; font-size:11px; font-weight:600; letter-spacing:.09em;
   text-transform:uppercase; color:var(--sel-ink)}
-.graf svg{display:block; width:100%; height:auto}
-.graf .et{font-size:11px; fill:var(--ink-2)}
-.graf .vl{font-size:11px; fill:var(--acc); font-variant-numeric:tabular-nums}
+/* Barra = un div con width en %. Con <svg preserveAspectRatio="none" el texto
+   se estiraba con el viewBox; en HTML el texto no se escala. */
+.gf{display:grid; grid-template-columns:minmax(0,84px) minmax(0,1fr) auto;
+  gap:9px; align-items:center; padding:2px 0; font-size:11.5px}
+.gn{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted)}
+.gf.top .gn{color:var(--ink)}
+.gb{height:13px; background:var(--panel-2); border-radius:3px; overflow:hidden}
+.gb i{display:block; height:100%; border-radius:3px}
+.gv{color:var(--acc); font-variant-numeric:tabular-nums; white-space:nowrap}
 .cmpbody table{border-collapse:collapse; font-size:13px}
+.cmpbody td.t{border-radius:3px; font-weight:600}
 .cmpbody th,.cmpbody td{border-bottom:1px solid var(--line); padding:7px 12px;
   text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums}
 .cmpbody th:first-child,.cmpbody td:first-child{text-align:left; color:var(--muted)}
@@ -281,6 +288,12 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   .selbody{padding:0 10px 10px}
   .selbody h3{font-size:12px} .selbody dt,.selbody dd{font-size:10px}
   .vacio{padding:10px; font-size:10.5px}
+  /* 330px de ancho en un movil tapa el mapa entero. Como hoja inferior deja ver
+     el lote al que se acaba de volar, que es justo lo que se mira. */
+  .pop{left:8px; right:8px; width:auto; top:auto; bottom:8px; max-height:72%}
+  .pophd{padding:9px 9px 0 12px} .pophd h3{font-size:14px}
+  .pop .who{padding:2px 12px 7px} .pop .tabs{padding:0 12px 7px}
+  .popfoot{padding:8px 12px calc(9px + env(safe-area-inset-bottom))}
 }
 .aviso{margin-top:6px; padding:3px 7px; border:1px solid #3A4A76; border-radius:3px;
   background:#131A2B; color:var(--sel-ink); font:inherit; font-size:11px; letter-spacing:.04em;
@@ -710,14 +723,19 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
      asi que se despeja al reves. */
   /* La ficha flotante ocupa la derecha, asi que el lote no se centra: se coloca
      en el centro del hueco que queda libre. */
+  // En pantalla ancha la ficha esta a la derecha, asi que el lote se desplaza a
+  // la izquierda. En movil la ficha es una hoja inferior: el desplazamiento va
+  // en vertical o el lote acaba debajo de ella.
+  function fino(){ return W < 560; }
   function anclaX(){
-    return pop.hidden ? W/2 : Math.max(W*0.22, (W-358)/2);
+    return (pop.hidden || fino()) ? W/2 : Math.max(W*0.22, (W-358)/2);
   }
+  function anclaY(){ return (pop.hidden || !fino()) ? H/2 : H*0.26; }
   function encuadrar(cx,cy,k){
-    view.k=k; view.tx=anclaX()-cx*k; view.ty=H/2+cy*k;
+    view.k=k; view.tx=anclaX()-cx*k; view.ty=anclaY()+cy*k;
   }
   function centro(){
-    return [(anclaX()-view.tx)/view.k, (view.ty-H/2)/view.k];
+    return [(anclaX()-view.tx)/view.k, (view.ty-anclaY())/view.k];
   }
   function volarA(l){
     if(!l || !W){ draw(); return; }
@@ -1237,9 +1255,23 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
     var cols=guardados.map(function(i){ return lots[i].d; });
     var h='<table><thead><tr><th></th>'+cols.map(function(d){
       return '<th>'+esc(d.ad||d.u||"—")+'</th>'; }).join("")+'</tr></thead><tbody>';
+    // Cada fila numerica se tine con la misma rampa del mapa: crema el menor,
+    // indigo el mayor. Se normaliza por FILA, que es donde esta la comparacion;
+    // normalizar por tabla mezclaria euros con plantas.
     C.ficha.forEach(function(r){
-      h+='<tr><td>'+esc(r[0])+'</td>'+cols.map(function(d){
-        return '<td>'+(COMP[r[2]] ? COMP[r[2]](d) : met(r[2])(d[r[1]]))+'</td>';
+      var m=r[2], f=r[1], vs=null, lo=0, alto=0;
+      if(NUM[m] && !COMP[m]){
+        vs=cols.map(function(d){ var v=d[f]; return (v==null||!isFinite(v))?null:v; });
+        var ok=vs.filter(function(v){ return v!=null; });
+        lo=Math.min.apply(null,ok); alto=Math.max.apply(null,ok);
+        if(ok.length<2 || !(alto>lo)) vs=null;   // nada que comparar: sin color
+      }
+      h+='<tr><td>'+esc(r[0])+'</td>'+cols.map(function(d,i){
+        var t = vs && vs[i]!=null ? (vs[i]-lo)/(alto-lo) : null;
+        // sobre crema hace falta tinta oscura; sobre indigo, clara
+        var est = t==null ? '' : ' class="t" style="background:'+ramp(t)+
+                  ';color:'+(t>0.45?'#F2F2F2':'#111')+'"';
+        return '<td'+est+'>'+(COMP[m] ? COMP[m](d) : met(m)(d[f]))+'</td>';
       }).join("")+'</tr>';
     });
     document.getElementById("cmpbody").innerHTML=h+'</tbody></table>';
@@ -1290,20 +1322,16 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
       var max = Math.max.apply(null, vals);
       if(!(max > 0)) return;                    // campo vacio en todos: no se dibuja
       vistos[f] = 1;
-      var alto = 22, hueco = 7, H = cols.length*(alto+hueco);
-      var barras = cols.map(function(d, i){
-        var v = vals[i], y = i*(alto+hueco);
-        var w = Math.max(1, (v/max)*62);        // 62% del ancho, deja sitio al valor
-        return '<rect x="0" y="'+y+'" width="'+w+'%" height="'+alto+'" rx="2" '+
-               'fill="'+ramp(v/max)+'"></rect>'+
-               '<text class="et" x="6" y="'+(y+alto/2+4)+'">'+
-                 esc(String(d.ad||d.u||"—").slice(0,26))+'</text>'+
-               '<text class="vl" x="'+(w+2)+'%" y="'+(y+alto/2+4)+'">'+
-                 met(o.m)(d[f])+'</text>';
+      var filas = cols.map(function(d, i){
+        var t = vals[i]/max;
+        return '<div class="gf'+(t===1?' top':'')+'">'+
+          '<span class="gn">'+esc(String(d.ad||d.u||"\u2014"))+'</span>'+
+          '<span class="gb"><i style="width:'+Math.max(2,t*100).toFixed(1)+
+            '%;background:'+ramp(t)+'"></i></span>'+
+          '<span class="gv">'+met(o.m)(d[f])+'</span></div>';
       }).join("");
-      out.push('<div class="graf"><h3>'+esc(o.t.split("·")[0].trim())+'</h3>'+
-               '<svg viewBox="0 0 100 '+H+'" preserveAspectRatio="none" '+
-               'style="height:'+H+'px">'+barras+'</svg></div>');
+      out.push('<div class="graf"><h3>'+esc(o.t.split("\u00b7")[0].trim())+'</h3>'+
+               filas+'</div>');
     });
     return out.length ? out.join("")
       : '<div class="vacio">Nada numerico que comparar todavia.</div>';
