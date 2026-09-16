@@ -162,7 +162,18 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   padding:14px 18px; border-bottom:1px solid var(--line); background:var(--panel)}
 .cmphd h2{margin:0; font-size:15px; font-weight:600}
 .cmphd .btn{width:auto}
-.cmpbody{flex:1; overflow:auto; padding:16px 18px}
+.cmpbody{flex:1; overflow:auto; padding:16px 18px; display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,420px); gap:24px; align-items:start}
+@media (max-width:1100px){ .cmpbody{grid-template-columns:1fr} }
+.cmptabla{overflow-x:auto}
+.cmpgraf{display:flex; flex-direction:column; gap:16px}
+.graf{border:1px solid var(--line); border-radius:5px; padding:11px 13px 9px;
+  background:var(--panel)}
+.graf h3{margin:0 0 9px; font-size:11px; font-weight:600; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--sel-ink)}
+.graf svg{display:block; width:100%; height:auto}
+.graf .et{font-size:11px; fill:var(--ink-2)}
+.graf .vl{font-size:11px; fill:var(--acc); font-variant-numeric:tabular-nums}
 .cmpbody table{border-collapse:collapse; font-size:13px}
 .cmpbody th,.cmpbody td{border-bottom:1px solid var(--line); padding:7px 12px;
   text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums}
@@ -390,7 +401,10 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
     <h2>Comparar lotes guardados</h2>
     <div class="cab"><span class="sesion-chip" data-sesion></span><button class="btn sm" id="cmpX">Volver</button></div>
   </div>
-  <div class="cmpbody" id="cmpbody"></div>
+  <div class="cmpbody">
+    <div class="cmptabla" id="cmpbody"></div>
+    <div class="cmpgraf" id="cmpgraf"></div>
+  </div>
 </div>
 
 <div class="modal" id="modal" hidden>
@@ -1229,6 +1243,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
       }).join("")+'</tr>';
     });
     document.getElementById("cmpbody").innerHTML=h+'</tbody></table>';
+    document.getElementById("cmpgraf").innerHTML=graficos(cols);
     vCmp.hidden=false;
   };
 
@@ -1259,6 +1274,40 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   }
   addEventListener("pagehide", mandarVisita);
   setInterval(mandarVisita, 120000);      // por si la pestana vive horas abiertas
+
+  /* Barras horizontales, una por lote, normalizadas al mayor de cada campo.
+     Los campos salen de C.orden: son los que la ciudad ya declara como
+     comparables, asi que no hay una segunda lista que mantener.
+     ponytail: SVG a mano; una libreria de graficos para esto seria cargar
+     cientos de KB para dibujar rectangulos. */
+  var NUM = {m2:1, m1:1, p:1, n0:1, n1:1, dinero:1, dineroM2:1, pct:1, idx:1};
+  function graficos(cols){
+    var vistos = {}, out = [];
+    C.orden.forEach(function(o){
+      var f = o.mf || o.f;
+      if(!NUM[o.m] || vistos[f]) return;
+      var vals = cols.map(function(d){ var v=d[f]; return (v==null||!isFinite(v))?0:v; });
+      var max = Math.max.apply(null, vals);
+      if(!(max > 0)) return;                    // campo vacio en todos: no se dibuja
+      vistos[f] = 1;
+      var alto = 22, hueco = 7, H = cols.length*(alto+hueco);
+      var barras = cols.map(function(d, i){
+        var v = vals[i], y = i*(alto+hueco);
+        var w = Math.max(1, (v/max)*62);        // 62% del ancho, deja sitio al valor
+        return '<rect x="0" y="'+y+'" width="'+w+'%" height="'+alto+'" rx="2" '+
+               'fill="'+ramp(v/max)+'"></rect>'+
+               '<text class="et" x="6" y="'+(y+alto/2+4)+'">'+
+                 esc(String(d.ad||d.u||"—").slice(0,26))+'</text>'+
+               '<text class="vl" x="'+(w+2)+'%" y="'+(y+alto/2+4)+'">'+
+                 met(o.m)(d[f])+'</text>';
+      }).join("");
+      out.push('<div class="graf"><h3>'+esc(o.t.split("·")[0].trim())+'</h3>'+
+               '<svg viewBox="0 0 100 '+H+'" preserveAspectRatio="none" '+
+               'style="height:'+H+'px">'+barras+'</svg></div>');
+    });
+    return out.length ? out.join("")
+      : '<div class="vacio">Nada numerico que comparar todavia.</div>';
+  }
 
   pintarQuien(); pintarGuardados();
 
