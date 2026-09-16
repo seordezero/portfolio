@@ -121,6 +121,46 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 .stat .u{font-size:11.5px; color:var(--muted); margin-left:3px; font-weight:400}
 .canvaswrap{position:relative; flex:1; min-height:0; background:var(--map-bg)}
 canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:none}
+/* La ficha flota sobre el mapa, semitransparente, para no tapar el contexto.
+   El mapa encuadra el lote desplazado a la izquierda y cae justo aqui al lado. */
+.pop{position:absolute; right:14px; top:14px; bottom:14px; width:330px;
+  background:rgba(26,26,26,.9); backdrop-filter:blur(7px);
+  border:1px solid var(--line-2); border-radius:6px;
+  display:flex; flex-direction:column; overflow:hidden; z-index:4}
+.pophd{display:flex; align-items:flex-start; gap:8px; padding:12px 12px 0 15px}
+.pophd h3{margin:0; flex:1; font-size:16px; font-weight:600; color:var(--sel-ink);
+  line-height:1.25}
+.pop .who{padding:2px 15px 9px; font-size:11.5px; color:var(--muted)}
+.pop .tabs{padding:0 15px 9px}
+.pop .selbody{flex:1}
+.popfoot{padding:10px 15px calc(12px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line)}
+.popfoot .btn{width:100%}
+.popfoot .btn.on{border-color:var(--sel); color:var(--sel-ink)}
+
+/* Comparar: ocupa toda la ventana. Es "otra pagina" desde el punto de vista del
+   usuario, pero sin fichero aparte ni recarga. */
+.modalbox .oauth{margin-bottom:7px}
+.modalbox .oauth:disabled{opacity:.45; cursor:not-allowed}
+.nota-oauth{font-size:11.5px; color:var(--muted); margin:2px 0 12px !important}
+.correo{width:100%; text-align:left; padding:8px 10px; margin-bottom:8px;
+  border-color:var(--line-2); background:var(--panel-2)}
+.sesion-chip{font-size:11px; color:var(--muted); padding:0 15px 8px}
+.sesion-chip b{color:var(--sel-ink); font-weight:600}
+.cmp{position:fixed; inset:0; z-index:60; background:var(--black);
+  display:flex; flex-direction:column}
+.cmphd{display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 18px; border-bottom:1px solid var(--line); background:var(--panel)}
+.cmphd h2{margin:0; font-size:15px; font-weight:600}
+.cmphd .btn{width:auto}
+.cmpbody{flex:1; overflow:auto; padding:16px 18px}
+.cmpbody table{border-collapse:collapse; font-size:13px}
+.cmpbody th,.cmpbody td{border-bottom:1px solid var(--line); padding:7px 12px;
+  text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums}
+.cmpbody th:first-child,.cmpbody td:first-child{text-align:left; color:var(--muted)}
+.cmpbody thead th{color:var(--sel-ink); font-size:12.5px; text-align:right}
+.cmpbody tbody tr:hover td{background:var(--panel-2)}
+
 .legend{position:absolute; left:12px; bottom:12px; background:var(--panel); border:1px solid var(--line);
   border-radius:5px; padding:9px 11px; font-size:12px; max-width:226px}
 .legend select{width:100%; margin-top:4px; padding:4px 6px; border:1px solid var(--line-2);
@@ -262,13 +302,27 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   </aside>
 
   <main class="main">
-    <div class="strip" id="strip"></div>
     <div class="canvaswrap">
       <canvas id="cv"></canvas>
       <div class="tools">
         <button class="btn" id="zIn" aria-label="Acercar">＋</button>
         <button class="btn" id="zOut" aria-label="Alejar">−</button>
         <button class="btn" id="zFit">Ajustar</button>
+      </div>
+      <div class="pop" id="pop" hidden>
+        <div class="pophd">
+          <h3 id="popTit">—</h3>
+          <button class="mx" id="popX" aria-label="Cerrar">×</button>
+        </div>
+        <div class="who" id="popWho"></div>
+        <div class="tabs" id="tabs">
+          <button type="button" data-t="info" aria-selected="true">Info</button>
+          <button type="button" data-t="fotos" aria-selected="false">Fotos</button>
+          <button type="button" data-t="3d" aria-selected="false">3D</button>
+          <button type="button" data-t="links" aria-selected="false">Links</button>
+        </div>
+        <div class="selbody" id="selbody"></div>
+        <div class="popfoot"><button class="btn sm" id="guardar">Guardar</button></div>
       </div>
       <div class="legend">
         <div class="t">Colorear por</div>
@@ -288,18 +342,39 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
     </div>
     <div class="lista" id="lista"></div>
     <div class="selbox">
-      <div class="sect" style="border-bottom:0; padding-bottom:7px">
-        <h2>Selección</h2>
+      <div class="sect">
+        <h2>Guardados</h2>
+        <span class="cnt num" id="gN">0</span>
       </div>
-      <div class="tabs" id="tabs">
-        <button type="button" data-t="info" aria-selected="true">Info</button>
-        <button type="button" data-t="fotos" aria-selected="false">Fotos</button>
-        <button type="button" data-t="3d" aria-selected="false">3D</button>
-        <button type="button" data-t="links" aria-selected="false">Links</button>
+      <div class="sesion-chip" id="quien"></div>
+      <div class="lista" id="guardados"></div>
+      <div class="foot">
+        <button class="btn" id="comparar">Comparar</button>
       </div>
-      <div class="selbody" id="selbody"></div>
     </div>
   </aside>
+</div>
+
+<div class="modal" id="sesion" hidden>
+  <div class="modalbox" role="dialog" aria-modal="true" style="max-width:380px">
+    <button class="mx" id="sesionX" aria-label="Cerrar">×</button>
+    <h2>Entra para guardar</h2>
+    <p>Explorar no pide cuenta. Guardar lotes sí, para que los encuentres la próxima vez.</p>
+    <button class="btn oauth" data-p="google" disabled>Continuar con Google</button>
+    <button class="btn oauth" data-p="linkedin" disabled>Continuar con LinkedIn</button>
+    <p class="nota-oauth">Google y LinkedIn están pendientes de conectar.</p>
+    <input class="ed correo" id="correo" type="email" placeholder="tu@correo.com"
+           autocomplete="email" aria-label="Correo">
+    <button class="btn" id="entrar">Entrar</button>
+  </div>
+</div>
+
+<div class="cmp" id="cmp" hidden>
+  <div class="cmphd">
+    <h2>Comparar lotes guardados</h2>
+    <button class="btn sm" id="cmpX">Volver</button>
+  </div>
+  <div class="cmpbody" id="cmpbody"></div>
 </div>
 
 <div class="modal" id="modal" hidden>
@@ -488,14 +563,6 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   document.getElementById("selNone").onclick=function(){ todos(false); };
   document.getElementById("reset").onclick=function(){ st.sel=null; ficha(); todos(true); };
 
-  /* ---------------- barra de totales ---------------- */
-  var strip=document.getElementById("strip");
-  strip.style.gridTemplateColumns="repeat("+C.stats.length+",minmax(0,1fr))";
-  strip.innerHTML = C.stats.map(function(s,i){
-    return '<div class="stat"><div class="k">'+esc(s.k)+'</div>'+
-           '<div class="v num" id="stat'+i+'">0</div></div>';
-  }).join("");
-
   /* ---------------- filtrado ---------------- */
   var vistos = [];
   function hayFiltro(){
@@ -504,7 +571,6 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   }
   function apply(){
     var activo=hayFiltro(), n=0;
-    var acc=C.stats.map(function(){ return 0; });
     vistos=[];
     for(var i=0;i<lots.length;i++){
       var d=lots[i].d, ok=activo;
@@ -521,22 +587,8 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
         if(vv!==null) ok = tg.test(d, vv);
       }
       lots[i].on=ok;
-      if(ok){
-        n++;
-        for(var q=0;q<C.stats.length;q++){
-          var sc=C.stats[q];
-          if(sc.f) acc[q] += d[sc.f]||0;
-        }
-        vistos.push(lots[i]);
-      }
+      if(ok){ n++; vistos.push(lots[i]); }
     }
-    C.stats.forEach(function(sc,q){
-      var el=document.getElementById("stat"+q), val;
-      if(sc.t==="n") val=fmt(n,0);
-      else if(sc.t==="avg") val=fmt(n?acc[q]/n/(sc.esc||1):0, sc.dec||0);
-      else val=fmt(acc[q]/(sc.esc||1), sc.dec||0);
-      el.innerHTML = val + (sc.u?'<span class="u">'+esc(sc.u)+'</span>':'');
-    });
     lista(); draw();
   }
 
@@ -601,9 +653,22 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   }
   document.getElementById("lista").addEventListener("click", function(e){
     var r=e.target.closest(".row"); if(!r) return;
-    st.sel = lots[+r.dataset.i];
-    lista(); ficha(); volarA(st.sel);
+    abrir(lots[+r.dataset.i]);
   });
+
+  /* Abrir un lote hace siempre lo mismo, venga del mapa o de la lista: encuadra,
+     rellena la ficha y la saca flotando. */
+  var pop=document.getElementById("pop");
+  function abrir(l){
+    st.sel=l;
+    pop.hidden=!l;
+    lista(); ficha(); volarA(l);
+  }
+  function cerrar(){
+    st.sel=null; pop.hidden=true;
+    cortarVuelo(); ficha(); lista(); draw();
+  }
+  document.getElementById("popX").onclick=cerrar;
 
   /* Vuelo suave hasta un lote. Se hace al pulsar en la LISTA, no al pulsar en el
      mapa: ahi el lote ya esta a la vista y moverlo desorienta. */
@@ -613,11 +678,16 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   }
   /* Centro de la vista en coordenadas del mundo. sx(x)=x*k+tx y sy(y)=-y*k+ty,
      asi que se despeja al reves. */
-  function centro(){
-    return [(W/2-view.tx)/view.k, (view.ty-H/2)/view.k];
+  /* La ficha flotante ocupa la derecha, asi que el lote no se centra: se coloca
+     en el centro del hueco que queda libre. */
+  function anclaX(){
+    return pop.hidden ? W/2 : Math.max(W*0.22, (W-358)/2);
   }
   function encuadrar(cx,cy,k){
-    view.k=k; view.tx=W/2-cx*k; view.ty=H/2+cy*k;
+    view.k=k; view.tx=anclaX()-cx*k; view.ty=H/2+cy*k;
+  }
+  function centro(){
+    return [(anclaX()-view.tx)/view.k, (view.ty-H/2)/view.k];
   }
   function volarA(l){
     if(!l || !W){ draw(); return; }
@@ -685,10 +755,12 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   };
   function ficha(){
     var c=document.getElementById("selbody");
-    if(!st.sel){ c.innerHTML='<div class="vacio" style="padding-left:0">Ningún lote abierto. Haz clic en el mapa o en la lista.</div>'; return; }
-    var d=st.sel.d;
-    var cab='<h3>'+esc(d.ad||d.u||"—")+'</h3><div class="who">'+esc(d.u||"—")+
-            (d.af?' · dirección '+esc(d.af):'')+'</div>';
+    if(!st.sel){ c.innerHTML=""; return; }
+    var d=st.sel.d, cab="";
+    document.getElementById("popTit").textContent = d.ad||d.u||"—";
+    document.getElementById("popWho").textContent =
+      (d.u||"—") + (d.af?" · dirección "+d.af:"");
+    pintarGuardar();
     if(st.tab==="links"){
       var q=encodeURIComponent((d.ad||"")+(C.sufijoBusqueda||""));
       var h=cab;
@@ -905,7 +977,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
       if(x<l.b[0]||x>l.b[2]||y<l.b[1]||y>l.b[3]) continue;
       if(inside(l.p,x,y)){ hit=l; break; }
     }
-    st.sel=hit; ficha(); lista(); draw();
+    if(hit) abrir(hit); else cerrar();
   }
 
   /* un dedo mueve el mapa, dos dedos acercan */
@@ -950,8 +1022,92 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   window.addEventListener("keydown", function(e){
     if(e.key!=="Escape") return;
     if(!modal.hidden){ modal.hidden=true; return; }   // el aviso se cierra primero
-    if(st.sel){ st.sel=null; cortarVuelo(); ficha(); lista(); draw(); }
+    if(!document.getElementById("cmp").hidden){ cerrarCmp(); return; }
+    if(!document.getElementById("sesion").hidden){ document.getElementById("sesion").hidden=true; return; }
+    if(st.sel) cerrar();
   });
+
+  /* ---------------- sesion y lotes guardados ----------------
+     Sin backend todavia: la sesion y los guardados viven en localStorage, por
+     ciudad. Cuando haya OAuth, esto mismo se sincroniza contra el servidor sin
+     tocar el resto de la interfaz.
+     ponytail: localStorage, pasar a servidor cuando se conecte Google/LinkedIn. */
+  var LLAVE_S="mapea.sesion", LLAVE_G="mapea.guardados."+(C.id||"x");
+  function leer(k,d){ try{ return JSON.parse(localStorage.getItem(k))||d; }catch(e){ return d; } }
+  function escribir(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+  var sesion=leer(LLAVE_S,null), guardados=leer(LLAVE_G,[]);
+
+  var vSesion=document.getElementById("sesion");
+  document.getElementById("sesionX").onclick=function(){ vSesion.hidden=true; };
+  document.getElementById("entrar").onclick=function(){
+    var c=document.getElementById("correo").value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c)){ document.getElementById("correo").focus(); return; }
+    sesion={correo:c, desde:Date.now()};
+    escribir(LLAVE_S,sesion); vSesion.hidden=true; pintarQuien();
+    if(st.sel) alternarGuardado();
+  };
+  function pintarQuien(){
+    document.getElementById("quien").innerHTML =
+      sesion ? 'Sesión: <b>'+esc(sesion.correo)+'</b>' : "";
+  }
+
+  function estaGuardado(l){ return l && guardados.indexOf(l.i)>=0; }
+  function pintarGuardar(){
+    var b=document.getElementById("guardar");
+    var g=estaGuardado(st.sel);
+    b.textContent = g ? "Quitar de guardados" : "Guardar";
+    b.classList.toggle("on", g);
+  }
+  function alternarGuardado(){
+    if(!st.sel) return;
+    var k=guardados.indexOf(st.sel.i);
+    if(k>=0) guardados.splice(k,1); else guardados.push(st.sel.i);
+    escribir(LLAVE_G,guardados); pintarGuardar(); pintarGuardados();
+  }
+  document.getElementById("guardar").onclick=function(){
+    // Explorar no pide cuenta; guardar si.
+    if(!sesion){ vSesion.hidden=false; document.getElementById("correo").focus(); return; }
+    alternarGuardado();
+  };
+
+  function pintarGuardados(){
+    var c=document.getElementById("guardados");
+    document.getElementById("gN").textContent=fmt(guardados.length,0);
+    if(!guardados.length){
+      c.innerHTML='<div class="vacio">Sin lotes guardados. Abre uno y pulsa Guardar.</div>';
+      return;
+    }
+    c.innerHTML=guardados.map(function(i){
+      var d=lots[i].d;
+      return '<div class="row" data-i="'+i+'"><span class="a">'+esc(d.ad||d.u||"—")+
+             '</span><span class="b">'+esc(d.u||"")+'</span></div>';
+    }).join("");
+  }
+  document.getElementById("guardados").addEventListener("click", function(e){
+    var r=e.target.closest(".row"); if(!r) return;
+    abrir(lots[+r.dataset.i]);
+  });
+
+  /* Comparar: tabla de los guardados con las mismas filas de la ficha. Ocupa toda
+     la ventana, asi que se lee como otra pagina, pero sin fichero ni recarga. */
+  var vCmp=document.getElementById("cmp");
+  function cerrarCmp(){ vCmp.hidden=true; }
+  document.getElementById("cmpX").onclick=cerrarCmp;
+  document.getElementById("comparar").onclick=function(){
+    if(!guardados.length){ return; }
+    var cols=guardados.map(function(i){ return lots[i].d; });
+    var h='<table><thead><tr><th></th>'+cols.map(function(d){
+      return '<th>'+esc(d.ad||d.u||"—")+'</th>'; }).join("")+'</tr></thead><tbody>';
+    C.ficha.forEach(function(r){
+      h+='<tr><td>'+esc(r[0])+'</td>'+cols.map(function(d){
+        return '<td>'+(COMP[r[2]] ? COMP[r[2]](d) : met(r[2])(d[r[1]]))+'</td>';
+      }).join("")+'</tr>';
+    });
+    document.getElementById("cmpbody").innerHTML=h+'</tbody></table>';
+    vCmp.hidden=false;
+  };
+
+  pintarQuien(); pintarGuardados();
 
   window.addEventListener("resize", resize);
   window.addEventListener("orientationchange", function(){ setTimeout(function(){ resize(); fit(); }, 250); });
