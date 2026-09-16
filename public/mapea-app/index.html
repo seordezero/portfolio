@@ -37,6 +37,14 @@ body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
   font-size:15px;letter-spacing:-.01em;padding:11px 0;color:var(--acc)}
 .bar .marca svg{width:17px;height:17px;display:block}
 .bar nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+/* La sesion vive en la cabecera de TODAS las vistas: portada, consola y
+   comparador. Aqui solo informa y deja salir; entrar se pide al guardar. */
+.sesion-chip{display:inline-flex;align-items:center;gap:7px;margin-left:18px;
+  font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.sesion-chip b{color:var(--acc);font-weight:600}
+.sesion-chip button{border:0;background:none;padding:0;color:var(--muted);
+  font:inherit;font-size:11.5px;cursor:pointer;text-decoration:underline}
+.sesion-chip button:hover{color:var(--acc)}
 .bar nav a{padding:13px 12px;color:var(--acc);text-decoration:none;font-size:12.5px;
   letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
 .bar nav a:hover{border-bottom-color:var(--acc)}
@@ -95,6 +103,7 @@ h1{margin:0;font-family:var(--rotulo);font-weight:400;
       <a href="peru-lima-barranco/">Barranco</a>
       <a href="spain-madrid-carabanchel/">Carabanchel</a>
     </nav>
+    <span class="sesion-chip" data-sesion></span>
   </header>
   <main>
     <div class="marca-bloque">
@@ -126,5 +135,19 @@ h1{margin:0;font-family:var(--rotulo);font-weight:400;
     ni un servicio de tasación.</p>
     <a class="volver" href="/">← sebastianortizdezevallos.com</a>
   </main>
+<script>
+/* La portada no tiene logica propia: solo lee la sesion que dejo la consola en
+   localStorage y ofrece salir. Entrar se pide donde hace falta, al guardar. */
+(function(){
+  var k="mapea.sesion", s=null;
+  try{ s=JSON.parse(localStorage.getItem(k)); }catch(e){}
+  var c=document.querySelector("[data-sesion]"); if(!c) return;
+  c.innerHTML = s && s.correo
+    ? "<b>"+s.correo.replace(/[&<>]/g,"")+"</b><button type='button'>salir</button>"
+    : "";
+  var b=c.querySelector("button");
+  if(b) b.onclick=function(){ localStorage.removeItem(k); c.innerHTML=""; };
+})();
+</script>
 </body>
 </html>

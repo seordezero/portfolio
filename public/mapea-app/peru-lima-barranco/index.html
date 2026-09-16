@@ -142,10 +142,17 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
    usuario, pero sin fichero aparte ni recarga. */
 .modalbox .oauth{margin-bottom:7px}
 .modalbox .oauth:disabled{opacity:.45; cursor:not-allowed}
+.terminos{display:flex; gap:8px; align-items:flex-start; margin-top:12px;
+  font-size:11.5px; color:var(--ink-2); line-height:1.45; cursor:pointer}
+.terminos input{margin:2px 0 0; accent-color:var(--sel); flex:none}
+.terminos a{color:var(--sel-ink)}
 .nota-oauth{font-size:11.5px; color:var(--muted); margin:2px 0 12px !important}
 .correo{width:100%; text-align:left; padding:8px 10px; margin-bottom:8px;
   border-color:var(--line-2); background:var(--panel-2)}
-.sesion-chip{font-size:11px; color:var(--muted); padding:0 15px 8px}
+.cab{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.cmphd .cab{flex:1; justify-content:flex-end}
+.sesion-chip{font-size:11.5px; color:var(--muted); display:inline-flex;
+  align-items:center; gap:7px; white-space:nowrap}
 .sesion-chip b{color:var(--sel-ink); font-weight:600}
 .sesion-chip button{margin-left:6px; border:0; background:none; padding:0;
   color:var(--muted); font:inherit; font-size:11px; cursor:pointer; text-decoration:underline}
@@ -288,7 +295,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 <div class="app">
   <aside class="rail izq">
     <div class="mast">
-      <a class="volver" href="../">← MAPEA</a>
+      <div class="cab"><a class="volver" href="../">← MAPEA</a><span class="sesion-chip" data-sesion></span></div>
       <h1 id="mTitulo">MAPEA App</h1>
       <div class="sub num" id="mSub"></div>
       <button class="aviso" id="avisoBtn" type="button">Prototipo de investigación</button>
@@ -348,7 +355,6 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
         <h2>Guardados</h2>
         <span class="cnt num" id="gN">0</span>
       </div>
-      <div class="sesion-chip" id="quien"></div>
       <div class="lista" id="guardados"></div>
       <div class="foot">
         <button class="btn" id="comparar">Comparar</button>
@@ -371,6 +377,10 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
     <input class="ed correo" id="correo" type="email" placeholder="tu@correo.com"
            autocomplete="email" aria-label="Correo">
     <button class="btn" id="entrar">Entrar con correo</button>
+    <label class="terminos"><input type="checkbox" id="acepto">
+      Acepto que MAPEA guarde mi correo, los lotes que guarde y el tiempo de uso,
+      para medir cómo se usa la herramienta. <a href="#" id="verTerminos">Ver condiciones</a>.
+    </label>
     <p class="nota-oauth" id="avisoSesion"></p>
   </div>
 </div>
@@ -378,7 +388,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 <div class="cmp" id="cmp" hidden>
   <div class="cmphd">
     <h2>Comparar lotes guardados</h2>
-    <button class="btn sm" id="cmpX">Volver</button>
+    <div class="cab"><span class="sesion-chip" data-sesion></span><button class="btn sm" id="cmpX">Volver</button></div>
   </div>
   <div class="cmpbody" id="cmpbody"></div>
 </div>
@@ -811,9 +821,10 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   }
   function sx(x){ return x*view.k+view.tx; }
   function sy(y){ return -y*view.k+view.ty; }
-  // Las rampas de color de los lotes van de indigo a crema, que son los dos
-  // colores de la marca; el gris queda para lo que no cumple el filtro.
-  var RA=[27,84,224], RB=[228,219,198];
+  // Rampa de crema (indice bajo) a indigo (indice alto). El orden importa: con
+  // indigo en el 0 se leia al reves, un barrio sin zona verde salia mas marcado
+  // que uno rodeado de parques.
+  var RA=[228,219,198], RB=[27,84,224];
   function ramp(t){
     t=Math.max(0,Math.min(1,t));
     return "rgb("+Math.round(RA[0]+(RB[0]-RA[0])*t)+","+Math.round(RA[1]+(RB[1]-RA[1])*t)+","+Math.round(RA[2]+(RB[2]-RA[2])*t)+")";
@@ -1064,6 +1075,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 
   document.getElementById("proveedores").addEventListener("click", function(e){
     var b=e.target.closest(".oauth"); if(!b || b.disabled) return;
+    if(!aceptado()) return;
     aviso("Abriendo " + b.dataset.p.replace("_oidc","") + "…");
     sbCliente().then(function(c){
       return c.auth.signInWithOAuth({provider:b.dataset.p,
@@ -1073,11 +1085,20 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 
   function aviso(t){ document.getElementById("avisoSesion").textContent = t || ""; }
 
+  function aceptado(){
+    if(document.getElementById("acepto").checked) return true;
+    aviso("Marca la casilla de condiciones para continuar.");
+    return false;
+  }
+  document.getElementById("verTerminos").onclick=function(e){
+    e.preventDefault(); vSesion.hidden=true; modal.hidden=false;
+  };
   document.getElementById("entrar").onclick=function(){
+    if(!aceptado()) return;
     var c=document.getElementById("correo").value.trim();
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c)){ document.getElementById("correo").focus(); return; }
     if(!SB){                                   // sin backend: sesion local
-      sesion={correo:c, desde:Date.now()};
+      sesion={correo:c, desde:Date.now(), acepto:new Date().toISOString()};
       escribir(LLAVE_S,sesion); vSesion.hidden=true; pintarQuien();
       if(st.sel) alternarGuardado();
       return;
@@ -1092,13 +1113,22 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   };
 
   function pintarQuien(){
-    var q=document.getElementById("quien");
-    if(!sesion){ q.innerHTML=""; return; }
-    q.innerHTML='Sesión: <b>'+esc(sesion.correo)+'</b><button type="button" id="salir">salir</button>';
-    document.getElementById("salir").onclick=function(){
-      sesion=null; escribir(LLAVE_S,null); pintarQuien();
-      if(SB) sbCliente().then(function(c){ c.auth.signOut(); });
-    };
+    var html = sesion
+      ? '<b>'+esc(sesion.correo)+'</b><button type="button" data-salir>salir</button>'
+      : '<button type="button" data-entrar>Iniciar sesión</button>';
+    document.querySelectorAll("[data-sesion]").forEach(function(q){ q.innerHTML=html; });
+  }
+  document.addEventListener("click", function(e){
+    if(e.target.closest("[data-salir]")){
+      cerrarSesion();
+    }else if(e.target.closest("[data-entrar]")){
+      vSesion.hidden=false; document.getElementById("correo").focus();
+    }
+  });
+  function cerrarSesion(){
+    mandarVisita();                       // se cierra el tramo antes de salir
+    sesion=null; escribir(LLAVE_S,null); pintarQuien();
+    if(SB) sbCliente().then(function(c){ c.auth.signOut(); });
   }
 
   /* Al volver del proveedor, Supabase deja la sesion en la URL. Se recoge, se
@@ -1108,7 +1138,9 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
       return c.auth.getSession().then(function(r){
         var u = r && r.data && r.data.session && r.data.session.user;
         if(!u) return;
-        sesion={correo:u.email||u.id, uid:u.id, desde:Date.now()};
+        sesion={correo:u.email||u.id, uid:u.id, desde:Date.now(),
+                token:r.data.session.access_token,
+                acepto:(sesion&&sesion.acepto)||new Date().toISOString()};
         escribir(LLAVE_S,sesion); pintarQuien();
         return sincronizar(c, u.id);
       });
@@ -1199,6 +1231,34 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
     document.getElementById("cmpbody").innerHTML=h+'</tbody></table>';
     vCmp.hidden=false;
   };
+
+  /* Tiempo de uso. Se mide solo el rato con la pestana VISIBLE, no el que esta
+     abierta de fondo, y se manda un tramo por visita. Append-only: no hace falta
+     ni RPC ni incrementar contadores, y el resumen se hace al exportar.
+     ponytail: una fila por visita; agregar en SQL si algun dia son muchas. */
+  var visto=0, desde=Date.now(), mandado=false;
+  function acumular(){
+    if(document.visibilityState==="visible"){ desde=Date.now(); return; }
+    visto += Date.now()-desde; desde=Date.now();
+  }
+  document.addEventListener("visibilitychange", acumular);
+  function mandarVisita(){
+    acumular();
+    var seg=Math.round((visto + (document.visibilityState==="visible"
+                                 ? Date.now()-desde : 0))/1000);
+    visto=0; desde=Date.now();
+    if(mandado && seg<5) return;
+    if(!SB || !sesion || !sesion.uid || seg<5) return;
+    mandado=true;
+    // keepalive para que salga aunque la pestana se este cerrando
+    fetch(SB.url+"/rest/v1/visitas", {method:"POST", keepalive:true,
+      headers:{"apikey":SB.key, "Authorization":"Bearer "+(sesion.token||SB.key),
+               "Content-Type":"application/json", "Prefer":"return=minimal"},
+      body:JSON.stringify([{usuario:sesion.uid, ciudad:C.id||"x", segundos:seg,
+                            guardados:guardados.length}])}).catch(function(){});
+  }
+  addEventListener("pagehide", mandarVisita);
+  setInterval(mandarVisita, 120000);      // por si la pestana vive horas abiertas
 
   pintarQuien(); pintarGuardados();
 
