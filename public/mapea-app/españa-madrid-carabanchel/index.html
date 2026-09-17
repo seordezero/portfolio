@@ -188,10 +188,24 @@ th.plegada .nomb,th.plegada .qx{display:none}
 /* La pagina entera cabe en la ventana: nada de scroll de pagina. Lo unico que
    se desplaza por dentro es la tabla, que tiene mas filas que alto hay. */
 .cmpbody{flex:1; min-height:0; overflow:hidden; padding:6px 16px 44px; display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,52%); gap:14px; align-items:stretch}
-/* La tabla se centra en su mitad; recorta, nunca desplaza. */
-.cmptabla{overflow:hidden; min-height:0; display:flex; flex-direction:column;
-  justify-content:center}
+  grid-template-columns:minmax(0,1fr) minmax(0,52%) 44px; gap:14px; align-items:stretch}
+/* La salida hacia la cabida, al borde y de canto: es un paso adelante, no una
+   opcion mas de la pagina. Sin lote elegido no hay cabida que generar. */
+.cabida{display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; padding:14px 0; border:1px solid var(--line-2); border-radius:5px;
+  background:var(--panel); color:var(--sel-ink); font:inherit; font-size:11px;
+  font-weight:600; letter-spacing:.09em; text-transform:uppercase; cursor:pointer}
+.cabida span{writing-mode:vertical-rl; transform:rotate(180deg); white-space:nowrap}
+.cabida b{font-size:15px}
+.cabida:disabled{opacity:.34; cursor:not-allowed; color:var(--muted)}
+.cabida:not(:disabled):hover{border-color:var(--acc); color:var(--acc)}
+/* La tabla ocupa el mismo alto que la rejilla de graficos, y sus filas se
+   reparten ese alto. Asi las dos mitades son el mismo bloque, y plegar una
+   columna no puede encoger nada. Recorta, nunca desplaza. */
+.cmptabla{overflow:hidden; min-height:0; display:flex; flex-direction:column}
+.cmpbody table{height:100%}
+/* Misma altura exacta que la tabla: el alto se lo pone pintarComparar, para que
+   las dos mitades sean el mismo bloque y no dos cosas que casi coinciden. */
 .cmpgraf{display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
   gap:12px; min-height:0}
 .graf{border:1px solid var(--line); border-radius:5px; padding:9px 11px 8px;
@@ -232,9 +246,19 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .qx:hover{color:#E06A6A}
 @media (max-width:1100px){
   .cmpbody{grid-template-columns:1fr; overflow:auto}
+  .cabida{flex-direction:row; padding:10px}
+  .cabida span{writing-mode:horizontal-tb; transform:none}
   .cmpgraf{grid-template-columns:1fr; grid-template-rows:none}
   .graf{min-height:230px}
 }
+/* Altura fija por fila: si la altura la pone el contenido, plegar una columna
+   encoge la tabla entera y el bloque baila. Las filas son una rejilla, no una
+   consecuencia de lo que haya dentro. */
+.cmpbody tbody tr{height:34px}
+.cmpbody tbody tr.rgfx{height:84px}
+.cmpbody tr.hnum{height:22px} .cmpbody tr.hsw{height:30px} .cmpbody tr.hnom{height:28px}
+.apretada tbody tr{height:26px}
+.apretada tbody tr.rgfx{height:62px}
 /* Si la tabla no cabe de alto, se aprieta: menos aire por fila y los dibujos mas
    pequenos. Recortar filas no vale, son el dato. */
 .apretada th,.apretada td{padding:4px 10px !important}
@@ -283,6 +307,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
 .sect h2{margin:0; font-size:11px; font-weight:600; letter-spacing:.11em;
   text-transform:uppercase; color:var(--muted)}
 .sect .cnt{font-size:13.5px; color:var(--sel-ink); font-weight:600}
+.gaviso{font-size:10.5px; color:var(--acc); flex:1; text-align:right}
 .ordwrap{padding:8px 15px; border-bottom:1px solid var(--line)}
 .ordwrap select{width:100%; padding:5px 7px; border:1px solid var(--line-2); border-radius:4px;
   background:var(--panel-2); color:var(--ink); font:inherit; font-size:13px}
@@ -458,6 +483,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
       <div class="sect">
         <h2>Guardados</h2>
         <span class="cnt num" id="gN">0</span>
+        <span class="gaviso" id="gAviso"></span>
       </div>
       <div class="lista" id="guardados"></div>
       <div class="foot">
@@ -498,13 +524,16 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
 
 <div class="cmp" id="cmp" hidden>
   <div class="cmphd">
-    <h2>Comparar lotes guardados</h2>
-    <p class="gnota" id="cmpNota"></p>
+    <h2 id="cmpNota">Comparación entre lotes guardados</h2>
   </div>
   <div class="paleta" id="paleta" hidden></div>
   <div class="cmpbody">
     <div class="cmptabla" id="cmpbody"></div>
     <div class="cmpgraf" id="cmpgraf"></div>
+    <button class="cabida" id="cabida" disabled
+            title="Selecciona un lote para generar su cabida">
+      <span>Generar cabida arquitectónica</span><b>→</b>
+    </button>
   </div>
 </div>
 
@@ -1350,10 +1379,30 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
       return c.from("guardados").delete().eq("ciudad",C.id||"x");
     }).catch(function(){});
   }
+  /* Cuantos lotes caben: el ancho de la tabla del comparador, menos la columna
+     de etiquetas y una columna abierta, repartido entre columnas plegadas. No es
+     un numero inventado; guardar el numero 12 cuando solo caben 11 no es
+     guardar, es perder el sitio donde mirarlo. */
+  function topeGuardados(){
+    var W=(window.innerWidth-46)*0.48;          // la tabla ocupa su mitad
+    // 200 px para la que queda abierta, no 150: con 150 justos la columna
+    // abierta cabia pero los valores salian cortados
+    return Math.max(3, Math.floor((W-148-200-14)/41) + 1);
+  }
+  function avisoG(t){
+    var e=document.getElementById("gAviso");
+    e.textContent=t||"";
+    if(t) setTimeout(function(){ if(e.textContent===t) e.textContent=""; }, 5000);
+  }
   function alternarGuardado(){
     if(!st.sel) return;
     var i=st.sel.i, d=st.sel.d;
     if(guardados.indexOf(i)>=0){ quitarGuardado(i); return; }
+    var tope=topeGuardados();
+    if(guardados.length>=tope){
+      avisoG("Tope de "+tope+" en esta pantalla. Quita uno para guardar otro.");
+      return;
+    }
     guardados.push(i);
     escribir(LLAVE_G,guardados); pintarGuardar(); pintarGuardados();
     if(!SB || !sesion || !sesion.uid) return;
@@ -1467,7 +1516,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
              'title="Quitar de la comparación" aria-label="Quitar">×</button></th>';
     }).join("")+'</tr></thead><tbody>';
     [["Forma", silueta], ["Situación", situacion]].forEach(function(f){
-      h+='<tr><td>'+f[0]+'</td>'+guardados.map(function(g,k){
+      h+='<tr class="rgfx"><td>'+f[0]+'</td>'+guardados.map(function(g,k){
         return '<td data-l="'+g+'" class="gfx'+(pleg[g]?' plegada':'')+'" style="'+
                lados(tinta[k])+'">'+(pleg[g]?'':f[1](lots[g],tinta[k]))+'</td>';
       }).join("")+'</tr>';
@@ -1516,6 +1565,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   var foco=null;
   function pintarFoco(){
     vCmp.querySelectorAll(".foco").forEach(function(e){ e.classList.remove("foco"); });
+    document.getElementById("cabida").disabled = foco==null;
     if(foco==null) return;
     vCmp.querySelectorAll('[data-l="'+foco+'"]').forEach(function(e){ e.classList.add("foco"); });
   }
@@ -1546,6 +1596,11 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
     var sw=e.target.closest(".sw");
     if(sw) abrirPaleta(sw, +sw.dataset.c);
   });
+  document.getElementById("cabida").onclick=function(){
+    if(foco==null) return;
+    // relativo a .../compara/, que es donde estamos al pulsarlo
+    location.href = "cabida/?lote=" + foco;
+  };
   var paleta=document.getElementById("paleta");
   function abrirPaleta(btn, i){
     var r=btn.getBoundingClientRect();
@@ -1855,8 +1910,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
       caja("Análisis solar", '<div class="rosas">'+guardados.map(function(g,k){
         return rosa(lots[g], tinta[k], pies[k]); }).join("")+'</div>')
     ].filter(Boolean);
-    var nota = document.getElementById("cmpNota");
-    nota.title = nota.textContent =
+    document.getElementById("cmpNota").title =
       "Estimación, no tasación. Obra a "+met("dineroM2")(+C.coste||0)+
       ". Retorno = (potencial × valor por m² − obra) ÷ (valor actual + obra). "+
       "El análisis solar sale de la orientación real de las fachadas, sin sombras vecinas.";
