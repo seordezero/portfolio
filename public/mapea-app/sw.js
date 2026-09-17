@@ -16,6 +16,17 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
+  // La pagina, siempre de la red: con cache-primero un cambio no se veia hasta
+  // la SEGUNDA recarga. La cache solo entra si no hay conexion.
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      fetch(e.request).then(r => {
+        if (r && r.ok) caches.open(CACHE).then(c => c.put(e.request, r.clone()));
+        return r;
+      }).catch(() => caches.match("./index.html", {ignoreSearch: true}))
+    );
+    return;
+  }
   e.respondWith(
     caches.match(e.request, {ignoreSearch: true}).then(hit => {
       if (hit) {
