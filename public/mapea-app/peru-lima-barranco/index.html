@@ -203,16 +203,16 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .cmphd .btn{width:auto}
 /* La pagina entera cabe en la ventana: nada de scroll de pagina. Lo unico que
    se desplaza por dentro es la tabla, que tiene mas filas que alto hay. */
-.cmpbody{flex:1; min-height:0; overflow:hidden; padding:8px 26px 56px; display:grid;
+.cmpbody{flex:1; min-height:0; overflow:hidden; padding:8px 26px 18px; display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,52%) 46px;
-  grid-template-rows:minmax(0,1fr) auto; gap:26px; align-items:stretch}
+  grid-template-rows:minmax(0,1fr) 58px; gap:20px; align-items:stretch}
 /* Los numeros de los lotes, al pie de todo: mandan sobre la tabla y sobre los
    cuatro graficos, asi que no pueden vivir dentro de uno de ellos. */
 /* Filas explicitas: .pies va antes que el boton de cabida en el HTML, y sin
    decirlo la colocacion automatica mandaba el boton a la segunda fila. */
 .cmptabla,.cmpgraf,.cabida{grid-row:1}
 .pies{grid-row:2; grid-column:1/-1; display:flex; justify-content:center;
-  gap:11px; padding-top:4px}
+  align-items:center; gap:13px}
 /* La salida hacia la cabida, al borde y de canto: es un paso adelante, no una
    opcion mas de la pagina. Sin lote elegido no hay cabida que generar. */
 .cabida{display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -226,7 +226,9 @@ th.plegada .nomb,th.plegada .qx{display:none}
 /* La tabla ocupa el mismo alto que la rejilla de graficos, y sus filas se
    reparten ese alto. Asi las dos mitades son el mismo bloque, y plegar una
    columna no puede encoger nada. Recorta, nunca desplaza. */
-.cmptabla{overflow:hidden; min-height:0; display:flex; flex-direction:column}
+.cmptabla{overflow:hidden; min-height:0; display:flex; flex-direction:column;
+  border:1px solid var(--line); border-radius:5px; background:var(--panel);
+  padding:14px 16px 12px}
 .cmpbody table{height:100%}
 /* Misma altura exacta que la tabla: el alto se lo pone pintarComparar, para que
    las dos mitades sean el mismo bloque y no dos cosas que casi coinciden. */
@@ -246,8 +248,8 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .graf svg{flex:1; min-height:0; width:100%; display:block}
 /* Una sola rosa con todas encima: comparar orientaciones es comparar formas,
    y ocho roscos pequenos al lado no se comparan, se miran de uno en uno. */
-.solnum{width:26px; height:26px; border:1.5px solid; border-radius:4px;
-  background:none; font:inherit; font-size:12px; font-weight:700; cursor:pointer}
+.solnum{width:32px; height:32px; border:1.5px solid; border-radius:5px;
+  background:none; font:inherit; font-size:14px; font-weight:700; cursor:pointer}
 /* Elegido uno, los demas se apagan. En gris de verdad, no mas tenues: lo que
    esta encendido tiene que ser evidente sin comparar opacidades. */
 .cmp.confoco .cmptabla th:not(.foco):not(.hueco),
@@ -1562,18 +1564,18 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
        el usuario haya plegado a mano cuenta como plegado y no se desplaza. */
     var ANCHO_MIN=150, HUECO=7, ETIQ=148;
     var n=ids.length;
-    // lo que aun no se ha tocado empieza plegado, incluido lo recien guardado
-    ids.forEach(function(i){ if(plegadas[i]===undefined) plegadas[i]=1; });
     var W=document.getElementById("cmpbody").clientWidth || 700;
-    var abiertas=0;
-    ids.forEach(function(i){ if(!plegadas[i]) abiertas++; });
-    while(abiertas>1 &&
-          ETIQ + abiertas*ANCHO_MIN + (n-abiertas)*34 + HUECO*(n+2) > W) abiertas--;
-    var pleg={}, vistas=0;
-    ids.forEach(function(i){
-      if(plegadas[i]){ pleg[i]=1; return; }
-      if(++vistas>abiertas) pleg[i]=1;
-    });
+    /* Cuantas caben abiertas con el resto en su filo. Un scroll horizontal no es
+       un aviso de que hay mucho, es un fallo. */
+    var cupo=0;
+    while(ETIQ + (cupo+1)*ANCHO_MIN + (n-cupo-1)*34 + HUECO*(n+2) <= W) cupo++;
+    // se cae la que lleva mas tiempo abierta, no la ultima: abrir una nueva no
+    // deberia cerrar justo la que acabas de mirar
+    abiertasCola = abiertasCola.filter(function(i){ return ids.indexOf(i)>=0; });
+    while(abiertasCola.length > cupo) abiertasCola.shift();
+    var pleg={};
+    ids.forEach(function(i){ if(abiertasCola.indexOf(i)<0) pleg[i]=1; });
+    var abiertas=abiertasCola.length;
     // table-layout:fixed manda sobre estos anchos: una columna plegada se queda
     // en 34 px y las abiertas se reparten el resto.
     // Si no queda ninguna abierta, una columna de relleno se come el ancho
@@ -1646,11 +1648,14 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     });
     document.getElementById("cmpbody").innerHTML=h+'</tbody></table>';
     document.getElementById("cmpgraf").innerHTML=graficos(ids, cols, tinta);
-    document.getElementById("pies").innerHTML=guardados.map(function(i){
+    // Los numeros van en el orden de la tabla, no en el de guardado: si ordenar
+    // mueve las columnas y aqui no se mueve nada, las dos lecturas se contradicen.
+    // El numero sigue siendo el del lote; lo que cambia es el sitio.
+    document.getElementById("pies").innerHTML=ids.map(function(i){
       var c=colorLote(i);
       return '<button class="solnum" data-l="'+i+'" style="border-color:'+c+
              ';color:'+c+'">'+numeroDe(i)+'</button>';
-    }).join("");
+    }).join("")+'<button class="ord" data-ord="num">Ordenar</button>';
     // si aun asi no cabe de alto, se aprieta una vez: menos aire y dibujos mas
     // pequenos. Nada de scroll.
     var tb=document.querySelector(".cmptabla");
@@ -1679,10 +1684,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      abierta, asi que esto siempre cabe. */
   function enfocar(id){
     foco = id;
-    guardados.forEach(function(i){ plegadas[i]=1; });
-    // 0, no borrar la clave: sin clave, pintarComparar la trata como "aun sin
-    // tocar" y la vuelve a plegar en el acto
-    if(foco!=null) plegadas[foco]=0;
+    // elegir uno deja abierto ese y solo ese
+    abiertasCola = foco==null ? [] : [foco];
     pintarComparar();
   }
   vCmp.addEventListener("click", function(e){
@@ -1696,21 +1699,27 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      identidad del lote y no su puesto. */
   vCmp.addEventListener("click", function(e){
     var b=e.target.closest(".ord"); if(!b) return;
-    var k=b.dataset.ord, p=PUNTOS[k]||{};
-    ordenCmp = guardados.slice().sort(function(a,c){
-      return (p[c]==null?-Infinity:p[c]) - (p[a]==null?-Infinity:p[a]);
-    });
+    var k=b.dataset.ord;
+    if(k==="num"){                       // volver al orden en que se guardaron
+      ordenCmp=null;
+    }else{
+      var p=PUNTOS[k]||{};
+      ordenCmp = guardados.slice().sort(function(a,c){
+        return (p[c]==null?-Infinity:p[c]) - (p[a]==null?-Infinity:p[a]);
+      });
+    }
     pintarComparar();
   });
   /* Plegar una columna: con muchos lotes la tabla se estira y deja de leerse. */
-  /* Solo en memoria y a proposito: cada carga arranca con todas las columnas
-     plegadas. Abrir una es una pregunta concreta de ese rato, no una preferencia
-     que valga la pena arrastrar hasta la proxima visita. */
-  var plegadas={};
+  /* Las abiertas son una COLA, no un conjunto: importa en que orden se abrieron,
+     porque cuando ya no caben se cierra la que lleva mas tiempo abierta. Solo en
+     memoria y a proposito: cada carga arranca con todas plegadas. Abrir una es
+     una pregunta de ese rato, no una preferencia que arrastrar. */
+  var abiertasCola=[];
   vCmp.addEventListener("click", function(e){
     var b=e.target.closest(".pl"); if(!b) return;
-    var i=b.dataset.g;
-    if(plegadas[i]) delete plegadas[i]; else plegadas[i]=1;
+    var i=+b.dataset.g, k=abiertasCola.indexOf(i);
+    if(k>=0) abiertasCola.splice(k,1); else abiertasCola.push(i);
     pintarComparar();
   });
   document.getElementById("comparar").onclick=function(){
