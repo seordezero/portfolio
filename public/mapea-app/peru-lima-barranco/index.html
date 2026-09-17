@@ -167,18 +167,22 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .gcol.foco i,.ubb.foco{outline:2px solid var(--foco); outline-offset:1px}
 .rosa.foco{outline:1.5px solid var(--foco); border-radius:4px}
 .graf polygon.foco{stroke:var(--foco)!important; stroke-width:2.6}
-/* Columna plegada: se queda en un filo con el nombre de canto. */
-.cmpbody th.plegada,.cmpbody td.plegada{width:30px; min-width:30px; max-width:30px;
-  padding:5px 2px; overflow:hidden}
+/* Columna plegada: solo queda su color y su numero. El alto de las filas no
+   cambia, asi que la tabla no se mueve. */
+.cmpbody th.plegada,.cmpbody td.plegada{padding:5px 2px; overflow:hidden}
 .nomb{display:inline-block}
-th.plegada .nomb{writing-mode:vertical-rl; transform:rotate(180deg);
-  max-height:190px; overflow:hidden; font-size:11px; font-weight:600}
-th.plegada .qx{display:none}
+th.plegada .nomb,th.plegada .qx,th.plegada .sw{display:none}
 .pl{border:0; background:none; color:var(--muted); font-size:9px; line-height:1;
   cursor:pointer; padding:0 4px}
 .pl:hover{color:var(--acc)}
-.cmphd{display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:14px 18px; border-bottom:1px solid var(--line); background:var(--panel)}
+/* Sin barra: el titulo y la nota flotan sobre el fondo de la pagina. */
+.cmphd{display:flex; align-items:baseline; gap:14px; padding:11px 16px 6px;
+  background:transparent; flex:none}
+/* La sesion y los botones de la pagina, siempre en la misma esquina y sueltos.
+   z-index por encima del comparador, que es una capa fija. */
+.esquina{position:fixed; top:10px; right:14px; z-index:80; display:flex;
+  align-items:center; gap:9px}
+.esquina .btn{width:auto; background:rgba(26,26,26,.82); backdrop-filter:blur(6px)}
 .cmphd h2{margin:0; font-size:15px; font-weight:600}
 .cmphd .btn{width:auto}
 /* La pagina entera cabe en la ventana: nada de scroll de pagina. Lo unico que
@@ -198,11 +202,6 @@ th.plegada .qx{display:none}
 .rosa{flex:1; min-width:0; display:flex; flex-direction:column}
 .rosa em{font-style:normal; font-size:9px; color:var(--muted); text-align:center;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-top:2px}
-/* Barras horizontales agrupadas por categoria, una por lote. */
-.ub{flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center;
-  gap:7px; overflow:hidden}
-.ubc{font-size:9.5px; color:var(--muted); margin-bottom:2px}
-.ubb{height:7px; border-radius:2px; margin-bottom:2px; min-width:2px}
 /* Barras verticales sobre dos ejes. En HTML, no en SVG: con
    preserveAspectRatio="none" el viewBox estiraba el texto con las barras. */
 .gplot{flex:1; min-height:0; display:flex; align-items:flex-end; gap:10px;
@@ -240,7 +239,13 @@ th.plegada .qx{display:none}
 .mini img{width:100%; height:100%; display:block; opacity:.5}
 .mini i{position:absolute; width:9px; height:9px; margin:-4.5px 0 0 -4.5px;
   border-radius:50%; border:1.5px solid #0B0B0B; display:block}
-.cmpbody table{border-collapse:collapse; font-size:13px}
+/* Fija y con las columnas separadas: plegar una reparte su ancho entre las
+   demas en vez de desmontar la tabla, y el filo de color se ve entero. */
+.cmpbody table{border-collapse:separate; border-spacing:7px 0; table-layout:fixed;
+  width:100%; font-size:13px}
+/* Numero de la columna: el mismo abierta que plegada, es su identidad. */
+.cnum{display:inline-flex; align-items:center; justify-content:center; width:17px;
+  height:17px; border-radius:3px; font-size:10.5px; font-weight:700; color:#0B0B0B}
 .cmpbody td.t{border-radius:3px; font-weight:600}
 .cmpbody th,.cmpbody td{border-bottom:1px solid var(--line); padding:7px 12px;
   text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums}
@@ -258,7 +263,8 @@ th.plegada .qx{display:none}
 .legend .lg{display:flex; align-items:center; gap:7px; margin-top:5px; color:var(--ink-2)}
 .legend i{width:12px; height:11px; border-radius:2px; display:block; flex:none}
 .legend .t{font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--sel-ink)}
-.tools{position:absolute; right:12px; top:12px; display:flex; flex-direction:column; gap:5px}
+/* baja para no chocar con la esquina de la sesion */
+.tools{position:absolute; right:12px; top:48px; display:flex; flex-direction:column; gap:5px}
 .tools .btn{width:auto; background:var(--panel); padding:5px 9px}
 
 .sect{padding:11px 15px; border-bottom:1px solid var(--line); display:flex;
@@ -382,7 +388,7 @@ th.plegada .qx{display:none}
 <div class="app">
   <aside class="rail izq">
     <div class="mast">
-      <div class="cab"><a class="volver" href="../">← MAPEA</a><span class="sesion-chip" data-sesion></span></div>
+      <div class="cab"><a class="volver" href="../">← MAPEA</a></div>
       <h1 id="mTitulo">MAPEA App</h1>
       <div class="sub num" id="mSub"></div>
       <button class="aviso" id="avisoBtn" type="button">Prototipo de investigación</button>
@@ -473,11 +479,16 @@ th.plegada .qx{display:none}
   </div>
 </div>
 
+<div class="esquina">
+  <span class="sesion-chip" data-sesion></span>
+  <button class="btn sm" id="cmpVaciar" hidden>Vaciar</button>
+  <button class="btn sm" id="cmpX" hidden>Volver</button>
+</div>
+
 <div class="cmp" id="cmp" hidden>
   <div class="cmphd">
     <h2>Comparar lotes guardados</h2>
     <p class="gnota" id="cmpNota"></p>
-    <div class="cab"><span class="sesion-chip" data-sesion></span><button class="btn sm" id="cmpVaciar">Vaciar</button><button class="btn sm" id="cmpX">Volver</button></div>
   </div>
   <div class="paleta" id="paleta" hidden></div>
   <div class="cmpbody">
@@ -1167,7 +1178,9 @@ th.plegada .qx{display:none}
   window.addEventListener("keydown", function(e){
     if(e.key!=="Escape") return;
     if(!modal.hidden){ modal.hidden=true; return; }   // el aviso se cierra primero
-    if(!document.getElementById("cmp").hidden){ cerrarCmp(); return; }
+    // En el comparador, Escape suelta la seleccion y se queda ahi: salir de la
+    // pagina entera por darle a Escape era una sorpresa desagradable.
+    if(!vCmp.hidden){ foco=null; pintarFoco(); return; }
     if(!document.getElementById("sesion").hidden){ document.getElementById("sesion").hidden=true; return; }
     if(st.sel) cerrar();
   });
@@ -1371,18 +1384,42 @@ th.plegada .qx{display:none}
   /* Comparar: tabla de los guardados con las mismas filas de la ficha. Ocupa toda
      la ventana, asi que se lee como otra pagina, pero sin fichero ni recarga. */
   var vCmp=document.getElementById("cmp");
-  function cerrarCmp(){ vCmp.hidden=true; }
+  /* El comparador tiene URL propia, .../compara/, sin ser otro fichero: duplicar
+     la pagina serian los megas de datos de la ciudad repetidos. Es la misma
+     pagina con pushState, y en compara/ hay un index minimo que rebota aqui para
+     que la URL directa y el F5 entren. */
+  function enCompara(){ return /\/compara\/?$/.test(location.pathname); }
+  function verCmp(si){
+    vCmp.hidden=!si;
+    document.getElementById("cmpX").hidden=!si;
+    document.getElementById("cmpVaciar").hidden=!si;
+  }
+  function cerrarCmp(){
+    verCmp(false);
+    if(enCompara()) history.pushState({}, "", "../");
+  }
   document.getElementById("cmpX").onclick=cerrarCmp;
+  window.addEventListener("popstate", function(){
+    if(enCompara()){ if(vCmp.hidden && guardados.length) pintarComparar(); }
+    else verCmp(false);
+  });
   function pintarComparar(){
     if(!guardados.length){ return; }
     var cols=guardados.map(function(i){ return lots[i].d; });
     var tinta=guardados.map(colorLote);
-    var h='<table><thead><tr><th></th>'+guardados.map(function(i,k){
+    // table-layout:fixed manda sobre estos anchos: una columna plegada se queda
+    // en 34 px y las abiertas se reparten el resto. Sin esto, plegar desmontaba
+    // la tabla y sacaba scroll.
+    var h='<table><colgroup><col style="width:148px">'+
+      guardados.map(function(i){
+        return '<col style="width:'+(plegadas[i]?'34px':'auto')+'">'; }).join("")+
+      '</colgroup><thead><tr><th></th>'+guardados.map(function(i,k){
       var d=lots[i].d, pg=!!plegadas[i];
       return '<th data-l="'+i+'" class="'+(pg?'plegada':'')+'" style="border-top:2px solid '+
              tinta[k]+';'+lados(tinta[k])+'">'+
              '<button class="sw" data-c="'+i+'" style="background:'+tinta[k]+'" '+
              'title="Cambiar color" aria-label="Cambiar color"></button>'+
+             '<span class="cnum" style="background:'+tinta[k]+'">'+(k+1)+'</span>'+
              '<button class="pl" data-g="'+i+'" title="'+(pg?'Desplegar':'Plegar')+
              '" aria-label="Plegar columna">'+(pg?'▶':'▼')+'</button>'+
              '<span class="nomb">'+esc(d.ad||d.u||"—")+'</span>'+
@@ -1416,15 +1453,16 @@ th.plegada .qx{display:none}
         var g=guardados[i], pg=!!plegadas[g];
         var css = lados(tinta[i]) + (ultima ? 'border-bottom:2px solid '+tinta[i]+';' : '');
         var cl = pg ? 'plegada' : '';
-        if(t!=null && !pg){ cl+=' t'; css += 'background:'+ramp(t)+
-                     ';color:'+(t>0.45?'#F2F2F2':'#111')+';'; }
+        // El relleno es el color del lote, y su opacidad dice quien gana la fila:
+        // asi la celda contesta a la vez "de quien es" y "cuanto".
+        if(t!=null && !pg){ cl+=' t'; css += 'background:'+rgba(tinta[i], 0.10+0.45*t)+';'; }
         return '<td data-l="'+g+'" class="'+cl+'" style="'+css+'">'+
                (pg ? '' : (COMP[m] ? COMP[m](d) : met(m)(d[f])))+'</td>';
       }).join("")+'</tr>';
     });
     document.getElementById("cmpbody").innerHTML=h+'</tbody></table>';
     document.getElementById("cmpgraf").innerHTML=graficos(cols);
-    vCmp.hidden=false;
+    verCmp(true);
     pintarFoco();
   }
   /* Foco: un lote se marca en amarillo en la tabla y en los cuatro graficos a la
@@ -1438,8 +1476,9 @@ th.plegada .qx{display:none}
   }
   vCmp.addEventListener("click", function(e){
     if(e.target.closest(".sw,.qx,.pl,.btn")) return;    // esos ya hacen lo suyo
-    var t=e.target.closest("[data-l]"); if(!t) return;
-    foco = (String(foco)===t.dataset.l) ? null : +t.dataset.l;
+    var t=e.target.closest("[data-l]");
+    // pinchar fuera de cualquier lote suelta la seleccion
+    foco = (t && String(foco)!==t.dataset.l) ? +t.dataset.l : null;
     pintarFoco();
   });
   /* Plegar una columna: con muchos lotes la tabla se estira y deja de leerse. */
@@ -1451,7 +1490,11 @@ th.plegada .qx{display:none}
     if(plegadas[i]) delete plegadas[i]; else plegadas[i]=1;
     escribir(LLAVE_P, plegadas); pintarComparar();
   });
-  document.getElementById("comparar").onclick=pintarComparar;
+  document.getElementById("comparar").onclick=function(){
+    if(!guardados.length) return;
+    pintarComparar();
+    if(!enCompara()) history.pushState({cmp:1}, "", "compara/");
+  };
   document.getElementById("cmpbody").addEventListener("click", function(e){
     var q=e.target.closest(".qx");
     if(q){ quitarGuardado(+q.dataset.q); return; }
@@ -1551,6 +1594,10 @@ th.plegada .qx{display:none}
     return colores[i] || PAL[(k<0?0:k) % PAL.length];
   }
   function lados(c){ return 'border-left:2px solid '+c+';border-right:2px solid '+c+';'; }
+  function rgba(hex, a){
+    var n=parseInt(hex.slice(1),16);
+    return "rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a.toFixed(2)+")";
+  }
 
   /* --------- 1. retorno: una cifra por lote --------- */
   function barras(vals, pies, tinta){
@@ -1617,18 +1664,45 @@ th.plegada .qx{display:none}
 
   /* --------- 3. urbano: lo que rodea al lote, no el lote --------- */
   function urbano(cols, tinta){
+    // Un solo campo xy con todas las lineas juntas: lo que importa es si un lote
+    // va por encima de otro en todo o solo en una cosa, y eso se lee de un vistazo
+    // cuando las lineas comparten ejes. Cada categoria se normaliza a su maximo,
+    // porque metros de calle e indices de barrio no comparten unidad.
     var cats=(C.urbano||[]).filter(function(e){
       return cols.some(function(d){ var v=d[e[1]]; return v!=null && isFinite(v) && v!==0; });
     });
-    if(!cats.length) return "";
-    return '<div class="ub">'+cats.map(function(e){
+    if(cats.length<2) return "";
+    var W=300, H=190, ml=10, mr=10, mt=12, mb=30;
+    var norm=cats.map(function(e){
       var vs=cols.map(function(d){ var v=d[e[1]]; return (v==null||!isFinite(v))?0:v; });
-      var max=Math.max.apply(null, vs) || 1;
-      return '<div><div class="ubc">'+esc(e[0])+'</div>'+vs.map(function(v,i){
-        return '<div class="ubb" data-l="'+guardados[i]+'" style="width:'+
-               Math.max(2,v/max*100).toFixed(1)+'%;background:'+tinta[i]+'"></div>';
-      }).join("")+'</div>';
-    }).join("")+'</div>';
+      var mx=Math.max.apply(null, vs) || 1;
+      return vs.map(function(v){ return v/mx; });
+    });
+    function X(k){ return ml + (W-ml-mr) * k/(cats.length-1); }
+    function Y(t){ return mt + (H-mt-mb) * (1-t); }
+    var g='';
+    [0,0.5,1].forEach(function(t){
+      g+='<line x1="'+ml+'" y1="'+Y(t).toFixed(1)+'" x2="'+(W-mr)+'" y2="'+Y(t).toFixed(1)+
+         '" stroke="#2C2C2C" stroke-width=".7"/>';
+    });
+    cats.forEach(function(e,k){
+      g+='<line x1="'+X(k).toFixed(1)+'" y1="'+Y(1)+'" x2="'+X(k).toFixed(1)+'" y2="'+Y(0)+
+         '" stroke="#2C2C2C" stroke-width=".7"/>';
+      var an = k===0 ? "start" : (k===cats.length-1 ? "end" : "middle");
+      g+='<text x="'+X(k).toFixed(1)+'" y="'+(H-12)+'" text-anchor="'+an+
+         '" fill="#8A8A8A" font-size="8.5">'+esc(e[0].replace(/^Cercanía a /,""))+'</text>';
+    });
+    cols.forEach(function(d,i){
+      var pts=cats.map(function(_,k){ return X(k).toFixed(1)+","+Y(norm[k][i]).toFixed(1); });
+      g+='<polyline data-l="'+guardados[i]+'" points="'+pts.join(" ")+'" fill="none" stroke="'+
+         tinta[i]+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+      pts.forEach(function(p){
+        var q=p.split(",");
+        g+='<circle data-l="'+guardados[i]+'" cx="'+q[0]+'" cy="'+q[1]+'" r="2.6" fill="'+
+           tinta[i]+'"/>';
+      });
+    });
+    return '<svg viewBox="0 0 '+W+' '+H+'">'+g+'</svg>';
   }
 
   /* --------- 4. solar: que fachadas cogen sol ---------
@@ -1749,8 +1823,17 @@ th.plegada .qx{display:none}
 
   window.addEventListener("resize", resize);
   window.addEventListener("orientationchange", function(){ setTimeout(function(){ resize(); fit(); }, 250); });
+  // El enlace de volver se congela ahora en su URL absoluta: desde .../compara/
+  // un href relativo apuntaria a otro sitio.
+  (function(){ var v=document.querySelector(".volver"); if(v) v.href=v.href; })();
   restaurarFiltros();
   resize(); fit(); leyenda(); ficha(); apply();
+  // Entrada directa por .../compara/: el index de esa carpeta rebota aqui con
+  // ?ver=compara, y aqui se recompone la URL bonita.
+  if(/[?&]ver=compara/.test(location.search)){
+    history.replaceState({cmp:1}, "", "compara/");
+    if(guardados.length) pintarComparar();
+  }
 })();
 </script>
 <script>
