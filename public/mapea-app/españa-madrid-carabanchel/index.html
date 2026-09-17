@@ -175,6 +175,9 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 /* hsw es clase de la FILA, no de la celda: con th.hsw el borde de arriba se
    quedaba del color del lote y el marco amarillo salia abierto por arriba. */
 .cmp thead tr.hsw th.foco{border-top:3px solid var(--foco)!important}
+/* La fila del numero queda fuera del marco: el amarillo es del area de color,
+   y el numero vive por encima de ella. */
+.cmp thead tr.hnum th.foco{background:none!important; border:0!important}
 .cmp tbody tr:last-child td.foco{border-bottom:3px solid var(--foco)!important}
 .gcol.foco i,.ubb.foco{outline:2px solid var(--foco); outline-offset:1px}
 .rosa.foco{outline:1.5px solid var(--foco); border-radius:4px}
@@ -1525,6 +1528,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
        el usuario haya plegado a mano cuenta como plegado y no se desplaza. */
     var ANCHO_MIN=150, HUECO=7, ETIQ=148;
     var n=guardados.length;
+    // lo que aun no se ha tocado empieza plegado, incluido lo recien guardado
+    guardados.forEach(function(i){ if(plegadas[i]===undefined) plegadas[i]=1; });
     var W=document.getElementById("cmpbody").clientWidth || 700;
     var abiertas=0;
     guardados.forEach(function(i){ if(!plegadas[i]) abiertas++; });
@@ -1638,13 +1643,15 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     pintarFoco();
   });
   /* Plegar una columna: con muchos lotes la tabla se estira y deja de leerse. */
-  var LLAVE_P="mapea.plegadas."+(C.id||"x");
-  var plegadas=leer(LLAVE_P,{});
+  /* Solo en memoria y a proposito: cada carga arranca con todas las columnas
+     plegadas. Abrir una es una pregunta concreta de ese rato, no una preferencia
+     que valga la pena arrastrar hasta la proxima visita. */
+  var plegadas={};
   vCmp.addEventListener("click", function(e){
     var b=e.target.closest(".pl"); if(!b) return;
     var i=b.dataset.g;
     if(plegadas[i]) delete plegadas[i]; else plegadas[i]=1;
-    escribir(LLAVE_P, plegadas); pintarComparar();
+    pintarComparar();
   });
   document.getElementById("comparar").onclick=function(){
     if(!guardados.length) return;
