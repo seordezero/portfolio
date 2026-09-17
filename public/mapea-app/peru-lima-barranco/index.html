@@ -204,7 +204,15 @@ th.plegada .nomb,th.plegada .qx{display:none}
 /* La pagina entera cabe en la ventana: nada de scroll de pagina. Lo unico que
    se desplaza por dentro es la tabla, que tiene mas filas que alto hay. */
 .cmpbody{flex:1; min-height:0; overflow:hidden; padding:8px 26px 56px; display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,52%) 46px; gap:26px; align-items:stretch}
+  grid-template-columns:minmax(0,1fr) minmax(0,52%) 46px;
+  grid-template-rows:minmax(0,1fr) auto; gap:26px; align-items:stretch}
+/* Los numeros de los lotes, al pie de todo: mandan sobre la tabla y sobre los
+   cuatro graficos, asi que no pueden vivir dentro de uno de ellos. */
+/* Filas explicitas: .pies va antes que el boton de cabida en el HTML, y sin
+   decirlo la colocacion automatica mandaba el boton a la segunda fila. */
+.cmptabla,.cmpgraf,.cabida{grid-row:1}
+.pies{grid-row:2; grid-column:1/-1; display:flex; justify-content:center;
+  gap:11px; padding-top:4px}
 /* La salida hacia la cabida, al borde y de canto: es un paso adelante, no una
    opcion mas de la pagina. Sin lote elegido no hay cabida que generar. */
 .cabida{display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -228,19 +236,32 @@ th.plegada .nomb,th.plegada .qx{display:none}
   background:var(--panel); display:flex; flex-direction:column; min-height:0;
   overflow:hidden}
 .graf h3{margin:0 0 11px; font-size:10.5px; font-weight:600; letter-spacing:.09em;
-  text-transform:uppercase; color:var(--sel-ink); flex:none}
+  text-transform:uppercase; color:var(--sel-ink); flex:none;
+  display:flex; align-items:center; justify-content:space-between; gap:8px}
+.ord{border:1px solid var(--line-2); border-radius:3px; background:none;
+  color:var(--muted); font:inherit; font-size:9.5px; letter-spacing:.06em;
+  text-transform:uppercase; padding:2px 7px; cursor:pointer}
+.ord:hover{border-color:var(--acc); color:var(--acc)}
+.ord.on{border-color:var(--sel); color:var(--sel-ink)}
 .graf svg{flex:1; min-height:0; width:100%; display:block}
 /* Una sola rosa con todas encima: comparar orientaciones es comparar formas,
    y ocho roscos pequenos al lado no se comparan, se miran de uno en uno. */
-.solpies{flex:none; display:flex; gap:9px; justify-content:center; padding-top:8px}
-.solnum{width:22px; height:22px; border:1.5px solid; border-radius:4px;
-  background:none; font:inherit; font-size:11px; font-weight:700; cursor:pointer}
-.cmp.confoco .graf .solp{stroke:#7A7A7A!important; fill:#7A7A7A!important;
-  fill-opacity:.12!important}
+.solnum{width:26px; height:26px; border:1.5px solid; border-radius:4px;
+  background:none; font:inherit; font-size:12px; font-weight:700; cursor:pointer}
+/* Elegido uno, los demas se apagan. En gris de verdad, no mas tenues: lo que
+   esta encendido tiene que ser evidente sin comparar opacidades. */
+.cmp.confoco .cmptabla th:not(.foco):not(.hueco),
+.cmp.confoco .cmptabla td:not(.foco):not(.hueco),
+.cmp.confoco .graf [data-l]:not(.foco),
+.cmp.confoco .pies [data-l]:not(.foco){filter:grayscale(1); opacity:.45}
 .cmp .graf .solp.foco{stroke:var(--foco)!important; fill:var(--foco)!important;
   fill-opacity:.34!important; stroke-width:1.8}
-.cmp.confoco .solnum{opacity:.38}
-.cmp .solnum.foco{opacity:1; box-shadow:0 0 0 2px var(--foco)}
+.cmp .graf polygon.radp.foco,.cmp .graf polyline.urbl.foco{stroke:var(--foco)!important;
+  stroke-width:2.8}
+.cmp .graf circle.urbp.foco{fill:var(--foco)!important}
+.cmp .gcol.foco i{background:var(--foco)!important}
+.cmp .solnum.foco{box-shadow:0 0 0 2px var(--foco); border-color:var(--foco)!important;
+  color:var(--foco)!important}
 /* Barras verticales sobre dos ejes. En HTML, no en SVG: con
    preserveAspectRatio="none" el viewBox estiraba el texto con las barras. */
 .gplot{flex:1; min-height:0; display:flex; align-items:flex-end; gap:10px;
@@ -568,6 +589,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   <div class="cmpbody">
     <div class="cmptabla" id="cmpbody"></div>
     <div class="cmpgraf" id="cmpgraf"></div>
+    <div class="pies" id="pies"></div>
     <button class="cabida" id="cabida" disabled
             title="Selecciona un lote para generar su cabida">
       <span>Generar cabida arquitectónica</span><b>→</b>
@@ -1268,7 +1290,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     if(!modal.hidden){ modal.hidden=true; return; }   // el aviso se cierra primero
     // En el comparador, Escape suelta la seleccion y se queda ahi: salir de la
     // pagina entera por darle a Escape era una sorpresa desagradable.
-    if(!vCmp.hidden){ foco=null; pintarFoco(); return; }
+    if(!vCmp.hidden){ enfocar(null); return; }
     if(!document.getElementById("sesion").hidden){ document.getElementById("sesion").hidden=true; return; }
     if(st.sel) cerrar();
   });
@@ -1516,27 +1538,39 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     if(enCompara()){ if(vCmp.hidden && guardados.length) pintarComparar(); }
     else verCmp(false);
   });
+  /* guardados es el orden en que se guardaron y no se toca: de ahi salen el
+     numero y el color de cada lote. ordenCmp es solo el orden de PRESENTACION,
+     asi que ordenar mueve las columnas pero el 3 sigue siendo el 3. */
+  var ordenCmp=null, PUNTOS={};
+  function columnas(){
+    if(!ordenCmp) return guardados.slice();
+    var v=ordenCmp.filter(function(i){ return guardados.indexOf(i)>=0; });
+    guardados.forEach(function(i){ if(v.indexOf(i)<0) v.push(i); });
+    return v;
+  }
+  function numeroDe(i){ return guardados.indexOf(i)+1; }
   function pintarComparar(){
     if(!guardados.length){ return; }
     // visible ANTES de medir: oculto, el contenedor mide 0 y no se sabe cuantas
     // columnas caben
     verCmp(true);
-    var cols=guardados.map(function(i){ return lots[i].d; });
-    var tinta=guardados.map(colorLote);
+    var ids=columnas();
+    var cols=ids.map(function(i){ return lots[i].d; });
+    var tinta=ids.map(colorLote);
     /* Cuantas columnas caben abiertas. Un scroll horizontal no es un aviso de que
        hay mucho, es un fallo: si no caben, se pliegan solas las ultimas. Lo que
        el usuario haya plegado a mano cuenta como plegado y no se desplaza. */
     var ANCHO_MIN=150, HUECO=7, ETIQ=148;
-    var n=guardados.length;
+    var n=ids.length;
     // lo que aun no se ha tocado empieza plegado, incluido lo recien guardado
-    guardados.forEach(function(i){ if(plegadas[i]===undefined) plegadas[i]=1; });
+    ids.forEach(function(i){ if(plegadas[i]===undefined) plegadas[i]=1; });
     var W=document.getElementById("cmpbody").clientWidth || 700;
     var abiertas=0;
-    guardados.forEach(function(i){ if(!plegadas[i]) abiertas++; });
+    ids.forEach(function(i){ if(!plegadas[i]) abiertas++; });
     while(abiertas>1 &&
           ETIQ + abiertas*ANCHO_MIN + (n-abiertas)*34 + HUECO*(n+2) > W) abiertas--;
     var pleg={}, vistas=0;
-    guardados.forEach(function(i){
+    ids.forEach(function(i){
       if(plegadas[i]){ pleg[i]=1; return; }
       if(++vistas>abiertas) pleg[i]=1;
     });
@@ -1549,17 +1583,17 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     var huecoTd = relleno ? '<td class="hueco"></td>' : '';
     var h='<table><colgroup><col style="width:'+ETIQ+'px">'+
       (relleno ? '<col style="width:auto">' : '')+
-      guardados.map(function(i){
+      ids.map(function(i){
         return '<col style="width:'+(pleg[i]?'34px':'auto')+'">'; }).join("")+
       '</colgroup><thead>';
     // fila 1: solo el numero, fuera del filo de color
-    h+='<tr class="hnum"><th></th>'+hueco+guardados.map(function(i,k){
+    h+='<tr class="hnum"><th></th>'+hueco+ids.map(function(i,k){
       // el numero va solo: el color lo pone la fila de abajo, que es la que abre
       // el filo de la columna
-      return '<th data-l="'+i+'"><span class="cnum">'+(k+1)+'</span></th>';
+      return '<th data-l="'+i+'"><span class="cnum">'+numeroDe(i)+'</span></th>';
     }).join("")+'</tr>';
     // fila 2: el cuadro de color, que es donde arranca el filo
-    h+='<tr class="hsw"><th></th>'+hueco+guardados.map(function(i,k){
+    h+='<tr class="hsw"><th></th>'+hueco+ids.map(function(i,k){
       return '<th data-l="'+i+'" class="'+(pleg[i]?'plegada':'')+'" style="border-top:2px solid '+
              tinta[k]+';'+lados(tinta[k])+'">'+
              '<button class="sw" data-c="'+i+'" style="background:'+tinta[k]+'" '+
@@ -1567,7 +1601,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     }).join("")+'</tr>';
     // fila 3: nombre, plegar y quitar. El triangulo se queda aunque este plegada,
     // que si no no hay manera de volver a abrirla.
-    h+='<tr class="hnom"><th></th>'+hueco+guardados.map(function(i,k){
+    h+='<tr class="hnom"><th></th>'+hueco+ids.map(function(i,k){
       var d=lots[i].d, pg=!!pleg[i];
       return '<th data-l="'+i+'" class="'+(pg?'plegada':'')+'" style="'+lados(tinta[k])+'"><div>'+
              '<button class="pl" data-g="'+i+'" title="'+(pg?'Desplegar':'Plegar')+
@@ -1577,7 +1611,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
              'title="Quitar de la comparación" aria-label="Quitar">×</button></div></th>';
     }).join("")+'</tr></thead><tbody>';
     [["Forma", silueta], ["Situación", situacion]].forEach(function(f){
-      h+='<tr class="rgfx"><td>'+f[0]+'</td>'+huecoTd+guardados.map(function(g,k){
+      h+='<tr class="rgfx"><td>'+f[0]+'</td>'+huecoTd+ids.map(function(g,k){
         return '<td data-l="'+g+'" class="gfx'+(pleg[g]?' plegada':'')+'" style="'+
                lados(tinta[k])+'">'+(pleg[g]?'':f[1](lots[g],tinta[k]))+'</td>';
       }).join("")+'</tr>';
@@ -1600,7 +1634,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       h+='<tr><td>'+esc(r[0])+'</td>'+huecoTd+cols.map(function(d,i){
         var t = vs && vs[i]!=null ? (vs[i]-lo)/(alto-lo) : null;
         // sobre crema hace falta tinta oscura; sobre indigo, clara
-        var g=guardados[i], pg=!!pleg[g];
+        var g=ids[i], pg=!!pleg[g];
         var css = lados(tinta[i]) + (ultima ? 'border-bottom:2px solid '+tinta[i]+';' : '');
         var cl = pg ? 'plegada' : '';
         // El relleno es el color del lote, y su opacidad dice quien gana la fila:
@@ -1611,7 +1645,12 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       }).join("")+'</tr>';
     });
     document.getElementById("cmpbody").innerHTML=h+'</tbody></table>';
-    document.getElementById("cmpgraf").innerHTML=graficos(cols);
+    document.getElementById("cmpgraf").innerHTML=graficos(ids, cols, tinta);
+    document.getElementById("pies").innerHTML=guardados.map(function(i){
+      var c=colorLote(i);
+      return '<button class="solnum" data-l="'+i+'" style="border-color:'+c+
+             ';color:'+c+'">'+numeroDe(i)+'</button>';
+    }).join("");
     // si aun asi no cabe de alto, se aprieta una vez: menos aire y dibujos mas
     // pequenos. Nada de scroll.
     var tb=document.querySelector(".cmptabla");
@@ -1635,12 +1674,33 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     var p=vCmp.querySelector(".solp.foco");
     if(p) p.parentNode.appendChild(p);
   }
+  /* Elegir un lote abre su columna: elegirlo es querer leerlo, y con la columna
+     plegada no hay nada que leer. El tope de guardados ya reserva sitio para una
+     abierta, asi que esto siempre cabe. */
+  function enfocar(id){
+    foco = id;
+    guardados.forEach(function(i){ plegadas[i]=1; });
+    // 0, no borrar la clave: sin clave, pintarComparar la trata como "aun sin
+    // tocar" y la vuelve a plegar en el acto
+    if(foco!=null) plegadas[foco]=0;
+    pintarComparar();
+  }
   vCmp.addEventListener("click", function(e){
-    if(e.target.closest(".sw,.qx,.pl,.btn")) return;    // esos ya hacen lo suyo
+    if(e.target.closest(".sw,.qx,.pl,.btn,.ord")) return;   // esos ya hacen lo suyo
     var t=e.target.closest("[data-l]");
     // pinchar fuera de cualquier lote suelta la seleccion
-    foco = (t && String(foco)!==t.dataset.l) ? +t.dataset.l : null;
-    pintarFoco();
+    enfocar(t && String(foco)!==t.dataset.l ? +t.dataset.l : null);
+  });
+  /* Ordenar: cada grafico ordena por lo que ese grafico mide. Cambia el orden de
+     las columnas y de las barras; los numeros de abajo no se mueven, que son la
+     identidad del lote y no su puesto. */
+  vCmp.addEventListener("click", function(e){
+    var b=e.target.closest(".ord"); if(!b) return;
+    var k=b.dataset.ord, p=PUNTOS[k]||{};
+    ordenCmp = guardados.slice().sort(function(a,c){
+      return (p[c]==null?-Infinity:p[c]) - (p[a]==null?-Infinity:p[a]);
+    });
+    pintarComparar();
   });
   /* Plegar una columna: con muchos lotes la tabla se estira y deja de leerse. */
   /* Solo en memoria y a proposito: cada carga arranca con todas las columnas
@@ -1779,7 +1839,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   }
 
   /* --------- 1. retorno: una cifra por lote --------- */
-  function barras(vals, pies, tinta){
+  function barras(ids, vals, pies, tinta){
     var hay=vals.filter(function(v){ return v!=null && isFinite(v); });
     if(!hay.length) return "";
     // Si todos valen 0 el grafico se dibuja igual, a cero: "los tres lotes estan
@@ -1787,7 +1847,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     var max=Math.max.apply(null, hay.map(Math.abs)) || 1;
     var cols=vals.map(function(v,k){
       var t=(v==null||!isFinite(v)) ? 0 : Math.max(0,v)/max;   // lo negativo no crece
-      return '<div class="gcol" data-l="'+guardados[k]+'"><b class="gval'+
+      return '<div class="gcol" data-l="'+ids[k]+'"><b class="gval'+
              (v<0?' neg':'')+'">'+met("pct")(v)+'</b>'+
              '<i style="height:'+(t*100).toFixed(1)+'%;background:'+tinta[k]+'"></i></div>';
     }).join("");
@@ -1804,7 +1864,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     var v=d[f];
     return (v==null||!isFinite(v)) ? null : v;
   }
-  function radar(cols, tinta){
+  function radar(ids, cols, tinta){
     var ejes=C.radar||[], n=ejes.length;
     if(n<3) return "";
     var cx=150, cy=112, R=68;
@@ -1834,7 +1894,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       var pts=ejes.map(function(e,k){
         return pt(k, Math.max(0, (valEje(d,e[1])||0)/maxs[k])).join(",");
       }).join(" ");
-      g+='<polygon data-l="'+guardados[i]+'" points="'+pts+'" fill="'+tinta[i]+
+      g+='<polygon class="radp" data-l="'+ids[i]+'" points="'+pts+'" fill="'+tinta[i]+
          '" fill-opacity=".12" stroke="'+tinta[i]+
          '" stroke-width="1.7" stroke-linejoin="round"/>';
     });
@@ -1842,7 +1902,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   }
 
   /* --------- 3. urbano: lo que rodea al lote, no el lote --------- */
-  function urbano(cols, tinta){
+  function urbano(ids, cols, tinta){
     // Un solo campo xy con todas las lineas juntas: lo que importa es si un lote
     // va por encima de otro en todo o solo en una cosa, y eso se lee de un vistazo
     // cuando las lineas comparten ejes. Cada categoria se normaliza a su maximo,
@@ -1873,11 +1933,11 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     });
     cols.forEach(function(d,i){
       var pts=cats.map(function(_,k){ return X(k).toFixed(1)+","+Y(norm[k][i]).toFixed(1); });
-      g+='<polyline data-l="'+guardados[i]+'" points="'+pts.join(" ")+'" fill="none" stroke="'+
+      g+='<polyline class="urbl" data-l="'+ids[i]+'" points="'+pts.join(" ")+'" fill="none" stroke="'+
          tinta[i]+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
       pts.forEach(function(p){
         var q=p.split(",");
-        g+='<circle data-l="'+guardados[i]+'" cx="'+q[0]+'" cy="'+q[1]+'" r="2.6" fill="'+
+        g+='<circle class="urbp" data-l="'+ids[i]+'" cx="'+q[0]+'" cy="'+q[1]+'" r="2.6" fill="'+
            tinta[i]+'"/>';
       });
     });
@@ -1912,13 +1972,13 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     }
     return seg;
   }
-  function solar(cols, tinta){
+  function solar(ids, cols, tinta){
     /* Todas las rosas encima de los mismos ejes. Comparar orientaciones es
        comparar formas, y ocho roscos pequenos uno al lado de otro no se comparan:
        se miran de uno en uno. Se normaliza por el maximo de TODOS, si no cada
        lote saldria con su propia escala y la superposicion no diria nada. */
     var cx=104, cy=98, R=74, g='';
-    var datos=guardados.map(function(gid){
+    var datos=ids.map(function(gid){
       return fachadas(lots[gid]).map(function(x,k){ return x*solFactor(k); });
     });
     var max=0;
@@ -1947,14 +2007,16 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
            'A'+r.toFixed(1)+','+r.toFixed(1)+' 0 0 1 '+(cx+r*Math.sin(a1)).toFixed(1)+','+
            (cy-r*Math.cos(a1)).toFixed(1)+'Z';
       });
-      g+='<path class="solp" data-l="'+guardados[i]+'" d="'+d+'" fill="'+tinta[i]+
+      g+='<path class="solp" data-l="'+ids[i]+'" d="'+d+'" fill="'+tinta[i]+
          '" fill-opacity=".3" stroke="'+tinta[i]+'" stroke-width="1.3"/>';
     });
-    var pies=guardados.map(function(gid,k){
-      return '<button class="solnum" data-l="'+gid+'" style="border-color:'+tinta[k]+
-             ';color:'+tinta[k]+'">'+(k+1)+'</button>';
-    }).join("");
-    return '<svg viewBox="0 0 208 196">'+g+'</svg><div class="solpies">'+pies+'</div>';
+    // Los numeros ya no viven aqui: estan al pie de la pagina, porque mandan
+    // sobre la tabla y sobre los cuatro graficos, no solo sobre este.
+    PUNTOS.sol={};
+    datos.forEach(function(v,i){
+      PUNTOS.sol[ids[i]] = v.reduce(function(a,b){ return a+b; }, 0);
+    });
+    return '<svg viewBox="0 0 208 196">'+g+'</svg>';
   }
 
   /* Plano del distrito: se pinta una sola vez en un canvas fuera de pantalla y
@@ -1998,18 +2060,44 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
            '%;background:'+color+'"></i></div>';
   }
 
-  function caja(titulo, cuerpo){
-    return cuerpo ? '<div class="graf"><h3>'+esc(titulo)+'</h3>'+cuerpo+'</div>' : "";
+  function caja(titulo, clave, cuerpo){
+    if(!cuerpo) return "";
+    return '<div class="graf"><h3>'+esc(titulo)+
+           '<button class="ord" data-ord="'+clave+'">Ordenar</button></h3>'+cuerpo+'</div>';
   }
-  function graficos(cols){
+  function graficos(ids, cols, tinta){
     var pies=cols.map(function(d){ return String(d.ad||d.u||"\u2014"); });
-    var tinta=guardados.map(colorLote);
     var r=cols.map(retorno);
+    /* Puntuacion por grafico: es lo que usa su boton Ordenar. Cada uno ordena por
+       lo que ese grafico mide; una cifra general mezclaria euros con orientacion
+       y no significaria nada. */
+    PUNTOS.ret={}; PUNTOS.multi={}; PUNTOS.urb={};
+    r.forEach(function(x,i){ PUNTOS.ret[ids[i]] = x?x.ret:null; });
+    (function(){
+      var ejes=C.radar||[];
+      var maxs=ejes.map(function(e){
+        return Math.max.apply(null, cols.map(function(d){ return valEje(d,e[1])||0; })) || 1;
+      });
+      cols.forEach(function(d,i){
+        PUNTOS.multi[ids[i]] = ejes.reduce(function(a,e,k){
+          return a + (valEje(d,e[1])||0)/maxs[k]; }, 0);
+      });
+      var cats=C.urbano||[];
+      var mx=cats.map(function(e){
+        return Math.max.apply(null, cols.map(function(d){
+          var v=d[e[1]]; return (v==null||!isFinite(v))?0:v; })) || 1;
+      });
+      cols.forEach(function(d,i){
+        PUNTOS.urb[ids[i]] = cats.reduce(function(a,e,k){
+          var v=d[e[1]]; return a + ((v==null||!isFinite(v))?0:v)/mx[k]; }, 0);
+      });
+    })();
     var out=[
-      caja("Retorno estimado", barras(r.map(function(x){ return x?x.ret:null; }), pies, tinta)),
-      caja("Análisis multivariable", radar(cols, tinta)),
-      caja("Análisis urbano", urbano(cols, tinta)),
-      caja("Análisis solar", solar(cols, tinta))
+      caja("Retorno estimado", "ret",
+           barras(ids, r.map(function(x){ return x?x.ret:null; }), pies, tinta)),
+      caja("Análisis multivariable", "multi", radar(ids, cols, tinta)),
+      caja("Análisis urbano", "urb", urbano(ids, cols, tinta)),
+      caja("Análisis solar", "sol", solar(ids, cols, tinta))
     ].filter(Boolean);
     document.getElementById("cmpNota").title =
       "Estimación, no tasación. Obra a "+met("dineroM2")(+C.coste||0)+
