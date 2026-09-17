@@ -126,7 +126,9 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:none}
 /* La ficha flota sobre el mapa, semitransparente, para no tapar el contexto.
    El mapa encuadra el lote desplazado a la izquierda y cae justo aqui al lado. */
-.pop{position:absolute; right:14px; top:14px; bottom:14px; width:330px;
+/* Abajo a la derecha y sin llegar arriba: los mandos de zoom viven en esa
+   esquina y taparlos deja al usuario sin salida del lote al que acaba de entrar. */
+.pop{position:absolute; right:14px; top:auto; bottom:14px; max-height:62%; width:330px;
   background:rgba(26,26,26,.9); backdrop-filter:blur(7px);
   border:1px solid var(--line-2); border-radius:6px;
   display:flex; flex-direction:column; overflow:hidden; z-index:4}
@@ -164,9 +166,14 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 /* Foco: todo lo que representa al mismo lote lleva data-l con su id, asi que
    marcarlo en la tabla y en los cuatro graficos es una sola consulta. */
 .cmp [data-l]{cursor:pointer}
+/* El filo amarillo tiene que ser continuo: las rayas grises entre filas lo
+   cortaban, y la ultima fila se quedaba con el borde de abajo del color del lote. */
 .cmp td.foco,.cmp th.foco{border-left-color:var(--foco)!important;
-  border-right-color:var(--foco)!important}
-.cmp thead th.foco{border-top-color:var(--foco)!important}
+  border-right-color:var(--foco)!important;
+  border-bottom-color:transparent!important;
+  background:rgba(242,214,92,.14)!important}
+.cmp thead th.hsw.foco{border-top-color:var(--foco)!important}
+.cmp tbody tr:last-child td.foco{border-bottom:2px solid var(--foco)!important}
 .gcol.foco i,.ubb.foco{outline:2px solid var(--foco); outline-offset:1px}
 .rosa.foco{outline:1.5px solid var(--foco); border-radius:4px}
 .graf polygon.foco,.graf polyline.foco{stroke:var(--foco)!important; stroke-width:2.8}
@@ -218,10 +225,17 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .graf h3{margin:0 0 11px; font-size:10.5px; font-weight:600; letter-spacing:.09em;
   text-transform:uppercase; color:var(--sel-ink); flex:none}
 .graf svg{flex:1; min-height:0; width:100%; display:block}
-.rosas{flex:1; min-height:0; display:flex; gap:8px; align-items:stretch}
-.rosa{flex:1; min-width:0; display:flex; flex-direction:column}
-.rosa em{font-style:normal; font-size:9px; color:var(--muted); text-align:center;
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-top:2px}
+/* Una sola rosa con todas encima: comparar orientaciones es comparar formas,
+   y ocho roscos pequenos al lado no se comparan, se miran de uno en uno. */
+.solpies{flex:none; display:flex; gap:9px; justify-content:center; padding-top:8px}
+.solnum{width:22px; height:22px; border:1.5px solid; border-radius:4px;
+  background:none; font:inherit; font-size:11px; font-weight:700; cursor:pointer}
+.cmp.confoco .graf .solp{stroke:#6A6A6A!important; fill:#6A6A6A!important;
+  fill-opacity:.06!important}
+.cmp .graf .solp.foco{stroke:var(--foco)!important; fill:var(--foco)!important;
+  fill-opacity:.17!important; stroke-width:2.6}
+.cmp.confoco .solnum{opacity:.38}
+.cmp .solnum.foco{opacity:1; box-shadow:0 0 0 2px var(--foco)}
 /* Barras verticales sobre dos ejes. En HTML, no en SVG: con
    preserveAspectRatio="none" el viewBox estiraba el texto con las barras. */
 .gplot{flex:1; min-height:0; display:flex; align-items:flex-end; gap:10px;
@@ -292,8 +306,11 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .cmpbody tr.hnum th{border-bottom:0; padding:0 0 4px; text-align:center}
 .cmpbody tr.hsw th{border-bottom:0; padding:7px 0 3px; text-align:center}
 .cmpbody tr.hnom th{padding:0 8px 7px; text-align:center}
-tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
-  vertical-align:bottom}
+/* Que se acorte el NOMBRE, no la celda entera: con la celda recortando, el
+   triangulo y la cruz se comian el sitio y la direccion se quedaba en "...". */
+.cmpbody tr.hnom th > div{display:flex; align-items:center; justify-content:center; gap:2px}
+tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap}
 .cmpbody th:first-child,.cmpbody td:first-child{text-align:left; color:var(--muted)}
 .cmpbody thead th{color:var(--sel-ink); font-size:12.5px; text-align:right}
 .cmpbody tbody tr:hover td{background:var(--panel-2)}
@@ -326,7 +343,14 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
 .row:hover .b{color:var(--acc-ink)}
 .row[aria-current="true"] .a{color:var(--sel-ink); font-weight:600}
 .row[aria-current="true"]{background:var(--panel-2); box-shadow:inset 3px 0 0 var(--sel)}
-.row .a{font-size:13px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.row .a{font-size:13px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; flex:1; min-width:0}
+/* El guardado lleva su numero y su color aqui tambien: es el mismo lote que en
+   el mapa y en el comparador, y se reconoce sin leer la direccion. */
+#guardados .row{gap:7px}
+#guardados .cnum{flex:none; width:13px; text-align:right}
+#guardados .sw{flex:none; margin:0; width:13px; height:13px}
+#guardados .qx{flex:none; font-size:14px; margin:0}
 .row .b{font-size:13px; color:var(--acc-ink); white-space:nowrap; font-variant-numeric:tabular-nums}
 .vacio{padding:16px 15px; color:var(--off); font-size:12.5px}
 .selbox{border-bottom:1px solid var(--line-2); display:flex; flex-direction:column;
@@ -524,6 +548,8 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   </div>
 </div>
 
+<div class="paleta" id="paleta" hidden></div>
+
 <div class="esquina">
   <span class="sesion-chip" data-sesion></span>
   <button class="btn sm" id="cmpVaciar">Vaciar</button>
@@ -534,7 +560,6 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   <div class="cmphd">
     <h2 id="cmpNota">Comparación entre lotes guardados</h2>
   </div>
-  <div class="paleta" id="paleta" hidden></div>
   <div class="cmpbody">
     <div class="cmptabla" id="cmpbody"></div>
     <div class="cmpgraf" id="cmpgraf"></div>
@@ -1018,6 +1043,9 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   var RANGOS={};
   function rangoDe(f){ if(!RANGOS[f]) RANGOS[f]=span(f); return RANGOS[f]; }
   function colorOf(l){
+    // Un guardado se pinta de su color esté donde esté: es lo que lo distingue
+    // del resto del plano mientras se trabaja con él.
+    if(guardados.indexOf(l.i)>=0) return colorLote(l.i);
     var d=l.d, m=st.modo;
     if(m==="zona")  return (C.zonas||{})[d.z] || css("--map-none");
     if(m==="valor"){ var rv=rangoDe("vm");
@@ -1073,11 +1101,18 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
       path(lots[j].p); ctx.fillStyle=colorOf(lots[j]); ctx.fill();
       if(view.k>0.9) ctx.stroke();
     }
+    // los guardados se pintan aunque el filtro los deje fuera: guardarlos es
+    // decir "a este vuelvo", y desaparecer al mover un filtro no ayuda
+    for(var gg=0; gg<guardados.length; gg++){
+      var lg2=lots[guardados[gg]];
+      path(lg2.p); ctx.fillStyle=colorLote(lg2.i); ctx.fill();
+      ctx.lineWidth=1.2; ctx.strokeStyle=css("--map-bg"); ctx.stroke();
+    }
     if(view.k>1.6) rotular();
-    if(st.sel){                                   // lote abierto: indigo, borde claro
+    if(st.sel){                                   // lo seleccionado, siempre amarillo
       path(st.sel.p);
-      ctx.fillStyle=css("--map-sel"); ctx.fill();
-      ctx.lineWidth=2.2; ctx.strokeStyle=css("--map-sel-ink"); ctx.stroke();
+      ctx.fillStyle=FOCO; ctx.fill();
+      ctx.lineWidth=2.2; ctx.strokeStyle="#FFF3BF"; ctx.stroke();
     }
   }
   function rotular(){
@@ -1124,7 +1159,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   function leyenda(){
     var h="", m=st.modo;
     if(m==="match") h=lg(css("--map-hit"),"Cumple el filtro")+lg(css("--map-miss"),"No cumple")+
-                      lg(css("--map-sel"),"Lote abierto")+lg(css("--map-verde"),"Zona verde");
+                      lg(FOCO,"Lote abierto")+lg(css("--map-verde"),"Zona verde");
     else if(m==="zona") (C.zonasLeyenda||[]).forEach(function(z){
       h+=lg((C.zonas||{})[z[0]]||css("--map-none"), z[1]); });
     else if(m==="valor"){ var rv=rangoDe("vm");
@@ -1433,10 +1468,12 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
       c.innerHTML='<div class="vacio">Sin lotes guardados. Abre uno y pulsa Guardar.</div>';
       return;
     }
-    c.innerHTML=guardados.map(function(i){
+    c.innerHTML=guardados.map(function(i,k){
       var d=lots[i].d;
-      return '<div class="row" data-i="'+i+'"><span class="a">'+esc(d.ad||d.u||"—")+
-             '</span><span class="b">'+esc(d.u||"")+'</span>'+
+      return '<div class="row" data-i="'+i+'"><span class="cnum">'+(k+1)+'</span>'+
+             '<button class="sw" data-c="'+i+'" style="background:'+colorLote(i)+'" '+
+             'title="Cambiar color" aria-label="Cambiar color"></button>'+
+             '<span class="a">'+esc(d.ad||d.u||"—")+'</span>'+
              '<button class="qx" data-q="'+i+'" title="Quitar de guardados" '+
              'aria-label="Quitar de guardados">×</button></div>';
     }).join("");
@@ -1444,6 +1481,8 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   document.getElementById("guardados").addEventListener("click", function(e){
     var q=e.target.closest(".qx");
     if(q){ quitarGuardado(+q.dataset.q); return; }   // la cruz no abre el lote
+    var sw=e.target.closest(".sw");
+    if(sw){ abrirPaleta(sw, +sw.dataset.c); return; }
     var r=e.target.closest(".row"); if(!r) return;
     abrir(lots[+r.dataset.i]);
   });
@@ -1523,12 +1562,12 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
     // que si no no hay manera de volver a abrirla.
     h+='<tr class="hnom"><th></th>'+hueco+guardados.map(function(i,k){
       var d=lots[i].d, pg=!!pleg[i];
-      return '<th data-l="'+i+'" class="'+(pg?'plegada':'')+'" style="'+lados(tinta[k])+'">'+
+      return '<th data-l="'+i+'" class="'+(pg?'plegada':'')+'" style="'+lados(tinta[k])+'"><div>'+
              '<button class="pl" data-g="'+i+'" title="'+(pg?'Desplegar':'Plegar')+
              '" aria-label="Plegar columna">'+(pg?'▶':'▼')+'</button>'+
-             '<span class="nomb">'+esc(d.ad||d.u||"—")+'</span>'+
+             '<span class="nomb" title="'+esc(d.ad||d.u||"—")+'">'+esc(d.ad||d.u||"—")+'</span>'+
              '<button class="qx" data-q="'+i+'" '+
-             'title="Quitar de la comparación" aria-label="Quitar">×</button></th>';
+             'title="Quitar de la comparación" aria-label="Quitar">×</button></div></th>';
     }).join("")+'</tr></thead><tbody>';
     [["Forma", silueta], ["Situación", situacion]].forEach(function(f){
       h+='<tr class="rgfx"><td>'+f[0]+'</td>'+huecoTd+guardados.map(function(g,k){
@@ -1581,8 +1620,13 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   function pintarFoco(){
     vCmp.querySelectorAll(".foco").forEach(function(e){ e.classList.remove("foco"); });
     document.getElementById("cabida").disabled = foco==null;
+    vCmp.classList.toggle("confoco", foco!=null);
     if(foco==null) return;
     vCmp.querySelectorAll('[data-l="'+foco+'"]').forEach(function(e){ e.classList.add("foco"); });
+    // en SVG manda el orden del documento: para que la rosa elegida quede encima
+    // hay que moverla al final, no basta con pintarla de otro color
+    var p=vCmp.querySelector(".solp.foco");
+    if(p) p.parentNode.appendChild(p);
   }
   vCmp.addEventListener("click", function(e){
     if(e.target.closest(".sw,.qx,.pl,.btn")) return;    // esos ya hacen lo suyo
@@ -1629,9 +1673,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   }
   paleta.addEventListener("click", function(e){
     var b=e.target.closest("[data-p]"); if(!b) return;
-    colores[+paleta.dataset.i]=b.dataset.p;
-    escribir(LLAVE_C, colores);
-    paleta.hidden=true; pintarComparar();
+    paleta.hidden=true; aplicarColor(+paleta.dataset.i, b.dataset.p);
   });
   document.addEventListener("click", function(e){
     if(!paleta.hidden && !e.target.closest(".paleta") && !e.target.closest(".sw"))
@@ -1711,6 +1753,12 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   Object.keys(colores).forEach(function(k){
     if(PAL.indexOf(colores[k])<0) delete colores[k];
   });
+  var FOCO="#F2D65C";
+  function aplicarColor(i, c){
+    colores[i]=c; escribir(LLAVE_C, colores);
+    pintarGuardados(); draw();
+    if(!vCmp.hidden) pintarComparar();
+  }
   function colorLote(i){
     var k=guardados.indexOf(i);
     return colores[i] || PAL[(k<0?0:k) % PAL.length];
@@ -1855,26 +1903,41 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
     }
     return seg;
   }
-  function rosa(l, color, pie){
-    var seg=fachadas(l), v=seg.map(function(x,k){ return x*solFactor(k); });
-    var max=Math.max.apply(null, v) || 1;
-    var cx=50, cy=48, R=36, g='', mejor=0;
-    v.forEach(function(x,k){ if(x>v[mejor]) mejor=k; });
-    g+='<circle cx="50" cy="48" r="36" fill="none" stroke="#2C2C2C" stroke-width=".7"/>';
-    v.forEach(function(x,k){
-      var r=R*x/max;
-      if(r<0.6) return;
-      var a0=(k*45-22.5)*Math.PI/180, a1=(k*45+22.5)*Math.PI/180;
-      g+='<path d="M50,48L'+(cx+r*Math.sin(a0)).toFixed(1)+','+(cy-r*Math.cos(a0)).toFixed(1)+
-         'A'+r.toFixed(1)+','+r.toFixed(1)+' 0 0 1 '+(cx+r*Math.sin(a1)).toFixed(1)+','+
-         (cy-r*Math.cos(a1)).toFixed(1)+'Z" fill="'+color+'" fill-opacity="'+
-         (0.25+0.65*solFactor(k)).toFixed(2)+'" stroke="'+color+'" stroke-width=".6"/>';
+  function solar(cols, tinta){
+    /* Todas las rosas encima de los mismos ejes. Comparar orientaciones es
+       comparar formas, y ocho roscos pequenos uno al lado de otro no se comparan:
+       se miran de uno en uno. Se normaliza por el maximo de TODOS, si no cada
+       lote saldria con su propia escala y la superposicion no diria nada. */
+    var cx=104, cy=98, R=74, g='';
+    var datos=guardados.map(function(gid){
+      return fachadas(lots[gid]).map(function(x,k){ return x*solFactor(k); });
     });
-    g+='<text x="50" y="8" text-anchor="middle" fill="#8A8A8A" font-size="7">N</text>';
-    g+='<text x="50" y="95" text-anchor="middle" fill="'+color+'" font-size="8.5">'+
-       ROSA[mejor]+'</text>';
-    return '<div class="rosa" data-l="'+l.i+'"><svg viewBox="0 0 100 100">'+g+'</svg>'+
-           '<em title="'+esc(pie)+'">'+esc(pie)+'</em></div>';
+    var max=0;
+    datos.forEach(function(v){ v.forEach(function(x){ if(x>max) max=x; }); });
+    max = max || 1;
+    [0.34,0.67,1].forEach(function(t){
+      g+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*t).toFixed(1)+
+         '" fill="none" stroke="#2C2C2C" stroke-width=".7"/>';
+    });
+    g+='<line x1="'+cx+'" y1="'+(cy-R)+'" x2="'+cx+'" y2="'+(cy+R)+'" stroke="#2C2C2C" stroke-width=".7"/>';
+    g+='<line x1="'+(cx-R)+'" y1="'+cy+'" x2="'+(cx+R)+'" y2="'+cy+'" stroke="#2C2C2C" stroke-width=".7"/>';
+    [["N",cx,cy-R-5],["E",cx+R+7,cy+3],["S",cx,cy+R+11],["O",cx-R-7,cy+3]].forEach(function(e){
+      g+='<text x="'+e[1]+'" y="'+e[2]+'" text-anchor="middle" fill="#8A8A8A" font-size="8.5">'+
+         e[0]+'</text>';
+    });
+    datos.forEach(function(v,i){
+      var pts=v.map(function(x,k){
+        var a=k*45*Math.PI/180, r=R*x/max;
+        return (cx+r*Math.sin(a)).toFixed(1)+","+(cy-r*Math.cos(a)).toFixed(1);
+      }).join(" ");
+      g+='<polygon class="solp" data-l="'+guardados[i]+'" points="'+pts+'" fill="'+tinta[i]+
+         '" fill-opacity=".13" stroke="'+tinta[i]+'" stroke-width="1.8" stroke-linejoin="round"/>';
+    });
+    var pies=guardados.map(function(gid,k){
+      return '<button class="solnum" data-l="'+gid+'" style="border-color:'+tinta[k]+
+             ';color:'+tinta[k]+'">'+(k+1)+'</button>';
+    }).join("");
+    return '<svg viewBox="0 0 208 196">'+g+'</svg><div class="solpies">'+pies+'</div>';
   }
 
   /* Plano del distrito: se pinta una sola vez en un canvas fuera de pantalla y
@@ -1929,8 +1992,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
       caja("Retorno estimado", barras(r.map(function(x){ return x?x.ret:null; }), pies, tinta)),
       caja("Análisis multivariable", radar(cols, tinta)),
       caja("Análisis urbano", urbano(cols, tinta)),
-      caja("Análisis solar", '<div class="rosas">'+guardados.map(function(g,k){
-        return rosa(lots[g], tinta[k], pies[k]); }).join("")+'</div>')
+      caja("Análisis solar", solar(cols, tinta))
     ].filter(Boolean);
     document.getElementById("cmpNota").title =
       "Estimación, no tasación. Obra a "+met("dineroM2")(+C.coste||0)+
