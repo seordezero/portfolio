@@ -171,7 +171,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
    cambia, asi que la tabla no se mueve. */
 .cmpbody th.plegada,.cmpbody td.plegada{padding:5px 2px; overflow:hidden}
 .nomb{display:inline-block}
-th.plegada .nomb,th.plegada .qx,th.plegada .sw{display:none}
+th.plegada .nomb,th.plegada .qx{display:none}
 .pl{border:0; background:none; color:var(--muted); font-size:9px; line-height:1;
   cursor:pointer; padding:0 4px}
 .pl:hover{color:var(--acc)}
@@ -187,9 +187,11 @@ th.plegada .nomb,th.plegada .qx,th.plegada .sw{display:none}
 .cmphd .btn{width:auto}
 /* La pagina entera cabe en la ventana: nada de scroll de pagina. Lo unico que
    se desplaza por dentro es la tabla, que tiene mas filas que alto hay. */
-.cmpbody{flex:1; min-height:0; overflow:hidden; padding:14px 16px; display:grid;
+.cmpbody{flex:1; min-height:0; overflow:hidden; padding:6px 16px 44px; display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,52%); gap:14px; align-items:stretch}
-.cmptabla{overflow:auto; min-height:0}
+/* La tabla se centra en su mitad; recorta, nunca desplaza. */
+.cmptabla{overflow:hidden; min-height:0; display:flex; flex-direction:column;
+  justify-content:center}
 .cmpgraf{display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
   gap:12px; min-height:0}
 .graf{border:1px solid var(--line); border-radius:5px; padding:9px 11px 8px;
@@ -233,6 +235,11 @@ th.plegada .nomb,th.plegada .qx,th.plegada .sw{display:none}
   .cmpgraf{grid-template-columns:1fr; grid-template-rows:none}
   .graf{min-height:230px}
 }
+/* Si la tabla no cabe de alto, se aprieta: menos aire por fila y los dibujos mas
+   pequenos. Recortar filas no vale, son el dato. */
+.apretada th,.apretada td{padding:4px 10px !important}
+.apretada .mini{width:54px !important; height:54px !important}
+.apretada td.gfx svg{width:54px !important; height:54px !important}
 /* Forma del lote y situacion en el distrito, arriba de cada columna. */
 .cmpbody td.gfx{text-align:center; padding:8px 12px}
 .mini{position:relative; width:74px; height:74px; margin:0 auto}
@@ -244,16 +251,20 @@ th.plegada .nomb,th.plegada .qx,th.plegada .sw{display:none}
 .cmpbody table{border-collapse:separate; border-spacing:7px 0; table-layout:fixed;
   width:100%; font-size:13px}
 /* Numero de la columna: el mismo abierta que plegada, es su identidad. */
-.cnum{display:inline-flex; align-items:center; justify-content:center; width:17px;
-  height:17px; border-radius:3px; font-size:10.5px; font-weight:700; color:#0B0B0B}
+.cnum{display:inline-block; font-size:11px; font-weight:700; color:var(--muted);
+  font-variant-numeric:tabular-nums}
 .cmpbody td.t{border-radius:3px; font-weight:600}
 .cmpbody th,.cmpbody td{border-bottom:1px solid var(--line); padding:7px 12px;
-  text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums}
+  text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-variant-numeric:tabular-nums}
+/* Cabecera en tres filas: numero suelto, color, nombre. */
+.cmpbody tr.hnum th{border-bottom:0; padding:0 0 4px; text-align:center}
+.cmpbody tr.hsw th{border-bottom:0; padding:7px 0 3px; text-align:center}
+.cmpbody tr.hnom th{padding:0 8px 7px; text-align:center}
+tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
+  vertical-align:bottom}
 .cmpbody th:first-child,.cmpbody td:first-child{text-align:left; color:var(--muted)}
-/* La tabla se desplaza por dentro, asi que los nombres y sus colores se quedan
-   clavados arriba: si no, se pierde de quien es cada columna. */
-.cmpbody thead th{color:var(--sel-ink); font-size:12.5px; text-align:right;
-  position:sticky; top:0; z-index:1; background:var(--panel)}
+.cmpbody thead th{color:var(--sel-ink); font-size:12.5px; text-align:right}
 .cmpbody tbody tr:hover td{background:var(--panel-2)}
 
 .legend{position:absolute; left:12px; bottom:12px; background:var(--panel); border:1px solid var(--line);
@@ -1405,31 +1416,60 @@ th.plegada .nomb,th.plegada .qx,th.plegada .sw{display:none}
   });
   function pintarComparar(){
     if(!guardados.length){ return; }
+    // visible ANTES de medir: oculto, el contenedor mide 0 y no se sabe cuantas
+    // columnas caben
+    verCmp(true);
     var cols=guardados.map(function(i){ return lots[i].d; });
     var tinta=guardados.map(colorLote);
+    /* Cuantas columnas caben abiertas. Un scroll horizontal no es un aviso de que
+       hay mucho, es un fallo: si no caben, se pliegan solas las ultimas. Lo que
+       el usuario haya plegado a mano cuenta como plegado y no se desplaza. */
+    var ANCHO_MIN=150, HUECO=7, ETIQ=148;
+    var n=guardados.length;
+    var W=document.getElementById("cmpbody").clientWidth || 700;
+    var abiertas=0;
+    guardados.forEach(function(i){ if(!plegadas[i]) abiertas++; });
+    while(abiertas>1 &&
+          ETIQ + abiertas*ANCHO_MIN + (n-abiertas)*34 + HUECO*(n+2) > W) abiertas--;
+    var pleg={}, vistas=0;
+    guardados.forEach(function(i){
+      if(plegadas[i]){ pleg[i]=1; return; }
+      if(++vistas>abiertas) pleg[i]=1;
+    });
     // table-layout:fixed manda sobre estos anchos: una columna plegada se queda
-    // en 34 px y las abiertas se reparten el resto. Sin esto, plegar desmontaba
-    // la tabla y sacaba scroll.
-    var h='<table><colgroup><col style="width:148px">'+
+    // en 34 px y las abiertas se reparten el resto.
+    var h='<table><colgroup><col style="width:'+ETIQ+'px">'+
       guardados.map(function(i){
-        return '<col style="width:'+(plegadas[i]?'34px':'auto')+'">'; }).join("")+
-      '</colgroup><thead><tr><th></th>'+guardados.map(function(i,k){
-      var d=lots[i].d, pg=!!plegadas[i];
-      return '<th data-l="'+i+'" class="'+(pg?'plegada':'')+'" style="border-top:2px solid '+
+        return '<col style="width:'+(pleg[i]?'34px':'auto')+'">'; }).join("")+
+      '</colgroup><thead>';
+    // fila 1: solo el numero, fuera del filo de color
+    h+='<tr class="hnum"><th></th>'+guardados.map(function(i,k){
+      // el numero va solo: el color lo pone la fila de abajo, que es la que abre
+      // el filo de la columna
+      return '<th data-l="'+i+'"><span class="cnum">'+(k+1)+'</span></th>';
+    }).join("")+'</tr>';
+    // fila 2: el cuadro de color, que es donde arranca el filo
+    h+='<tr class="hsw"><th></th>'+guardados.map(function(i,k){
+      return '<th data-l="'+i+'" class="'+(pleg[i]?'plegada':'')+'" style="border-top:2px solid '+
              tinta[k]+';'+lados(tinta[k])+'">'+
              '<button class="sw" data-c="'+i+'" style="background:'+tinta[k]+'" '+
-             'title="Cambiar color" aria-label="Cambiar color"></button>'+
-             '<span class="cnum" style="background:'+tinta[k]+'">'+(k+1)+'</span>'+
+             'title="Cambiar color" aria-label="Cambiar color"></button></th>';
+    }).join("")+'</tr>';
+    // fila 3: nombre, plegar y quitar. El triangulo se queda aunque este plegada,
+    // que si no no hay manera de volver a abrirla.
+    h+='<tr class="hnom"><th></th>'+guardados.map(function(i,k){
+      var d=lots[i].d, pg=!!pleg[i];
+      return '<th data-l="'+i+'" class="'+(pg?'plegada':'')+'" style="'+lados(tinta[k])+'">'+
              '<button class="pl" data-g="'+i+'" title="'+(pg?'Desplegar':'Plegar')+
              '" aria-label="Plegar columna">'+(pg?'▶':'▼')+'</button>'+
              '<span class="nomb">'+esc(d.ad||d.u||"—")+'</span>'+
              '<button class="qx" data-q="'+i+'" '+
              'title="Quitar de la comparación" aria-label="Quitar">×</button></th>';
-      }).join("")+'</tr></thead><tbody>';
+    }).join("")+'</tr></thead><tbody>';
     [["Forma", silueta], ["Situación", situacion]].forEach(function(f){
       h+='<tr><td>'+f[0]+'</td>'+guardados.map(function(g,k){
-        return '<td data-l="'+g+'" class="gfx'+(plegadas[g]?' plegada':'')+'" style="'+
-               lados(tinta[k])+'">'+(plegadas[g]?'':f[1](lots[g],tinta[k]))+'</td>';
+        return '<td data-l="'+g+'" class="gfx'+(pleg[g]?' plegada':'')+'" style="'+
+               lados(tinta[k])+'">'+(pleg[g]?'':f[1](lots[g],tinta[k]))+'</td>';
       }).join("")+'</tr>';
     });
     // Cada fila numerica se tine con la misma rampa del mapa: crema el menor,
@@ -1450,7 +1490,7 @@ th.plegada .nomb,th.plegada .qx,th.plegada .sw{display:none}
       h+='<tr><td>'+esc(r[0])+'</td>'+cols.map(function(d,i){
         var t = vs && vs[i]!=null ? (vs[i]-lo)/(alto-lo) : null;
         // sobre crema hace falta tinta oscura; sobre indigo, clara
-        var g=guardados[i], pg=!!plegadas[g];
+        var g=guardados[i], pg=!!pleg[g];
         var css = lados(tinta[i]) + (ultima ? 'border-bottom:2px solid '+tinta[i]+';' : '');
         var cl = pg ? 'plegada' : '';
         // El relleno es el color del lote, y su opacidad dice quien gana la fila:
@@ -1462,6 +1502,11 @@ th.plegada .nomb,th.plegada .qx,th.plegada .sw{display:none}
     });
     document.getElementById("cmpbody").innerHTML=h+'</tbody></table>';
     document.getElementById("cmpgraf").innerHTML=graficos(cols);
+    // si aun asi no cabe de alto, se aprieta una vez: menos aire y dibujos mas
+    // pequenos. Nada de scroll.
+    var tb=document.querySelector(".cmptabla");
+    tb.classList.remove("apretada");
+    if(tb.scrollHeight > tb.clientHeight) tb.classList.add("apretada");
     verCmp(true);
     pintarFoco();
   }
@@ -1821,6 +1866,10 @@ th.plegada .nomb,th.plegada .qx,th.plegada .sw{display:none}
 
   pintarQuien(); pintarGuardados();
 
+  window.addEventListener("resize", function(){
+    // el numero de columnas que caben depende del ancho, asi que se recalcula
+    if(!vCmp.hidden && guardados.length) pintarComparar();
+  });
   window.addEventListener("resize", resize);
   window.addEventListener("orientationchange", function(){ setTimeout(function(){ resize(); fit(); }, 250); });
   // El enlace de volver se congela ahora en su URL absoluta: desde .../compara/
