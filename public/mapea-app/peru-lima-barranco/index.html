@@ -162,18 +162,20 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .sesion-chip button{margin-left:6px; border:0; background:none; padding:0;
   color:var(--muted); font:inherit; font-size:11px; cursor:pointer; text-decoration:underline}
 .cmp{position:fixed; inset:0; z-index:60; background:var(--black);
-  display:flex; flex-direction:column; --foco:#F2D65C}
+  display:flex; flex-direction:column; --foco:#FFF200}
 /* Foco: todo lo que representa al mismo lote lleva data-l con su id, asi que
    marcarlo en la tabla y en los cuatro graficos es una sola consulta. */
 .cmp [data-l]{cursor:pointer}
 /* El filo amarillo tiene que ser continuo: las rayas grises entre filas lo
    cortaban, y la ultima fila se quedaba con el borde de abajo del color del lote. */
-.cmp td.foco,.cmp th.foco{border-left-color:var(--foco)!important;
-  border-right-color:var(--foco)!important;
+.cmp td.foco,.cmp th.foco{border-left:3px solid var(--foco)!important;
+  border-right:3px solid var(--foco)!important;
   border-bottom-color:transparent!important;
-  background:rgba(242,214,92,.14)!important}
-.cmp thead th.hsw.foco{border-top-color:var(--foco)!important}
-.cmp tbody tr:last-child td.foco{border-bottom:2px solid var(--foco)!important}
+  background:rgba(255,242,0,.13)!important}
+/* hsw es clase de la FILA, no de la celda: con th.hsw el borde de arriba se
+   quedaba del color del lote y el marco amarillo salia abierto por arriba. */
+.cmp thead tr.hsw th.foco{border-top:3px solid var(--foco)!important}
+.cmp tbody tr:last-child td.foco{border-bottom:3px solid var(--foco)!important}
 .gcol.foco i,.ubb.foco{outline:2px solid var(--foco); outline-offset:1px}
 .rosa.foco{outline:1.5px solid var(--foco); border-radius:4px}
 .graf polygon.foco,.graf polyline.foco{stroke:var(--foco)!important; stroke-width:2.8}
@@ -230,10 +232,10 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .solpies{flex:none; display:flex; gap:9px; justify-content:center; padding-top:8px}
 .solnum{width:22px; height:22px; border:1.5px solid; border-radius:4px;
   background:none; font:inherit; font-size:11px; font-weight:700; cursor:pointer}
-.cmp.confoco .graf .solp{stroke:#6A6A6A!important; fill:#6A6A6A!important;
-  fill-opacity:.06!important}
+.cmp.confoco .graf .solp{stroke:#7A7A7A!important; fill:#7A7A7A!important;
+  fill-opacity:.12!important}
 .cmp .graf .solp.foco{stroke:var(--foco)!important; fill:var(--foco)!important;
-  fill-opacity:.17!important; stroke-width:2.6}
+  fill-opacity:.34!important; stroke-width:1.8}
 .cmp.confoco .solnum{opacity:.38}
 .cmp .solnum.foco{opacity:1; box-shadow:0 0 0 2px var(--foco)}
 /* Barras verticales sobre dos ejes. En HTML, no en SVG: con
@@ -1745,15 +1747,15 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   /* Ni crema ni indigo: son los colores de la interfaz, y un lote pintado de
      indigo compite con lo que esta seleccionado. Tampoco amarillo, que es el
      color del foco. */
-  var PAL = ["#5FD2A0","#F2A65A","#E8687A","#B98CF0",
-             "#4FD2E0","#7BE07B","#FF9ECF","#FF7A45"];
+  var PAL = ["#5FD2A0","#F2A65A","#E8687A","#7BE07B",
+             "#4FD2E0","#FF7A45","#FF9ECF","#C9E04F"];
   var LLAVE_C = "mapea.colores."+(C.id||"x");
   var colores = leer(LLAVE_C, {});
   // los colores guardados antes de reservar crema e indigo se descartan
   Object.keys(colores).forEach(function(k){
     if(PAL.indexOf(colores[k])<0) delete colores[k];
   });
-  var FOCO="#F2D65C";
+  var FOCO="#FFF200";   // el amarillo de seleccion de Rhino
   function aplicarColor(i, c){
     colores[i]=c; escribir(LLAVE_C, colores);
     pintarGuardados(); draw();
@@ -1925,13 +1927,21 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       g+='<text x="'+e[1]+'" y="'+e[2]+'" text-anchor="middle" fill="#8A8A8A" font-size="8.5">'+
          e[0]+'</text>';
     });
+    // Petalos, no un octogono: la rosa de orientaciones se lee como sectores, y
+    // unir los ocho extremos con rectas inventa valores que no hay entre medias.
+    // Los ocho van en un solo path para que la rosa entera sea un elemento.
     datos.forEach(function(v,i){
-      var pts=v.map(function(x,k){
-        var a=k*45*Math.PI/180, r=R*x/max;
-        return (cx+r*Math.sin(a)).toFixed(1)+","+(cy-r*Math.cos(a)).toFixed(1);
-      }).join(" ");
-      g+='<polygon class="solp" data-l="'+guardados[i]+'" points="'+pts+'" fill="'+tinta[i]+
-         '" fill-opacity=".13" stroke="'+tinta[i]+'" stroke-width="1.8" stroke-linejoin="round"/>';
+      var d='';
+      v.forEach(function(x,k){
+        var r=R*x/max;
+        if(r<0.8) return;
+        var a0=(k*45-21)*Math.PI/180, a1=(k*45+21)*Math.PI/180;
+        d+='M'+cx+','+cy+'L'+(cx+r*Math.sin(a0)).toFixed(1)+','+(cy-r*Math.cos(a0)).toFixed(1)+
+           'A'+r.toFixed(1)+','+r.toFixed(1)+' 0 0 1 '+(cx+r*Math.sin(a1)).toFixed(1)+','+
+           (cy-r*Math.cos(a1)).toFixed(1)+'Z';
+      });
+      g+='<path class="solp" data-l="'+guardados[i]+'" d="'+d+'" fill="'+tinta[i]+
+         '" fill-opacity=".3" stroke="'+tinta[i]+'" stroke-width="1.3"/>';
     });
     var pies=guardados.map(function(gid,k){
       return '<button class="solnum" data-l="'+gid+'" style="border-color:'+tinta[k]+
