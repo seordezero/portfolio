@@ -19,8 +19,12 @@ self.addEventListener("fetch", e => {
   // La pagina, siempre de la red: con cache-primero un cambio no se veia hasta
   // la SEGUNDA recarga. La cache solo entra si no hay conexion.
   if (e.request.mode === "navigate") {
+    // cache:"reload" salta la cache HTTP del navegador. GitHub Pages sirve el
+    // index con max-age=600, asi que sin esto una recarga dentro de los diez
+    // minutos siguientes devolvia la version anterior aunque pidieramos red.
     e.respondWith(
-      fetch(e.request).then(r => {
+      fetch(new Request(e.request.url, {cache: "reload", credentials: "same-origin"}))
+        .then(r => {
         if (r && r.ok) caches.open(CACHE).then(c => c.put(e.request, r.clone()));
         return r;
       }).catch(() => caches.match("./index.html", {ignoreSearch: true}))

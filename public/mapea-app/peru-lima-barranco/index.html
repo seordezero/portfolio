@@ -1964,7 +1964,13 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
 <script>
 if("serviceWorker" in navigator){
   addEventListener("load", function(){
-    navigator.serviceWorker.register("sw.js").catch(function(){});
+    // Ruta absoluta a proposito. Al entrar en el comparador la URL pasa a
+    // .../compara/ con pushState, y para entonces un "sw.js" relativo resuelve a
+    // .../compara/sw.js, que no existe: el registro daba 404 y la pagina se
+    // quedaba con el service worker viejo para siempre.
+    var raiz = location.pathname.replace(/compara\/(index\.html)?$/, "");
+    navigator.serviceWorker.register(raiz + "sw.js",
+      {scope: raiz, updateViaCache: "none"}).catch(function(){});
   });
 }
 </script>
