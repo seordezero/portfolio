@@ -47,6 +47,9 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 .app{display:grid; grid-template-columns:332px minmax(0,1fr) 356px;
   height:100vh; height:100dvh; overflow:hidden}
 .rail{background:var(--panel); display:flex; flex-direction:column; overflow:hidden; min-width:0}
+/* El panel derecho arranca por debajo de la esquina de sesion: si no, la cabecera
+   de Guardados queda tapada por el correo. */
+.rail.der{padding-top:56px}
 .rail.izq{border-right:1px solid var(--line)}
 .rail.der{border-left:1px solid var(--line)}
 .mast{padding:calc(15px + env(safe-area-inset-top)) 17px 12px;
@@ -166,7 +169,8 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .cmp thead th.foco{border-top-color:var(--foco)!important}
 .gcol.foco i,.ubb.foco{outline:2px solid var(--foco); outline-offset:1px}
 .rosa.foco{outline:1.5px solid var(--foco); border-radius:4px}
-.graf polygon.foco{stroke:var(--foco)!important; stroke-width:2.6}
+.graf polygon.foco,.graf polyline.foco{stroke:var(--foco)!important; stroke-width:2.8}
+.graf circle.foco{fill:var(--foco)!important}
 /* Columna plegada: solo queda su color y su numero. El alto de las filas no
    cambia, asi que la tabla no se mueve. */
 .cmpbody th.plegada,.cmpbody td.plegada{padding:5px 2px; overflow:hidden}
@@ -176,19 +180,19 @@ th.plegada .nomb,th.plegada .qx{display:none}
   cursor:pointer; padding:0 4px}
 .pl:hover{color:var(--acc)}
 /* Sin barra: el titulo y la nota flotan sobre el fondo de la pagina. */
-.cmphd{display:flex; align-items:baseline; gap:14px; padding:11px 16px 6px;
+.cmphd{display:flex; align-items:baseline; gap:14px; padding:17px 26px 12px;
   background:transparent; flex:none}
 /* La sesion y los botones de la pagina, siempre en la misma esquina y sueltos.
    z-index por encima del comparador, que es una capa fija. */
-.esquina{position:fixed; top:10px; right:14px; z-index:80; display:flex;
-  align-items:center; gap:9px}
+.esquina{position:fixed; top:16px; right:22px; z-index:80; display:flex;
+  align-items:center; gap:11px}
 .esquina .btn{width:auto; background:rgba(26,26,26,.82); backdrop-filter:blur(6px)}
 .cmphd h2{margin:0; font-size:15px; font-weight:600}
 .cmphd .btn{width:auto}
 /* La pagina entera cabe en la ventana: nada de scroll de pagina. Lo unico que
    se desplaza por dentro es la tabla, que tiene mas filas que alto hay. */
-.cmpbody{flex:1; min-height:0; overflow:hidden; padding:6px 16px 44px; display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,52%) 44px; gap:14px; align-items:stretch}
+.cmpbody{flex:1; min-height:0; overflow:hidden; padding:8px 26px 56px; display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,52%) 46px; gap:26px; align-items:stretch}
 /* La salida hacia la cabida, al borde y de canto: es un paso adelante, no una
    opcion mas de la pagina. Sin lote elegido no hay cabida que generar. */
 .cabida{display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -207,11 +211,11 @@ th.plegada .nomb,th.plegada .qx{display:none}
 /* Misma altura exacta que la tabla: el alto se lo pone pintarComparar, para que
    las dos mitades sean el mismo bloque y no dos cosas que casi coinciden. */
 .cmpgraf{display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
-  gap:12px; min-height:0}
-.graf{border:1px solid var(--line); border-radius:5px; padding:9px 11px 8px;
+  gap:20px; min-height:0}
+.graf{border:1px solid var(--line); border-radius:5px; padding:14px 16px 12px;
   background:var(--panel); display:flex; flex-direction:column; min-height:0;
   overflow:hidden}
-.graf h3{margin:0 0 7px; font-size:10.5px; font-weight:600; letter-spacing:.09em;
+.graf h3{margin:0 0 11px; font-size:10.5px; font-weight:600; letter-spacing:.09em;
   text-transform:uppercase; color:var(--sel-ink); flex:none}
 .graf svg{flex:1; min-height:0; width:100%; display:block}
 .rosas{flex:1; min-height:0; display:flex; gap:8px; align-items:stretch}
@@ -266,6 +270,9 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .apretada td.gfx svg{width:54px !important; height:54px !important}
 /* Forma del lote y situacion en el distrito, arriba de cada columna. */
 .cmpbody td.gfx{text-align:center; padding:8px 12px}
+/* Relleno a la izquierda cuando no hay ninguna columna abierta: sin el, las
+   plegadas se reparten el ancho sobrante y dejan de ser un filo. */
+.cmpbody th.hueco,.cmpbody td.hueco{border:0!important; padding:0!important}
 .mini{position:relative; width:74px; height:74px; margin:0 auto}
 .mini img{width:100%; height:100%; display:block; opacity:.5}
 .mini i{position:absolute; width:9px; height:9px; margin:-4.5px 0 0 -4.5px;
@@ -322,7 +329,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
 .row .a{font-size:13px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .row .b{font-size:13px; color:var(--acc-ink); white-space:nowrap; font-variant-numeric:tabular-nums}
 .vacio{padding:16px 15px; color:var(--off); font-size:12.5px}
-.selbox{border-top:1px solid var(--line-2); display:flex; flex-direction:column;
+.selbox{border-bottom:1px solid var(--line-2); display:flex; flex-direction:column;
   height:46%; min-height:200px; overflow:hidden; background:var(--panel)}
 .tabs{display:flex; gap:2px; padding:0 15px 9px}
 .tabs button{padding:4px 9px; border:1px solid var(--line-2); border-radius:4px;
@@ -375,7 +382,10 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   .pair{margin-bottom:0; flex:2; gap:5px}
   .foot > .btn{flex:1}
   .btn{font-size:10.5px; padding:4px 5px}
-  .mast{padding:5px 12px 3px}
+  /* En vertical el panel derecho esta abajo: la esquina no le estorba, y quien
+     necesita el hueco es el rotulo, que si esta arriba. */
+  .rail.der{padding-top:0}
+  .mast{padding:38px 12px 3px}
   .strip{grid-template-columns:repeat(5,minmax(0,1fr))}
   .stat{padding:5px 7px} .stat .k{font-size:7.5px} .stat .v{font-size:13px}
   .stat .u{font-size:8.5px}
@@ -424,7 +434,6 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
 <div class="app">
   <aside class="rail izq">
     <div class="mast">
-      <div class="cab"><a class="volver" href="../">← MAPEA</a></div>
       <h1 id="mTitulo">MAPEA App</h1>
       <div class="sub num" id="mSub"></div>
       <button class="aviso" id="avisoBtn" type="button">Prototipo de investigación</button>
@@ -471,14 +480,6 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
   </main>
 
   <aside class="rail der">
-    <div class="sect">
-      <h2>Resultados</h2>
-      <span class="cnt num" id="rN">0</span>
-    </div>
-    <div class="ordwrap">
-      <select id="orden" aria-label="Ordenar por"></select>
-    </div>
-    <div class="lista" id="lista"></div>
     <div class="selbox">
       <div class="sect">
         <h2>Guardados</h2>
@@ -488,9 +489,16 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
       <div class="lista" id="guardados"></div>
       <div class="foot">
         <button class="btn" id="comparar">Comparar</button>
-        <button class="btn sm" id="vaciar">Vaciar</button>
       </div>
     </div>
+    <div class="sect">
+      <h2>Resultados</h2>
+      <span class="cnt num" id="rN">0</span>
+    </div>
+    <div class="ordwrap">
+      <select id="orden" aria-label="Ordenar por"></select>
+    </div>
+    <div class="lista" id="lista"></div>
   </aside>
 </div>
 
@@ -518,8 +526,8 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
 
 <div class="esquina">
   <span class="sesion-chip" data-sesion></span>
-  <button class="btn sm" id="cmpVaciar" hidden>Vaciar</button>
-  <button class="btn sm" id="cmpX" hidden>Volver</button>
+  <button class="btn sm" id="cmpVaciar">Vaciar</button>
+  <button class="btn sm" id="cmpX">Volver</button>
 </div>
 
 <div class="cmp" id="cmp" hidden>
@@ -1411,7 +1419,6 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
         refcat:(d.u||""), direccion:(d.ad||"")}], {onConflict:"usuario,ciudad,lote"});
     }).catch(function(){});   // si falla la red, queda en local y sube al reentrar
   }
-  document.getElementById("vaciar").onclick=vaciarGuardados;
   document.getElementById("cmpVaciar").onclick=vaciarGuardados;
   document.getElementById("guardar").onclick=function(){
     // Explorar no pide cuenta; guardar si.
@@ -1449,16 +1456,18 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
      pagina con pushState, y en compara/ hay un index minimo que rebota aqui para
      que la URL directa y el F5 entren. */
   function enCompara(){ return /\/compara\/?$/.test(location.pathname); }
-  function verCmp(si){
-    vCmp.hidden=!si;
-    document.getElementById("cmpX").hidden=!si;
-    document.getElementById("cmpVaciar").hidden=!si;
-  }
+  function verCmp(si){ vCmp.hidden=!si; }
   function cerrarCmp(){
     verCmp(false);
     if(enCompara()) history.pushState({}, "", "../");
   }
-  document.getElementById("cmpX").onclick=cerrarCmp;
+  // Un solo boton Volver en las dos paginas: cierra el comparador si esta
+  // abierto, y si no, se va a la portada. La esquina no cambia de forma.
+  var CASA = new URL("../", location.href).href;
+  document.getElementById("cmpX").onclick=function(){
+    if(!vCmp.hidden){ cerrarCmp(); return; }
+    location.href = CASA;
+  };
   window.addEventListener("popstate", function(){
     if(enCompara()){ if(vCmp.hidden && guardados.length) pintarComparar(); }
     else verCmp(false);
@@ -1487,18 +1496,24 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
     });
     // table-layout:fixed manda sobre estos anchos: una columna plegada se queda
     // en 34 px y las abiertas se reparten el resto.
+    // Si no queda ninguna abierta, una columna de relleno se come el ancho
+    // sobrante y las plegadas se quedan en su filo, pegadas a la derecha.
+    var relleno = abiertas===0;
+    var hueco = relleno ? '<th class="hueco"></th>' : '';
+    var huecoTd = relleno ? '<td class="hueco"></td>' : '';
     var h='<table><colgroup><col style="width:'+ETIQ+'px">'+
+      (relleno ? '<col style="width:auto">' : '')+
       guardados.map(function(i){
         return '<col style="width:'+(pleg[i]?'34px':'auto')+'">'; }).join("")+
       '</colgroup><thead>';
     // fila 1: solo el numero, fuera del filo de color
-    h+='<tr class="hnum"><th></th>'+guardados.map(function(i,k){
+    h+='<tr class="hnum"><th></th>'+hueco+guardados.map(function(i,k){
       // el numero va solo: el color lo pone la fila de abajo, que es la que abre
       // el filo de la columna
       return '<th data-l="'+i+'"><span class="cnum">'+(k+1)+'</span></th>';
     }).join("")+'</tr>';
     // fila 2: el cuadro de color, que es donde arranca el filo
-    h+='<tr class="hsw"><th></th>'+guardados.map(function(i,k){
+    h+='<tr class="hsw"><th></th>'+hueco+guardados.map(function(i,k){
       return '<th data-l="'+i+'" class="'+(pleg[i]?'plegada':'')+'" style="border-top:2px solid '+
              tinta[k]+';'+lados(tinta[k])+'">'+
              '<button class="sw" data-c="'+i+'" style="background:'+tinta[k]+'" '+
@@ -1506,7 +1521,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
     }).join("")+'</tr>';
     // fila 3: nombre, plegar y quitar. El triangulo se queda aunque este plegada,
     // que si no no hay manera de volver a abrirla.
-    h+='<tr class="hnom"><th></th>'+guardados.map(function(i,k){
+    h+='<tr class="hnom"><th></th>'+hueco+guardados.map(function(i,k){
       var d=lots[i].d, pg=!!pleg[i];
       return '<th data-l="'+i+'" class="'+(pg?'plegada':'')+'" style="'+lados(tinta[k])+'">'+
              '<button class="pl" data-g="'+i+'" title="'+(pg?'Desplegar':'Plegar')+
@@ -1516,7 +1531,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
              'title="Quitar de la comparación" aria-label="Quitar">×</button></th>';
     }).join("")+'</tr></thead><tbody>';
     [["Forma", silueta], ["Situación", situacion]].forEach(function(f){
-      h+='<tr class="rgfx"><td>'+f[0]+'</td>'+guardados.map(function(g,k){
+      h+='<tr class="rgfx"><td>'+f[0]+'</td>'+huecoTd+guardados.map(function(g,k){
         return '<td data-l="'+g+'" class="gfx'+(pleg[g]?' plegada':'')+'" style="'+
                lados(tinta[k])+'">'+(pleg[g]?'':f[1](lots[g],tinta[k]))+'</td>';
       }).join("")+'</tr>';
@@ -1536,7 +1551,7 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
         lo=Math.min.apply(null,ok); alto=Math.max.apply(null,ok);
         if(ok.length<2 || !(alto>lo)) vs=null;   // nada que comparar: sin color
       }
-      h+='<tr><td>'+esc(r[0])+'</td>'+cols.map(function(d,i){
+      h+='<tr><td>'+esc(r[0])+'</td>'+huecoTd+cols.map(function(d,i){
         var t = vs && vs[i]!=null ? (vs[i]-lo)/(alto-lo) : null;
         // sobre crema hace falta tinta oscura; sobre indigo, clara
         var g=guardados[i], pg=!!pleg[g];
@@ -1685,10 +1700,17 @@ tr.hnom .nomb{max-width:100%; overflow:hidden; text-overflow:ellipsis;
      Ocho tonos con luminosidad suficiente para leerse sobre negro. El usuario
      puede cambiarlos; el color manda en la tabla y en los cuatro graficos, asi
      que una columna y su estrella en el radar son el mismo lote de un vistazo. */
-  var PAL = ["#5C8CF7","#E4DBC6","#5FD2A0","#F2A65A",
-             "#E8687A","#B98CF0","#4FD2E0","#F2D65C"];
+  /* Ni crema ni indigo: son los colores de la interfaz, y un lote pintado de
+     indigo compite con lo que esta seleccionado. Tampoco amarillo, que es el
+     color del foco. */
+  var PAL = ["#5FD2A0","#F2A65A","#E8687A","#B98CF0",
+             "#4FD2E0","#7BE07B","#FF9ECF","#FF7A45"];
   var LLAVE_C = "mapea.colores."+(C.id||"x");
   var colores = leer(LLAVE_C, {});
+  // los colores guardados antes de reservar crema e indigo se descartan
+  Object.keys(colores).forEach(function(k){
+    if(PAL.indexOf(colores[k])<0) delete colores[k];
+  });
   function colorLote(i){
     var k=guardados.indexOf(i);
     return colores[i] || PAL[(k<0?0:k) % PAL.length];
