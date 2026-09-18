@@ -12,7 +12,10 @@
 <style>
 :root{--panel:#1A1A1A; --line:#262626; --line-2:#2E2E2E; --ink:#F2F2F2;
   --ink-2:#C9C9C9; --muted:#8A8A8A; --acc:#E4DBC6; --sel:#1B54E0; --sel-ink:#5C8CF7;
-  --foco:#FFF200}
+  /* Aqui no hay seleccion -se llega con un lote ya elegido-, asi que no hay
+     amarillo. Crema para lo que esta, indigo para lo que cabe, verde solo para
+     lo que es verde. */
+  --verde:#4E7F45}
 html,body{height:100%;margin:0}
 body{background:#000;color:var(--ink);font-family:Archivo,system-ui,sans-serif;
   display:flex;flex-direction:column;overflow:hidden}
@@ -46,7 +49,7 @@ aside{display:flex;flex-direction:column;gap:14px;min-height:0}
 dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0}
 dt{font-size:11px;color:var(--muted)}
 dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
-.gordo{font-size:22px;font-weight:700;color:var(--foco);text-align:right;
+.gordo{font-size:22px;font-weight:700;color:var(--acc);text-align:right;
   font-variant-numeric:tabular-nums}
 .nota{font-size:10.5px;color:var(--muted);line-height:1.5}
 .vacio{flex:1;display:flex;align-items:center;justify-content:center;
@@ -68,15 +71,17 @@ dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
   <div class="vista">
     <canvas id="c"></canvas>
     <div class="mandos">
-      <button class="btn" id="gira">Girar</button>
       <button class="btn" id="mas">&#65291;</button>
       <button class="btn" id="menos">&minus;</button>
       <button class="btn" id="fit">Ajustar</button>
     </div>
     <div class="leyenda">
-      <div><i style="background:#8C8C8C"></i>Construido hoy</div>
-      <div><i style="background:#FFF200;opacity:.45"></i>Lo que cabe encima</div>
+      <div><i style="background:#E4DBC6"></i>Construido hoy</div>
+      <div><i style="background:#1B54E0"></i>Lo que cabe encima</div>
+      <div><i style="background:#4E7F45"></i>Verde y arbolado</div>
       <div><i style="background:#3A3A3A"></i>Parcela</div>
+      <div><i style="background:#242424"></i>Manzana alrededor</div>
+      <div><i style="background:#1A1A1A"></i>Viario (calzada y acera)</div>
     </div>
   </div>
   <aside id="datos"></aside>
@@ -171,11 +176,29 @@ dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
     return "rgb("+Math.min(255,r+38)+","+Math.min(255,g+38)+","+Math.min(255,b+38)+")";
   }
 
+  function anillo(a, z){
+    var o=[]; for(var i=0;i<a.length;i+=2) o.push([a[i],a[i+1],z]);
+    return o;
+  }
+  /* Un arbol no es un modelo, es una escala: con el se sabe que el edificio
+     tiene cuatro plantas y no dos. Tronco y copa, nada mas. */
+  function arbol(x, y){
+    var t=proj(x,y,0), c1=proj(x,y,5);
+    cx.strokeStyle="#2E4A2A"; cx.lineWidth=Math.max(1, 1.4*esc0*k);
+    cx.beginPath(); cx.moveTo(W/2+t[0], H/2+t[1]);
+    cx.lineTo(W/2+c1[0], H/2+c1[1]); cx.stroke();
+    cx.fillStyle="#4E7F45"; cx.globalAlpha=.85;
+    cx.beginPath(); cx.arc(W/2+c1[0], H/2+c1[1], Math.max(2, 2.4*esc0*k), 0, 6.2832);
+    cx.fill(); cx.globalAlpha=1;
+  }
   function pinta(){
     cx.fillStyle="#141414"; cx.fillRect(0,0,W,H);
-    var suelo=[], p=d.parcela;
-    for(var i=0;i<p.length;i+=2) suelo.push([p[i],p[i+1],0]);
-    cara(suelo, "#2A2A2A", "#4A4A4A");
+    // el viario primero: es el suelo sobre el que se apoya todo lo demas
+    (d.vias||[]).forEach(function(v){ cara(anillo(v,0), "#1A1A1A", "#262626"); });
+    // lo verde de verdad: el unico color que no es ni crema ni indigo
+    (d.verdes||[]).forEach(function(v){ cara(anillo(v,0), "#1B2A18", "#4E7F45"); });
+    var p=d.parcela;
+    cara(anillo(p,0), "#2A2A2A", "#4A4A4A");
     /* Los prismas tambien se ordenan entre si, no solo sus muros: con varios
        edificios en la parcela, pintar en el orden del fichero tapa el de delante
        con el de detras. La profundidad es la del centroide girado. */
@@ -185,13 +208,16 @@ dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
       sx/=n; sy/=n;
       return sx*Math.sin(giro)+sy*Math.cos(giro) + (sx*Math.cos(giro)-sy*Math.sin(giro));
     }
+    (d.vecinos||[]).slice().sort(function(a,b){ return hondo(a.p)-hondo(b.p); })
+      .forEach(function(v){ prisma(v.p, 0, v.h, "#242424", "#343434"); });
+    (d.arboles||[]).forEach(function(a){ arbol(a[0], a[1]); });
     var orden = d.edificios.slice().sort(function(a,b){ return hondo(a)-hondo(b); });
-    orden.forEach(function(a){ prisma(a, 0, hHoy, "#8C8C8C", "#B4B4B4"); });
+    orden.forEach(function(a){ prisma(a, 0, hHoy, "#E4DBC6", "#F2ECDD"); });
     if(hTope > hHoy + 0.1){
       if(d.edificios.length)
-        orden.forEach(function(a){ prisma(a, hHoy, hTope, "#FFF200", "#FFF200", 0.30); });
+        orden.forEach(function(a){ prisma(a, hHoy, hTope, "#1B54E0", "#4F7DEF", 0.42); });
       else                              // solar sin edificar: el envolvente es la parcela
-        prisma(p, 0, hTope, "#FFF200", "#FFF200", 0.22);
+        prisma(p, 0, hTope, "#1B54E0", "#4F7DEF", 0.32);
     }
   }
 
@@ -200,26 +226,66 @@ dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
     W=Math.round(r.width); H=Math.round(r.height);
     cv.width=W*dpr; cv.height=H*dpr;
     cx.setTransform(dpr,0,0,dpr,0,0);
-    var p=d.parcela, m=0;
-    for(var i=0;i<p.length;i+=2) m=Math.max(m, Math.abs(p[i]), Math.abs(p[i+1]));
-    m=Math.max(m, hTope);
-    esc0 = Math.min(W,H)/(m*3.1||1);
+    /* El encuadre mira TODA la geometria: parcela, lo construido, el fantasma y
+       la manzana alrededor. Antes salia de la parcela sola y el fantasma se iba
+       por arriba de la pantalla. */
+    var m=0;
+    function mide(a){
+      for(var i=0;i<a.length;i+=2) m=Math.max(m, Math.abs(a[i]), Math.abs(a[i+1]));
+    }
+    mide(d.parcela);
+    (d.edificios||[]).forEach(mide);
+    // La manzana NO entra en el encuadre: si entrara, un lote de 115 m2 y otro de
+    // 5.000 saldrian a la misma escala, la del radio de contexto. El contexto cae
+    // donde caiga y se recorta por los bordes; es contexto, no el objeto.
+    m=Math.max(m, hTope*0.8, 15);
+    esc0 = Math.min(W,H)/(m*2.6||1);
     pinta();
   }
   document.getElementById("mas").onclick=function(){ k*=1.25; pinta(); };
   document.getElementById("menos").onclick=function(){ k/=1.25; pinta(); };
   document.getElementById("fit").onclick=function(){ k=1; giro=Math.PI/4; pinta(); };
-  document.getElementById("gira").onclick=function(){ giro+=Math.PI/4; pinta(); };
-  cv.addEventListener("pointerdown", function(e){ arrastra=e.clientX; cv.setPointerCapture(e.pointerId); });
+  /* Un dedo gira, dos pellizcan. Se lleva la cuenta de los punteros vivos
+     porque en un movil no hay rueda: sin el pellizco no hay forma de acercarse. */
+  var dedos={}, pellizco=0;
+  function separacion(){
+    var v=[]; for(var id in dedos) v.push(dedos[id]);
+    if(v.length<2) return 0;
+    return Math.hypot(v[0].x-v[1].x, v[0].y-v[1].y);
+  }
+  cv.addEventListener("pointerdown", function(e){
+    dedos[e.pointerId]={x:e.clientX, y:e.clientY};
+    cv.setPointerCapture(e.pointerId);
+    pellizco = separacion();
+    arrastra = pellizco ? null : e.clientX;   // con dos dedos no se gira
+  });
   cv.addEventListener("pointermove", function(e){
+    if(!(e.pointerId in dedos)) return;
+    dedos[e.pointerId]={x:e.clientX, y:e.clientY};
+    var sep = separacion();
+    if(sep && pellizco){
+      k *= sep/pellizco; pellizco = sep; pinta(); return;
+    }
     if(arrastra==null) return;
     giro += (e.clientX-arrastra)*0.008; arrastra=e.clientX; pinta();
   });
-  cv.addEventListener("pointerup", function(){ arrastra=null; });
+  function soltar(e){
+    delete dedos[e.pointerId];
+    pellizco = separacion();
+    // al levantar un dedo del pellizco, el que queda no debe dar un tiron
+    arrastra = null;
+  }
+  cv.addEventListener("pointerup", soltar);
+  cv.addEventListener("pointercancel", soltar);
   cv.addEventListener("wheel", function(e){
     e.preventDefault(); k *= e.deltaY<0 ? 1.12 : 1/1.12; pinta();
   }, {passive:false});
-  addEventListener("resize", ajusta);
+  /* ResizeObserver y no el evento resize: la primera medida del lienzo llega
+     antes de que el navegador haya repartido el ancho entre mapa y ficha, y con
+     ella el encuadre salia mal. El observador vuelve a encuadrar en cuanto el
+     lienzo tiene su tamano de verdad, y tambien si luego cambia. */
+  if(window.ResizeObserver) new ResizeObserver(ajusta).observe(cv);
+  else addEventListener("resize", ajusta);
   ajusta();
 })();
 </script>

@@ -6,7 +6,7 @@
 <title>MAPEA App (Barranco)</title>
 <meta name="description" content="Catastro de Barranco: 3.534 lotes con zonificacion, valor, altura permitida y accesibilidad. Prototipo de investigacion con datos simulados.">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#EAE4D9">
+<meta name="theme-color" content="#000000"><!-- la app es negra: con el crema de la portada, el movil pintaba su barra de claro encima -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -60,10 +60,13 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 .mast h1{font-weight:600; font-size:17px; margin:0; letter-spacing:.01em}
 .mast .sub{color:var(--muted); font-size:10.5px; margin-top:2px}
 
-/* Doce controles y cuatro titulos tienen que caber sin desplazarse: las filas
-   van apretadas a proposito. Si entra un parametro mas, hay que quitar otro. */
+/* Los doce caben sin desplazar el panel, pero no a base de apretarlos: las
+   filas se reparten el hueco que haya. En una pantalla alta respiran solas; en
+   una baja se juntan hasta el minimo. */
 .filters{padding:0 17px; display:flex; flex-direction:column; flex:1; min-height:0;
-  overflow-y:auto}
+  overflow-y:auto; justify-content:space-between}
+.filters > div{display:flex; flex-direction:column; justify-content:space-around;
+  flex:1 1 auto; min-height:0}
 .gtit{font-size:8.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
   color:var(--sel-ink); padding:6px 0 2px; border-bottom:1px solid var(--line-2)}
 /* La ultima fila de cada grupo no lleva raya: ya la pone el titulo del grupo
@@ -77,7 +80,7 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 /* Doce parametros tienen que caber sin desplazar el panel. Cada fila cuesta
    unos 42 px y el hueco es de 614: no sobra nada. Si entra un parametro mas,
    sale otro. */
-.f{padding:2px 0 3px; border-bottom:1px solid var(--line); min-width:0}  /* 8/7 y no 10/8: con la letra mas grande, 9 filtros pasaban 6 px de la
+.f{padding:3px 0 4px; border-bottom:1px solid var(--line); min-width:0; flex:0 0 auto}  /* 8/7 y no 10/8: con la letra mas grande, 9 filtros pasaban 6 px de la
      altura del panel y aparecia barra de scroll */
 .f .hd{display:flex; align-items:baseline; justify-content:space-between; gap:6px}
 .f .nm,.sel1 .nm{font-size:9.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase;
@@ -526,7 +529,19 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   .sect{padding:7px 11px} .ordwrap{padding:6px 11px} .row{padding:5px 11px}
   .selbox{height:44%; min-height:120px} .selbody{padding:0 11px 10px}
   .tabs{padding:0 11px 7px} .foot{padding:7px 11px 9px}
-  .legend{display:none}
+  /* Arriba a la izquierda, enfrente de los mandos: abajo esta la ficha y en
+     un movil no caben las dos en la misma franja. */
+  .legend{left:10px; top:10px; bottom:auto; max-width:132px; font-size:9px;
+    padding:5px 7px}
+  .legend .lg{margin-top:2px} .legend select{margin-top:3px; padding:3px 5px}
+  /* La ficha se va al lado contrario de los mandos. En un mapa de 370 px de
+     ancho, ficha a la derecha y mandos a la derecha no caben: la ficha tapaba
+     Ajustar, Zoom y Centrar, y se quedaba uno sin salir del lote. */
+  .pop{left:12px; right:auto; width:240px; bottom:12px; top:auto; max-height:58%}
+  .pophd{padding:9px 9px 0 12px} .pophd h3{font-size:14px}
+  .pop .who{padding:2px 12px 6px}
+  .selbody dt,.selbody dd{font-size:10.5px}
+  .popfoot{padding:7px 12px calc(8px + env(safe-area-inset-bottom))}
 }
 
 /* ---------- teléfono en vertical: filtros arriba, mapa al centro, listas abajo ---------- */
@@ -540,8 +555,12 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto 1fr}
   .mast{padding:7px 12px 5px}
   .mast h1{font-size:14px} .mast .sub{display:none}
-  .filters{display:grid; grid-template-columns:1fr 1fr; gap:0 12px;
-    padding:2px 12px 0; align-content:start}
+  /* De dos en dos: un parametro por fila en 375 px deja doce pantallas de
+     panel. El panel si puede desplazarse por dentro, pero asi casi no hace falta. */
+  .filters{display:block; padding:2px 12px 0}
+  .filters > div{display:grid; grid-template-columns:1fr 1fr; gap:0 12px;
+    align-content:start}
+  .gtit{padding:5px 0 1px}
   .f{padding:5px 0 4px}
   .f .nm{font-size:8.5px; letter-spacing:.08em}
   .ed{width:46px; font-size:11px}
@@ -561,7 +580,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   .strip{grid-template-columns:repeat(5,minmax(0,1fr))}
   .stat{padding:5px 7px} .stat .k{font-size:7.5px} .stat .v{font-size:13px}
   .stat .u{font-size:8.5px}
-  .legend{left:8px; bottom:8px; padding:6px 8px; max-width:150px; font-size:9.5px}
+  /* Arriba a la izquierda, no abajo: la ficha vive en la esquina de abajo a la
+     derecha y con 292 px de ancho no deja sitio a nada mas en esa franja. */
+  .legend{left:8px; top:8px; bottom:auto; padding:6px 8px; max-width:142px;
+    font-size:9.5px}
   .legend .lg{margin-top:3px} .tools{right:8px; top:8px}
   .tools .btn{padding:4px 7px; font-size:11px}
   /* abajo: lista a la izquierda, ficha a la derecha */
@@ -2042,13 +2064,49 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       for(var k=0;k<p.length;k+=2) o.push(+(p[k]-ox).toFixed(2), +(p[k+1]-oy).toFixed(2));
       return o;
     }
-    var huellas = [];
-    var EL = D.edifL || [];
-    for(var e=0;e<edif.length;e++) if(EL[e]===foco) huellas.push(rel(edif[e].p));
+    /* Contexto: 110 m alrededor. Los vecinos van con SU altura -la del lote al
+       que pertenece cada huella-, no con una inventada: si no, la manzana sale
+       plana y el lote elegido parece mas alto de lo que es. */
+    var huellas = [], vecinos = [], vias = [], arboles = [];
+    var EL = D.edifL || [], R = 110;
+    function cerca(bb){ return bb[2]>ox-R && bb[0]<ox+R && bb[3]>oy-R && bb[1]<oy+R; }
+    for(var e=0;e<edif.length;e++){
+      if(EL[e]===foco){ huellas.push(rel(edif[e].p)); continue; }
+      if(!cerca(edif[e].b)) continue;
+      var dv = EL[e]>=0 ? lots[EL[e]].d : null;
+      var hv = dv ? (dv.ha>0 ? dv.ha : (dv.pa||0)*3.5) : 0;
+      vecinos.push({p:rel(edif[e].p), h:+(hv>2 ? hv : 9).toFixed(1)});
+    }
+    /* El viario de Madrid son poligonos de espacio publico -calzada y acera
+       juntas-, no ejes. Sirve de suelo; no hay dato que separe una de otra. */
+    for(var v=0;v<calles.length;v++){
+      var q=calles[v].p, mnx=1e9, mny=1e9, mxx=-1e9, mxy=-1e9;
+      for(var t=0;t<q.length;t+=2){
+        if(q[t]<mnx)mnx=q[t]; if(q[t]>mxx)mxx=q[t];
+        if(q[t+1]<mny)mny=q[t+1]; if(q[t+1]>mxy)mxy=q[t+1];
+      }
+      if(cerca([mnx,mny,mxx,mxy])) vias.push(rel(q));
+    }
+    var zverdes = [];
+    for(var z=0;z<verdes.length;z++){
+      if(verdes[z].d.e === 0) continue;          // vacante: no existe sobre el terreno
+      var g=verdes[z].p, gnx=1e9, gny=1e9, gxx=-1e9, gxy=-1e9;
+      for(var u=0;u<g.length;u+=2){
+        if(g[u]<gnx)gnx=g[u]; if(g[u]>gxx)gxx=g[u];
+        if(g[u+1]<gny)gny=g[u+1]; if(g[u+1]>gxy)gxy=g[u+1];
+      }
+      if(cerca([gnx,gny,gxx,gxy])) zverdes.push(rel(g));
+    }
+    (D.arb||[]).forEach(function(a){
+      var ax=a[0]*S, ay=a[1]*S;
+      if(Math.abs(ax-ox)<R && Math.abs(ay-oy)<R)
+        arboles.push([+(ax-ox).toFixed(1), +(ay-oy).toFixed(1)]);
+    });
     escribir("mapea.cabida", {
       ciudad: C.ciudad || "", id: C.id || "",
       refcat: d.u || "", dir: d.ad || "", color: colorLote(foco),
       parcela: rel(l.p), edificios: huellas,
+      vecinos: vecinos, vias: vias, arboles: arboles, verdes: zverdes,
       pa: d.pa || 0, pm: d.pm || 0, ha: d.ha || 0,
       area: d.a || 0, potencial: d.po || 0, zona: d.z || "",
       moneda: C.moneda || "", vm: d.vm || 0
