@@ -68,9 +68,10 @@ main{flex:1;min-height:0;display:grid;
   background:var(--panel);overflow:hidden}
 canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
 canvas:active{cursor:grabbing}
-.mandos{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:5px}
+/* Abajo a la derecha, el mismo criterio que en el navegador. */
+.mandos{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:5px}
 .mandos .btn{padding:5px 9px;background:var(--panel)}
-.leyenda{position:absolute;left:12px;bottom:12px;font-size:11px;color:var(--muted);
+.leyenda{position:absolute;left:12px;top:12px;font-size:11px;color:var(--muted);
   background:rgba(10,10,10,.72);padding:8px 10px;border-radius:4px;line-height:1.7}
 .leyenda i{display:inline-block;width:11px;height:11px;border-radius:2px;
   margin-right:7px;vertical-align:-1px}
