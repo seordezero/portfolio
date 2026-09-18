@@ -348,6 +348,11 @@ th.plegada .nomb,th.plegada .qx{display:none}
   color:var(--foco)!important}
 /* Barras verticales sobre dos ejes. En HTML, no en SVG: con
    preserveAspectRatio="none" el viewBox estiraba el texto con las barras. */
+/* La explicacion de por que no hay cifra vive dentro del grafico, no en lugar
+   del grafico. */
+.gnota{margin-top:6px; font-size:9.5px; line-height:1.4; color:var(--muted)}
+.gnota.centro{margin:0; display:flex; align-items:center; justify-content:center;
+  text-align:center; height:100%; min-height:90px; padding:0 14px}
 .gplot{flex:1; min-height:0; display:flex; align-items:flex-end; gap:10px;
   padding:0 3px; border-left:1px solid var(--line-2); border-bottom:1px solid var(--line-2)}
 .gcol{flex:1; min-width:0; height:100%; display:flex; flex-direction:column;
@@ -2407,19 +2412,24 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   /* --------- 1. retorno: una cifra por lote --------- */
   function barras(ids, vals, pies, tinta){
     var hay=vals.filter(function(v){ return v!=null && isFinite(v); });
-    if(!hay.length) return "";
-    // Si todos valen 0 el grafico se dibuja igual, a cero: "los tres lotes estan
-    // agotados" es una respuesta, no un hueco. Solo se calla si no hay dato.
-    var max=Math.max.apply(null, hay.map(Math.abs)) || 1;
+    /* El grafico NO desaparece cuando falta el dato. Si todos valen 0 se dibuja a
+       cero -"los tres lotes estan agotados" es una respuesta-, y si no hay cifra
+       se dibujan igual las columnas vacias y se dice por que. Un hueco en la
+       rejilla solo hace dudar de si la pagina esta rota. */
+    var max=hay.length ? (Math.max.apply(null, hay.map(Math.abs)) || 1) : 1;
     var cols=vals.map(function(v,k){
       var t=(v==null||!isFinite(v)) ? 0 : Math.max(0,v)/max;   // lo negativo no crece
       return '<div class="gcol" data-l="'+ids[k]+'"><b class="gval'+
              (v<0?' neg':'')+'">'+met("pct")(v)+'</b>'+
              '<i style="height:'+(t*100).toFixed(1)+'%;background:'+tinta[k]+'"></i></div>';
     }).join("");
+    var nota = hay.length ? "" :
+      '<div class="gnota">Sin valor estimado por m&sup2;: el modelo de valor solo '+
+      'cubre uso residencial.</div>';
     return '<div class="gplot">'+cols+'</div><div class="gx">'+
            pies.map(function(p){
-             return '<span title="'+esc(p)+'">'+esc(p)+'</span>'; }).join("")+'</div>';
+             return '<span title="'+esc(p)+'">'+esc(p)+'</span>'; }).join("")+
+           '</div>'+nota;
   }
 
   /* --------- 2. radar: cada lote, una estrella irregular ---------
@@ -2473,8 +2483,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     // va por encima de otro en todo o solo en una cosa, y eso se lee de un vistazo
     // cuando las lineas comparten ejes. Cada categoria se normaliza a su maximo,
     // porque metros de calle e indices de barrio no comparten unidad.
+    /* Un cero es un dato: ese barrio no tiene servicios. Solo se descarta la
+       categoria que ningun lote sabe, que es otra cosa. */
     var cats=(C.urbano||[]).filter(function(e){
-      return cols.some(function(d){ var v=d[e[1]]; return v!=null && isFinite(v) && v!==0; });
+      return cols.some(function(d){ var v=d[e[1]]; return v!=null && isFinite(v); });
     });
     if(cats.length<2) return "";
     var W=300, H=190, ml=10, mr=10, mt=12, mb=30;
@@ -2626,8 +2638,11 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
            '%;background:'+color+'"></i></div>';
   }
 
+  /* Los cuatro graficos estan SIEMPRE. Si a uno le falta el dato lo dice dentro
+     de su caja; quitarlo deja un hueco en la rejilla y parece un fallo. */
   function caja(titulo, clave, cuerpo){
-    if(!cuerpo) return "";
+    if(!cuerpo) cuerpo = '<div class="gnota centro">Sin datos suficientes para '+
+      'este an&aacute;lisis.</div>';
     return '<div class="graf"><h3>'+esc(titulo)+
            '<button class="ord" data-ord="'+clave+'">Ordenar</button></h3>'+cuerpo+'</div>';
   }
@@ -2669,7 +2684,6 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       "Estimación, no tasación. Obra a "+met("dineroM2")(+C.coste||0)+
       ". Retorno = (potencial × valor por m² − obra) ÷ (valor actual + obra). "+
       "El análisis solar sale de la orientación real de las fachadas, sin sombras vecinas.";
-    if(!out.length) return '<div class="vacio">Nada numerico que comparar todavia.</div>';
     return out.join("");
   }
 
