@@ -1007,6 +1007,19 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     vista:  function(d){ return d.vi===1?"sí · "+fmt(d.dm,0)+" m":"no"; },
     segur:  function(d){ return d.si!=null?fmt(d.si,0)+" / 100":"—"; },
     venta:  function(d){ return d.ev===1?"sí (simulado)":"no"; },
+    restr:  function(d){
+      return {libre: "sin restricción",
+              fuera_de_ordenacion: "fuera de ordenación",
+              protegido: "protegido"}[d.rs] || "sin determinar";
+    },
+    /* El porcentaje es el dato; el enlace es lo que el usuario quiere pulsar.
+       Se manda al anuncio en vez de copiarlo: enlazar no es republicar. */
+    ventapct: function(d){
+      if(d.vp==null) return "no";
+      var t = fmt(d.vp,1)+" % de las unidades";
+      return d.vu ? '<a href="'+esc(d.vu)+'" target="_blank" rel="noopener">'+
+                    t+' · ver anuncio</a>' : t;
+    },
     pisosperm:function(d){ return d.pm!=null?fmt(d.pm,0)+(d.am?" ("+fmt(d.am,0)+" m)":""):"—"; }
   };
   function ficha(){
@@ -1083,6 +1096,9 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       return d.ao?ramp((d.ao-ra[0])/((ra[1]-ra[0])||1)):css("--map-none"); }
     if(m==="iv")    return d.iv!=null?ramp(d.iv/100):css("--map-none");
     if(m==="ic")    return d.ic!=null?ramp(d.ic/100):css("--map-none");
+    // Todo lo que empieza por x es un indice urbano en escala absoluta 0-100.
+    // Una rama para los cuatro: el quinto no tendra que tocar este archivo.
+    if(m.charAt(0)==="x") return d[m]!=null?ramp(d[m]/100):css("--map-none");
     if(m==="conf")  return d.vc!=null?ramp(d.vc/100):css("--map-none");
     if(m==="pisos") return d.pm?ramp(Math.min(d.pm,12)/12):css("--map-none");
     if(m==="pact")  return d.pa?ramp(Math.min(d.pa,12)/12):css("--map-none");
@@ -1201,6 +1217,13 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     else if(m==="venta") h=lg(css("--map-sel-ink"),"Con aviso de venta (simulado)")+lg(css("--map-miss"),"Sin aviso");
     else if(m==="tipo") h=lg(css("--map-hit"),"Edificio")+lg(css("--map-hit-soft"),"Casa")+lg(css("--map-miss"),"Otro");
     else if(m==="pact") h=grad("0 – 12 plantas construidas");
+    // Los indices urbanos (x*) comparten escala absoluta 0-100 y su rotulo sale
+    // del propio selector de modo, asi que anadir uno no toca esta funcion.
+    else if(m.charAt(0)==="x"){
+      var tt=m;
+      (C.modos||[]).forEach(function(o){ if(o.v===m) tt=o.t; });
+      h=grad("0 – 100 · "+tt);
+    }
     else h=grad("0 – 12 plantas permitidas");
     document.getElementById("leyenda").innerHTML=h;
   }
