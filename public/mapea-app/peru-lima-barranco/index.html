@@ -30,7 +30,7 @@ img{max-width:100%}[hidden]{display:none!important}</style>
   /* --- lienzo del mapa: negro. Aqui el crema es "cumple el filtro" y el
      indigo "seleccionado". Van aparte de los colores de panel. --- */
   --black:#000000;
-  --map-bg:#000000; --map-hit:#E4DBC6; --map-hit-soft:#4A4436; --map-miss:#242424;
+  --map-bg:#000000; --map-edif:rgba(0,0,0,.42); --map-hit:#E4DBC6; --map-hit-soft:#4A4436; --map-miss:#242424;
   --map-line:#333333; --map-line-2:#3F3F3F; --map-street:#1B1B1B;
   --map-sel:#1B54E0; --map-sel-ink:#7BA0FF;
   --map-verde:#4E7F45; --map-verde-soft:#1B2A18; --map-none:#3A3A3A;
@@ -639,6 +639,16 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     return {i:i, p:p, b:[a,b,c,d], d:l, on:true};
   });
   var verdes = D.verdes.map(function(v){ return {p:decode(v.g), d:v}; });
+  /* Huella construida. Se guarda con su caja para poder descartar de un vistazo
+     lo que no esta en pantalla: son 10.000 piezas y se repintan en cada gesto. */
+  var edif = (D.edif||[]).map(function(g){
+    var p=decode(g), a=1e9, b=1e9, c=-1e9, d=-1e9;
+    for(var k=0;k<p.length;k+=2){
+      if(p[k]<a)a=p[k]; if(p[k]>c)c=p[k];
+      if(p[k+1]<b)b=p[k+1]; if(p[k+1]>d)d=p[k+1];
+    }
+    return {p:p, b:[a,b,c,d]};
+  });
   var POLY = C.calles === "poly";
   var calles = (D.calles||[]).map(function(c){
     var o = {p:decode(c.g), n:c.n};
@@ -1099,6 +1109,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     // Todo lo que empieza por x es un indice urbano en escala absoluta 0-100.
     // Una rama para los cuatro: el quinto no tendra que tocar este archivo.
     if(m.charAt(0)==="x") return d[m]!=null?ramp(d[m]/100):css("--map-none");
+    if(m==="pot"){ var rp=rangoDe("po");
+      return d.po?ramp((d.po-rp[0])/((rp[1]-rp[0])||1)):css("--map-none"); }
+    if(m==="restr") return d.rs==="fuera_de_ordenacion" ? css("--map-sel-ink")
+                         : (d.rs==="libre" ? css("--map-hit") : css("--map-miss"));
     if(m==="conf")  return d.vc!=null?ramp(d.vc/100):css("--map-none");
     if(m==="pisos") return d.pm?ramp(Math.min(d.pm,12)/12):css("--map-none");
     if(m==="pact")  return d.pa?ramp(Math.min(d.pa,12)/12):css("--map-none");
@@ -1152,6 +1166,18 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       var lg2=lots[guardados[gg]];
       path(lg2.p); ctx.fillStyle=colorLote(lg2.i); ctx.fill();
       ctx.lineWidth=1.2; ctx.strokeStyle=css("--map-bg"); ctx.stroke();
+    }
+    /* La huella, solo con zoom: a escala de distrito son manchas que tapan el
+       color del lote sin decir nada. */
+    if(view.k>1.1 && edif.length){
+      ctx.fillStyle=css("--map-edif");
+      var x0=(0-view.tx)/view.k, x1=(W-view.tx)/view.k;
+      var y1=(view.ty-0)/view.k, y0=(view.ty-H)/view.k;
+      for(var e=0;e<edif.length;e++){
+        var bb=edif[e].b;
+        if(bb[2]<x0||bb[0]>x1||bb[3]<y0||bb[1]>y1) continue;
+        path(edif[e].p); ctx.fill();
+      }
     }
     if(view.k>1.6) rotular();
     if(st.sel){                                   // lo seleccionado, siempre amarillo
@@ -1219,6 +1245,11 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     else if(m==="pact") h=grad("0 – 12 plantas construidas");
     // Los indices urbanos (x*) comparten escala absoluta 0-100 y su rotulo sale
     // del propio selector de modo, asi que anadir uno no toca esta funcion.
+    else if(m==="pot"){ var rp=rangoDe("po");
+      h=grad(fmt(rp[0],0)+" – "+fmt(rp[1],0)+" m² de potencial"); }
+    else if(m==="restr") h=lg(css("--map-hit"),"Libre")+
+                           lg(css("--map-sel-ink"),"Fuera de ordenación")+
+                           lg(css("--map-miss"),"Sin determinar");
     else if(m.charAt(0)==="x"){
       var tt=m;
       (C.modos||[]).forEach(function(o){ if(o.v===m) tt=o.t; });
