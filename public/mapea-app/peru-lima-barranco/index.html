@@ -52,23 +52,39 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 .rail.der{padding-top:56px}
 .rail.izq{border-right:1px solid var(--line)}
 .rail.der{border-left:1px solid var(--line)}
-.mast{padding:calc(15px + env(safe-area-inset-top)) 17px 12px;
+.mast{padding:calc(9px + env(safe-area-inset-top)) 17px 7px;
   padding-left:calc(17px + env(safe-area-inset-left)); border-bottom:1px solid var(--line)}
 .volver{display:inline-block; color:var(--muted); font-size:10px; letter-spacing:.09em;
   text-transform:uppercase; text-decoration:none; margin-bottom:5px}
 .volver:hover{color:var(--acc-ink)}
-.mast h1{font-weight:600; font-size:19.5px; margin:0; letter-spacing:.01em}
-.mast .sub{color:var(--muted); font-size:12px; margin-top:3px}
+.mast h1{font-weight:600; font-size:17px; margin:0; letter-spacing:.01em}
+.mast .sub{color:var(--muted); font-size:10.5px; margin-top:2px}
 
-.filters{padding:2px 17px 0; display:flex; flex-direction:column; flex:1; min-height:0; overflow-y:auto}
-.f{padding:8px 0 7px; border-bottom:1px solid var(--line); min-width:0}  /* 8/7 y no 10/8: con la letra mas grande, 9 filtros pasaban 6 px de la
+/* Doce controles y cuatro titulos tienen que caber sin desplazarse: las filas
+   van apretadas a proposito. Si entra un parametro mas, hay que quitar otro. */
+.filters{padding:0 17px; display:flex; flex-direction:column; flex:1; min-height:0;
+  overflow-y:auto}
+.gtit{font-size:8.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--sel-ink); padding:6px 0 2px; border-bottom:1px solid var(--line-2)}
+/* La ultima fila de cada grupo no lleva raya: ya la pone el titulo del grupo
+   siguiente, y esos 3 px por grupo son justo lo que faltaba para que quepa. */
+.filters > div > .f:last-child,
+.filters > div > .sel1:last-child{border-bottom:0; padding-bottom:0}
+.sel1{padding:3px 0 4px; border-bottom:1px solid var(--line); min-width:0}
+.sel1 select{width:100%; margin-top:1px; padding:1px 5px; border:1px solid var(--line-2);
+  border-radius:4px; background:var(--panel-2); color:var(--ink); font:inherit;
+  font-size:12px}
+/* Doce parametros tienen que caber sin desplazar el panel. Cada fila cuesta
+   unos 42 px y el hueco es de 614: no sobra nada. Si entra un parametro mas,
+   sale otro. */
+.f{padding:2px 0 3px; border-bottom:1px solid var(--line); min-width:0}  /* 8/7 y no 10/8: con la letra mas grande, 9 filtros pasaban 6 px de la
      altura del panel y aparecia barra de scroll */
 .f .hd{display:flex; align-items:baseline; justify-content:space-between; gap:6px}
-.f .nm{font-size:11px; font-weight:600; letter-spacing:.11em; text-transform:uppercase;
+.f .nm,.sel1 .nm{font-size:9.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase;
   color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .f .rd{display:flex; align-items:baseline; gap:2px; flex:none}
-.f .sep,.f .uu{font-size:12.5px; color:var(--muted)}
-.ed{width:56px; padding:1px 3px; border:1px solid transparent; border-radius:3px; background:none;
+.f .sep,.f .uu{font-size:11px; color:var(--muted)}
+.ed{width:50px; padding:0 3px; font-size:11px; border:1px solid transparent; border-radius:3px; background:none;
   color:var(--ink); font:inherit; font-size:13.5px; font-variant-numeric:tabular-nums;
   text-align:right; -moz-appearance:textfield}
 .ed::-webkit-outer-spin-button,.ed::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
@@ -85,10 +101,10 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 .f.off .rng input::-webkit-slider-thumb{border-color:var(--off)}
 .f.off .rng input::-moz-range-thumb{border-color:var(--off)}
 
-.rng{position:relative; height:22px; margin-top:5px}
-.rng .track{position:absolute; left:7px; right:7px; top:9px; height:3px; border-radius:2px; background:var(--sunk)}
+.rng{position:relative; height:16px; margin-top:1px}
+.rng .track{position:absolute; left:7px; right:7px; top:7px; height:3px; border-radius:2px; background:var(--sunk)}
 .rng .fill{position:absolute; top:0; bottom:0; background:var(--acc); border-radius:2px}
-.rng input{position:absolute; left:0; width:100%; top:2px; height:18px; margin:0; padding:0;
+.rng input{position:absolute; left:0; width:100%; top:1px; height:15px; margin:0; padding:0;
   -webkit-appearance:none; appearance:none; background:none; pointer-events:none}
 .rng input:focus{outline:none}
 .rng input::-webkit-slider-thumb{-webkit-appearance:none; pointer-events:auto; width:14px; height:14px;
@@ -97,16 +113,16 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
   background:var(--panel); border:2px solid var(--acc); cursor:grab}
 .rng input:focus-visible::-webkit-slider-thumb{outline:2px solid var(--acc-ink); outline-offset:2px}
 
-.duo{display:flex; gap:6px; margin-top:6px}
-.duo button{flex:1; padding:5px 4px; border:1px solid var(--line-2); border-radius:4px;
+.duo{display:flex; gap:5px; margin-top:3px}
+.duo button{flex:1; padding:2px 4px; font-size:10.5px; border:1px solid var(--line-2); border-radius:4px;
   background:var(--panel-2); color:var(--off); font:inherit; font-size:13px; cursor:pointer}
 .duo button:hover{color:var(--ink-2)}
 .duo button[aria-pressed="true"]{background:var(--sel); border-color:var(--sel); color:var(--paper); font-weight:600}
 .duo button:focus-visible{outline:2px solid var(--acc); outline-offset:1px}
 
-.foot{padding:10px 17px calc(13px + env(safe-area-inset-bottom));
+.foot{padding:6px 17px calc(8px + env(safe-area-inset-bottom));
   padding-left:calc(17px + env(safe-area-inset-left)); border-top:1px solid var(--line)}
-.pair{display:flex; gap:6px; margin-bottom:7px}
+.pair{display:flex; gap:5px; margin-bottom:5px}
 .btn{padding:7px 10px; border:1px solid var(--line-2); border-radius:4px; background:var(--panel-2);
   color:var(--ink); font:inherit; font-size:13.5px; cursor:pointer; width:100%}
 .btn:hover{border-color:var(--sel); color:var(--sel-ink)}
@@ -221,6 +237,7 @@ th.plegada .nomb,th.plegada .qx{display:none}
   font-weight:600; letter-spacing:.09em; text-transform:uppercase; cursor:pointer}
 .cabida span{writing-mode:vertical-rl; transform:rotate(180deg); white-space:nowrap}
 .cabida b{font-size:15px}
+.cabida .corto{display:none; font-style:normal}
 .cabida:disabled{opacity:.34; cursor:not-allowed; color:var(--muted)}
 .cabida:not(:disabled):hover{border-color:var(--acc); color:var(--acc)}
 /* La tabla ocupa el mismo alto que la rejilla de graficos, y sus filas se
@@ -290,13 +307,62 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .qx{border:0; background:none; color:var(--muted); font-size:15px; line-height:1;
   cursor:pointer; padding:0 3px; margin-left:4px}
 .qx:hover{color:#E06A6A}
-@media (max-width:1100px){
-  .cmpbody{grid-template-columns:1fr; overflow:auto}
-  .cabida{flex-direction:row; padding:10px}
-  .cabida span{writing-mode:horizontal-tb; transform:none}
-  .cmpgraf{grid-template-columns:1fr; grid-template-rows:none}
-  .graf{min-height:230px}
+/* Ventana estrecha en horizontal: el mismo reparto que en el escritorio, solo
+   que mas apretado. No se desplaza. */
+@media (max-width:1100px) and (orientation:landscape){
+  .cmpbody{grid-template-columns:minmax(0,1fr) minmax(0,56%) 40px; gap:12px;
+    padding:4px 12px 8px; grid-template-rows:minmax(0,1fr) 42px}
+  .cmpgraf{gap:10px}
+  .graf{padding:8px 9px 7px}
+  .graf h3{margin:0 0 5px; font-size:9px}
+  .cmphd{padding:8px 12px 4px} .cmphd h2{font-size:13px}
+  .cmpbody table{font-size:11px}
+  .cmpbody th,.cmpbody td{padding:3px 6px}
+  .solnum{width:26px; height:26px; font-size:12px}
+  .cabida{font-size:9px}
 }
+/* Telefono en vertical: la tabla se da la vuelta. Una fila por lote en vez de
+   una columna, porque de ancho no cabe otra cosa; los valores se leen en la
+   ficha del navegador y aqui lo que manda es comparar los cuatro graficos. */
+@media (max-width:1100px) and (orientation:portrait){
+  /* Dos columnas solo para el pie: los numeros a la izquierda y la salida a la
+     cabida a la derecha. En una sola celda se montaban uno encima del otro. */
+  .cmpbody{grid-template-columns:minmax(0,1fr) auto;
+    grid-template-rows:auto minmax(0,1fr) 44px;
+    gap:10px; padding:4px 12px 8px; overflow:hidden}
+  .cmptabla{grid-row:1; grid-column:1/-1; padding:8px 10px; overflow:hidden;
+    justify-content:flex-start}
+  .cmpgraf{grid-row:2; grid-column:1/-1; grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr; gap:9px}
+  .pies{grid-row:3; grid-column:1; padding:0; justify-content:flex-start}
+  /* El titulo baja por debajo de la esquina flotante, que es fija y le pasaba
+     por encima. */
+  .cmphd{padding-top:52px!important}
+  /* En un telefono el rotulo largo no cabe al lado de los numeros. */
+  .cabida span{display:none}
+  .cabida .corto{display:inline}
+  .cabida{grid-row:3; grid-column:2; align-self:center;
+    flex-direction:row; width:auto; height:auto!important; padding:6px 10px;
+    gap:6px; font-size:8.5px}
+  .cabida span{writing-mode:horizontal-tb; transform:none}
+  .cabida b{font-size:13px}
+  .cmpbody table{display:none}          /* la tabla vertical, fuera */
+  .graf{padding:7px 8px 6px}
+  .graf h3{margin:0 0 4px; font-size:8px}
+  .gx span,.gn,.gval{font-size:8px}
+  .cmphd{padding:6px 12px 2px} .cmphd h2{font-size:13px}
+  .solnum{width:24px; height:24px; font-size:11px}
+}
+/* Las barras de lote solo existen en vertical: son la tabla girada 90 grados. */
+.cmpfilas{display:none}
+@media (max-width:1100px) and (orientation:portrait){ .cmpfilas{display:block} }
+.cmpfila{display:flex; align-items:center; gap:9px; padding:6px 9px;
+  border:2px solid; border-radius:4px; margin-bottom:5px}
+.cmpfila .cnum{flex:none; font-size:12px}
+.cmpfila .nb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; font-size:12px; font-weight:600}
+.cmp.confoco .cmpfila:not(.foco){filter:grayscale(1); opacity:.45}
+.cmpfila.foco{border-color:var(--foco)!important; background:rgba(255,242,0,.13)}
 /* Altura fija por fila: si la altura la pone el contenido, plegar una columna
    encoge la tabla entera y el bloque baila. Las filas son una rejilla, no una
    consecuencia de lo que haya dentro. */
@@ -462,7 +528,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   .pop .who{padding:2px 12px 7px} .pop .tabs{padding:0 12px 7px}
   .popfoot{padding:8px 12px calc(9px + env(safe-area-inset-bottom))}
 }
-.aviso{margin-top:6px; padding:3px 7px; border:1px solid #3A4A76; border-radius:3px;
+.aviso{margin-top:4px; padding:2px 6px; border:1px solid #3A4A76; border-radius:3px;
   background:#131A2B; color:var(--sel-ink); font:inherit; font-size:11px; letter-spacing:.04em;
   cursor:pointer; text-align:left; width:100%}
 .aviso:hover{border-color:var(--acc); color:var(--acc-ink)}
@@ -594,7 +660,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     <div class="pies" id="pies"></div>
     <button class="cabida" id="cabida" disabled
             title="Selecciona un lote para generar su cabida">
-      <span>Generar cabida arquitectónica</span><b>→</b>
+      <span>Generar cabida arquitectónica</span><i class="corto">Cabida</i><b>→</b>
     </button>
   </div>
 </div>
@@ -690,6 +756,23 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   function inv(c,v){ return c.esc==="sqrt" ? v*v : v; }
 
   var box = document.getElementById("filters");
+  /* Los controles se pintan por grupo -Oficial, Externo, Predictivo, Urbano- y
+     no en el orden en que estan declarados. El titulo se escribe una vez, al
+     abrir cada grupo. */
+  var SEL = {};                       // valor elegido en cada desplegable
+  function cajaDe(gr){
+    var id = "gr-" + gr.replace(/[^A-Za-z]/g, "");
+    var c = document.getElementById(id);
+    if(c) return c;
+    var t = document.createElement("div");
+    t.className = "gtit"; t.textContent = gr;
+    box.appendChild(t);
+    c = document.createElement("div");
+    c.id = id;
+    box.appendChild(c);
+    return c;
+  }
+  (C.grupos || []).forEach(function(gr){ cajaDe(gr); });
 
   FILTROS.forEach(function(cfg){
     var r = span(cfg.f);
@@ -706,7 +789,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
         '<input type="range" min="0" max="1000" value="0" aria-label="'+esc(cfg.nm)+' mínimo">'+
         '<input type="range" min="0" max="1000" value="1000" aria-label="'+esc(cfg.nm)+' máximo">'+
       '</div>';
-    box.appendChild(el);
+    cajaDe(cfg.gr || (C.grupos||[""])[0]).appendChild(el);
 
     var wrap=el.querySelector(".rng"), ins=wrap.querySelectorAll("input"), fill=wrap.querySelector(".fill");
     var edLo=document.getElementById("ed-"+cfg.f+"-lo"), edHi=document.getElementById("ed-"+cfg.f+"-hi");
@@ -775,7 +858,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
         '<button type="button" data-v="si" aria-pressed="false">'+esc(t.si)+'</button>'+
         '<button type="button" data-v="no" aria-pressed="false">'+esc(t.no)+'</button>'+
       '</div>';
-    box.appendChild(el);
+    cajaDe(t.gr || (C.grupos||[""])[0]).appendChild(el);
     el.querySelector(".duo").addEventListener("click", function(e){
       var b=e.target.closest("button"); if(!b) return;
       TG[t.k] = (TG[t.k]===b.dataset.v) ? null : b.dataset.v;   // volver a tocar lo apaga
@@ -783,6 +866,28 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     });
     pintarToggle(t);
   });
+  /* Desplegable de categoria: las opciones salen del propio dato, asi que una
+     ciudad con otra nomenclatura no toca nada aqui. */
+  (C.selects || []).forEach(function(cfg){
+    var vistos = {};
+    lots.forEach(function(l){
+      var v = l.d[cfg.campo];
+      if(v !== null && v !== undefined && v !== "") vistos[v] = (vistos[v]||0) + 1;
+    });
+    var ops = Object.keys(vistos).sort(function(a,b){ return vistos[b]-vistos[a]; });
+    SEL[cfg.k] = "";
+    var el = document.createElement("div");
+    el.className = "sel1";
+    el.innerHTML = '<div class="hd"><span class="nm">'+esc(cfg.nm)+'</span></div>'+
+      '<select id="sel-'+cfg.k+'"><option value="">todas</option>'+
+      ops.map(function(o){ return '<option value="'+esc(o)+'">'+esc(o)+
+        ' ('+vistos[o]+')</option>'; }).join("")+'</select>';
+    cajaDe(cfg.gr || (C.grupos||[""])[0]).appendChild(el);
+    el.querySelector("select").addEventListener("change", function(){
+      SEL[cfg.k] = this.value; apply();
+    });
+  });
+
   function pintarToggle(t){
     var el=document.getElementById("f-"+t.k);
     var v=TG[t.k];
@@ -796,6 +901,9 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   function todos(activo){
     FILTROS.forEach(function(c){ document.getElementById("rng-"+c.f)._set(activo); });
     TOGGLES.forEach(function(t){ TG[t.k]=null; pintarToggle(t); });
+    (C.selects||[]).forEach(function(c){
+      SEL[c.k]=""; var e=document.getElementById("sel-"+c.k); if(e) e.value="";
+    });
     apply();
   }
   document.getElementById("selAll").onclick=function(){ todos(true); };
@@ -828,7 +936,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   var vistos = [];
   function hayFiltro(){
     return FILTROS.some(function(c){ return ST[c.f].active; }) ||
-           TOGGLES.some(function(t){ return TG[t.k]!==null; });
+           TOGGLES.some(function(t){ return TG[t.k]!==null; }) ||
+           (C.selects||[]).some(function(c){ return !!SEL[c.k]; });
   }
   function apply(){
     var activo=hayFiltro(), n=0;
@@ -842,6 +951,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
         var full=(s.lo<=cfg.lo && s.hi>=cfg.hi);
         if(v==null || !isFinite(v)){ if(!full) ok=false; }
         else if(v<s.lo || v>s.hi) ok=false;
+      }
+      for(var q=0; q<(C.selects||[]).length && ok; q++){
+        var sc = C.selects[q];
+        if(SEL[sc.k]) ok = String(d[sc.campo]) === SEL[sc.k];
       }
       for(var g=0; g<TOGGLES.length && ok; g++){
         var tg=TOGGLES[g], vv=TG[tg.k];
@@ -1700,7 +1813,20 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
                (pg ? '' : (COMP[m] ? COMP[m](d) : met(m)(d[f])))+'</td>';
       }).join("")+'</tr>';
     });
-    document.getElementById("cmpbody").innerHTML=h+'</tbody></table>';
+    /* En vertical no cabe una columna por lote, asi que la tabla se gira: una
+       barra por lote con su numero y su color. El CSS ensena una u otra. */
+    var filasM = '<div class="cmpfilas">' + ids.map(function(i,k){
+      var d=lots[i].d;
+      return '<div class="cmpfila" data-l="'+i+'" style="border-color:'+tinta[k]+
+             ';background:'+rgba(tinta[k],0.16)+'">'+
+             '<span class="cnum" style="color:'+tinta[k]+'">'+numeroDe(i)+'</span>'+
+             '<button class="sw" data-c="'+i+'" style="background:'+tinta[k]+'" '+
+             'title="Cambiar color" aria-label="Cambiar color"></button>'+
+             '<span class="nb">'+esc(d.ad||d.u||"—")+'</span>'+
+             '<button class="qx" data-q="'+i+'" title="Quitar" aria-label="Quitar">×</button>'+
+             '</div>';
+    }).join("") + '</div>';
+    document.getElementById("cmpbody").innerHTML=filasM+h+'</tbody></table>';
     document.getElementById("cmpgraf").innerHTML=graficos(ids, cols, tinta);
     // Los numeros van en el orden de la tabla, no en el de guardado: si ordenar
     // mueve las columnas y aqui no se mueve nada, las dos lecturas se contradicen.
