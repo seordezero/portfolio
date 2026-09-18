@@ -1,4 +1,4 @@
-const CACHE = "mapea-españa-madrid-carabanchel-c5480ed0a3";
+const CACHE = "mapea-españa-madrid-carabanchel-340c25337c";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png",
                 "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
