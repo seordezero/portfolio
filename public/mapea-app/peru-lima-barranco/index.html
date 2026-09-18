@@ -461,6 +461,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
 /* baja para no chocar con la esquina de la sesion */
 .tools{position:absolute; right:12px; top:48px; display:flex; flex-direction:column; gap:5px}
 .tools .btn{width:auto; background:var(--panel); padding:5px 9px}
+.tools .btn:disabled{opacity:.35; cursor:not-allowed}
 
 .sect{padding:11px 15px; border-bottom:1px solid var(--line); display:flex;
   align-items:center; justify-content:space-between; gap:8px}
@@ -615,6 +616,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
         <button class="btn" id="zIn" aria-label="Acercar">＋</button>
         <button class="btn" id="zOut" aria-label="Alejar">−</button>
         <button class="btn" id="zFit">Ajustar</button>
+        <button class="btn" id="zSel" title="Zoom a la selección"
+                aria-label="Zoom a la selección" disabled>ZS</button>
+        <button class="btn" id="cSel" title="Centrar la selección"
+                aria-label="Centrar la selección" disabled>CS</button>
       </div>
       <div class="pop" id="pop" hidden>
         <div class="pophd">
@@ -926,8 +931,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     el.className = "sel1";
     el.innerHTML = '<div class="hd"><span class="nm">'+esc(cfg.nm)+'</span></div>'+
       '<select id="sel-'+cfg.k+'"><option value="">todas</option>'+
-      ops.map(function(o){ return '<option value="'+esc(o)+'">'+esc(o)+
-        ' ('+vistos[o]+')</option>'; }).join("")+'</select>';
+      ops.map(function(o){
+        var et = (cfg.etiquetas||{})[o] || o;
+        return '<option value="'+esc(o)+'">'+esc(et)+' ('+vistos[o]+')</option>';
+      }).join("")+'</select>';
     cajaDe(cfg.gr || (C.grupos||[""])[0]).appendChild(el);
     el.querySelector("select").addEventListener("change", function(){
       SEL[cfg.k] = this.value; apply();
@@ -1073,18 +1080,31 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   }
   document.getElementById("lista").addEventListener("click", function(e){
     var r=e.target.closest(".row"); if(!r) return;
-    abrir(lots[+r.dataset.i]);
+    abrir(lots[+r.dataset.i], "centrar");
   });
 
   /* Abrir un lote hace siempre lo mismo, venga del mapa o de la lista: encuadra,
      rellena la ficha y la saca flotando. */
   var pop=document.getElementById("pop");
-  function abrir(l){
+  /* mover: "nada" desde el mapa -el usuario ya esta mirando donde quiere-,
+     "centrar" desde la lista -no sabe donde cae el lote, pero el zoom es suyo-.
+     Encuadrar es cosa de los botones ZS y CS, no un efecto secundario de elegir. */
+  function abrir(l, mover){
     st.sel=l;
     pop.hidden=!l;
-    lista(); ficha(); volarA(l);
+    lista(); ficha();
+    botonesSel();
+    if(mover==="centrar") volarA(l, true);
+    else if(mover==="zoom") volarA(l);
+    else draw();
+  }
+  function botonesSel(){
+    var hay=!!st.sel;
+    document.getElementById("zSel").disabled=!hay;
+    document.getElementById("cSel").disabled=!hay;
   }
   function cerrar(){
+    botonesSel();
     st.sel=null; pop.hidden=true;
     cortarVuelo(); ficha(); lista(); draw();
   }
@@ -1114,13 +1134,14 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   function centro(){
     return [(anclaX()-view.tx)/view.k, (view.ty-anclaY())/view.k];
   }
-  function volarA(l){
+  function volarA(l, soloCentrar){
     if(!l || !W){ draw(); return; }
     var b=l.b, w=Math.max(b[2]-b[0],10), h=Math.max(b[3]-b[1],10);
     var pad=Math.min(W,H)*0.30;
     // se encuadra el lote pero sin pasarse: si no, una parcela pequena llena la
     // pantalla y se pierde de vista donde esta
     var k1=Math.max(Math.min(Math.min((W-pad*2)/w, (H-pad*2)/h), 9), 0.2);
+    if(soloCentrar) k1=view.k;            // centrar sin tocar el zoom
     var cx1=(b[0]+b[2])/2, cy1=(b[1]+b[3])/2;
     var c0=centro(), cx0=c0[0], cy0=c0[1], k0=view.k;
 
@@ -1440,6 +1461,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   document.getElementById("zIn").onclick=function(){ cortarVuelo(); zoomAt(1.3); };
   document.getElementById("zOut").onclick=function(){ cortarVuelo(); zoomAt(1/1.3); };
   document.getElementById("zFit").onclick=function(){ cortarVuelo(); fit(); };
+  document.getElementById("zSel").onclick=function(){ if(st.sel) volarA(st.sel); };
+  document.getElementById("cSel").onclick=function(){ if(st.sel) volarA(st.sel, true); };
 
   function inside(p,x,y){
     var c=false;
@@ -1458,7 +1481,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       if(x<l.b[0]||x>l.b[2]||y<l.b[1]||y>l.b[3]) continue;
       if(inside(l.p,x,y)){ hit=l; break; }
     }
-    if(hit) abrir(hit); else cerrar();
+    if(hit) abrir(hit, "nada"); else cerrar();
   }
 
   /* un dedo mueve el mapa, dos dedos acercan */
@@ -1726,7 +1749,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     var sw=e.target.closest(".sw");
     if(sw){ abrirPaleta(sw, +sw.dataset.c); return; }
     var r=e.target.closest(".row"); if(!r) return;
-    abrir(lots[+r.dataset.i]);
+    abrir(lots[+r.dataset.i], "centrar");
   });
 
   /* Comparar: tabla de los guardados con las mismas filas de la ficha. Ocupa toda
