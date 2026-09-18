@@ -29,23 +29,36 @@ body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
   -webkit-font-smoothing:antialiased;height:100vh;height:100dvh;overflow:hidden;
   display:flex;flex-direction:column}
 @media (max-height:620px){ #trama{display:none} }
-.bar{border-bottom:1px solid var(--acc);
+/* 56 px de alto: con los dos centros a 28, la raya cae justo debajo de la
+   pareja y el eje coincide con el de las demas paginas. */
+.bar{border-bottom:1px solid var(--acc);height:57px;flex:none;
   padding:0 calc(20px + env(safe-area-inset-left));
   padding-top:env(safe-area-inset-top);
-  display:flex;align-items:center;gap:22px;flex-wrap:wrap;position:relative;z-index:2}
-.bar .marca{display:flex;align-items:center;gap:8px;font-family:var(--rotulo);
-  font-size:15px;letter-spacing:-.01em;padding:11px 0;color:var(--acc)}
-.bar .marca svg{width:17px;height:17px;display:block}
+  display:flex;align-items:center;gap:22px;position:relative;z-index:2}
+.bar .marca{display:flex;align-items:center;gap:9px;font-family:var(--rotulo);
+  font-size:15px;letter-spacing:-.01em;color:var(--acc);text-decoration:none;
+  line-height:1}
+.bar .marca svg{width:22px;height:22px;display:block;border-radius:3px}
 .bar nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
 /* La sesion vive en la cabecera de TODAS las vistas: portada, consola y
    comparador. Aqui solo informa y deja salir; entrar se pide al guardar. */
 /* La sesion vive en la misma esquina en las tres paginas: portada, navegador
    y comparador. Flotando, sin barra que la sostenga. */
-.sesion-chip{position:fixed;top:20px;right:26px;z-index:40;display:inline-flex}
-.ava{width:31px;height:31px;border-radius:50%;border:0;cursor:pointer;
-  background:var(--acc);color:#1B54E0;font:inherit;font-size:14px;font-weight:700;
+.sesion-chip{position:fixed;top:13px;z-index:40;display:inline-flex;
+  right:calc(20px + env(safe-area-inset-right));align-items:center}
+.entrar{border:1px solid var(--acc);border-radius:15px;padding:6px 14px;
+  background:none;color:var(--acc);font:inherit;font-size:12.5px;cursor:pointer;
+  text-decoration:none;line-height:1.3}
+.entrar:hover{background:var(--acc);color:var(--paper)}
+/* Crema y indigo escritos tal cual: aqui --acc ES el indigo, y el avatar salia
+   indigo sobre indigo. Un punto azul con la inicial dentro, invisible. */
+/* Crema sobre crema no se ve: aqui el circulo necesita su propio contorno.
+   box-sizing:border-box para que siga midiendo 30 y no se salga del eje. */
+.ava{width:30px;height:30px;border-radius:50%;cursor:pointer;box-sizing:border-box;
+  border:1.5px solid #1B54E0;
+  background:#EAE4D9;color:#1B54E0;font:inherit;font-size:14px;font-weight:700;
   line-height:1;display:grid;place-items:center;padding:0}
-.avamenu{position:absolute;top:38px;right:0;min-width:184px;z-index:90;
+.avamenu{position:absolute;top:37px;right:0;min-width:184px;z-index:90;
   background:rgba(20,20,20,.96);border:1px solid #2E2E2E;border-radius:6px;
   padding:11px 13px;display:flex;flex-direction:column;gap:9px;text-align:left}
 .avamenu[hidden]{display:none}
@@ -148,13 +161,21 @@ h1{margin:0;font-family:var(--rotulo);font-weight:400;
   var c=document.querySelector("[data-sesion]"); if(!c) return;
   /* Sin sesion no hay nada que ensenar aqui: entrar se pide donde hace falta,
      al guardar un lote. */
-  if(!(s && s.correo)){ c.innerHTML=""; return; }
+  if(!(s && s.correo)){
+    // sin sesion, el ancla sigue ahi: dice como entrar
+    var pri = document.querySelector(".ciudades a.ciudad");
+    c.innerHTML = "<a class='entrar' href='" + (pri ? pri.getAttribute("href") : "") +
+      "?entrar=1'>Iniciar sesión</a>";
+    return;
+  }
   var e=s.correo.replace(/[&<>"]/g,"");
-  c.style.position="relative";
-  c.innerHTML = "<button type='button' class='ava' title='"+e+"'>"+
+  /* El position:relative iba antes en el propio chip y le quitaba el clavado de
+     la esquina. El ancla del desplegable es una caja de dentro. */
+  c.innerHTML = "<span style='position:relative;display:inline-flex'>"+
+    "<button type='button' class='ava' title='"+e+"'>"+
     e.charAt(0).toUpperCase()+"</button>"+
     "<div class='avamenu' hidden><span>"+e+"</span>"+
-    "<button type='button' data-salir>Salir</button></div>";
+    "<button type='button' data-salir>Salir</button></div></span>";
   var m=c.querySelector(".avamenu");
   c.querySelector(".ava").onclick=function(){ m.hidden=!m.hidden; };
   c.querySelector("[data-salir]").onclick=function(){

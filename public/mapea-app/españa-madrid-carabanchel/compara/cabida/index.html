@@ -19,13 +19,13 @@
 html,body{height:100%;margin:0}
 body{background:#000;color:var(--ink);font-family:Archivo,system-ui,sans-serif;
   display:flex;flex-direction:column;overflow:hidden}
-.esquina{position:fixed;top:20px;right:26px;z-index:80;display:flex;
-  align-items:center;gap:14px}
+.esquina{position:fixed;top:13px;height:30px;z-index:80;display:flex;
+  right:calc(20px + env(safe-area-inset-right));align-items:center;gap:14px}
 .sesion-chip{position:relative;display:inline-flex;align-items:center}
-.ava{width:31px;height:31px;border-radius:50%;border:0;cursor:pointer;
+.ava{width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;
   background:var(--acc);color:var(--sel);font:inherit;font-size:14px;font-weight:700;
   line-height:1;display:grid;place-items:center;padding:0}
-.avamenu{position:absolute;top:38px;right:0;min-width:184px;z-index:90;
+.avamenu{position:absolute;top:37px;right:0;min-width:184px;z-index:90;
   background:rgba(26,26,26,.96);backdrop-filter:blur(7px);
   border:1px solid var(--line-2);border-radius:6px;padding:11px 13px;
   display:flex;flex-direction:column;gap:9px;text-align:left}
@@ -40,10 +40,15 @@ body{background:#000;color:var(--ink);font-family:Archivo,system-ui,sans-serif;
   color:var(--ink);font:inherit;font-size:12px;padding:6px 11px;cursor:pointer;
   text-decoration:none;display:inline-block}
 .btn:hover{border-color:var(--acc);color:var(--acc)}
-.top{display:flex;align-items:center;gap:18px;padding:26px 32px 14px}
-.marca{display:inline-flex;align-items:center;gap:9px;text-decoration:none;
-  color:var(--acc);font-size:15px;font-weight:700;letter-spacing:.02em;flex:none}
-.marca svg{width:21px;height:21px;display:block;border-radius:3px;flex:none}
+.top{display:flex;align-items:center;gap:18px;padding:30px 32px 14px;
+  padding-left:130px}                 /* hueco de la marca, que va clavada */
+/* Clavada y en las mismas coordenadas que en el resto de paginas. */
+.marca{position:fixed;left:calc(20px + env(safe-area-inset-left));
+  top:calc(17px + env(safe-area-inset-top));z-index:81;
+  display:inline-flex;align-items:center;gap:9px;text-decoration:none;
+  color:var(--acc);font-size:15px;font-weight:700;letter-spacing:-.01em;
+  line-height:1}
+.marca svg{width:22px;height:22px;display:block;border-radius:3px;flex:none}
 .marca:hover{opacity:.82}
 h1{margin:0;padding:0;font-size:15px;font-weight:600}
 h1 b{color:var(--sel-ink)}
@@ -65,8 +70,9 @@ canvas:active{cursor:grabbing}
 /* La pagina no se desplaza; la columna de fichas si, por dentro, como el panel
    de resultados del navegador. Con la proto-cabida y los pasos son cinco fichas
    y en una pantalla baja no caben sin apretarlas hasta no leerse. */
-aside{display:flex;flex-direction:column;gap:16px;min-height:0;overflow-y:auto;
-  padding-right:2px}
+/* Sin desplazamiento: si algo no cabe, sobra, no se esconde detras de una
+   barra. Por eso las cifras van en una sola tarjeta. */
+aside{display:flex;flex-direction:column;gap:16px;min-height:0;overflow:hidden}
 .tar{border:1px solid var(--line);border-radius:5px;background:var(--panel);
   padding:16px 18px;flex:none}
 .tar h2{margin:0 0 9px;font-size:10.5px;font-weight:600;letter-spacing:.09em;
@@ -88,7 +94,7 @@ ol.pasos b{color:var(--ink);font-weight:600}
   body{background:#fff;color:#111;display:block;overflow:visible;height:auto}
   .esquina,.mandos,.imprimir{display:none !important}
   .top{padding:0 0 10px;color:#111}
-  .marca{color:#111}
+  .marca{position:static;color:#111}
   h1{color:#111;padding:0}
   h1 b{color:#1B54E0}
   main{display:block;padding:0}
@@ -102,10 +108,25 @@ ol.pasos b{color:var(--ink);font-weight:600}
 }
 .vacio{flex:1;display:flex;align-items:center;justify-content:center;
   color:var(--muted);font-size:13px;text-align:center;padding:26px}
+/* En una ventana baja la columna no cabe con el aire de una alta. Antes de
+   recortar contenido se recupera el aire; la ficha nunca se desplaza. */
+@media (max-height:880px){
+  .tar{padding:12px 15px}
+  aside{gap:11px}
+  .nota{font-size:10px;line-height:1.45}
+  ol.pasos{font-size:10px;line-height:1.45}
+  ol.pasos li{margin-bottom:3px}
+  dt{font-size:10.5px} dd{font-size:11.5px}
+  .gordo{font-size:19px}
+  .tar h2{margin-bottom:7px}
+}
+/* Por debajo de 740 px ya no queda aire que quitar: sale la explicacion larga,
+   que es lo unico prescindible. Las cifras y los pasos se quedan. */
+@media (max-height:740px){ .nota.larga{display:none} }
 @media (max-width:900px){
   main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;
     padding:0 12px 14px;gap:10px}
-  .top{padding:44px 12px 8px;gap:12px}
+  .top{padding:44px 12px 8px;gap:12px;padding-left:12px}
   h1{font-size:13px}
   aside{flex-direction:row;gap:10px}
   .tar{flex:1;padding:9px 11px}
@@ -187,20 +208,20 @@ ol.pasos b{color:var(--ink);font-weight:600}
       '<p class="nota">'+(suben>0
         ? 'Caben '+suben+' plantas m&aacute;s sobre lo construido.'
         : 'El lote ya ha agotado su edificabilidad.')+'</p></div>'+
+    /* Una sola tarjeta y no dos: con dos, la columna no cabia en la ventana y
+       habia que desplazarla. Las mismas cifras, sin el segundo titulo ni el
+       hueco entre tarjetas. */
     '<div class="tar"><h2>El lote</h2><dl>'+
       fila("&Aacute;rea", fmt(d.area,0)+" m&sup2;")+
       fila("Zonificaci&oacute;n", esc(d.zona||"&mdash;"))+
-      fila("Plantas construidas", d.pa+" p &middot; ~"+fmt(hHoy,1)+" m")+
-      fila("Plantas permitidas", d.pm+" p &middot; ~"+fmt(hTope,1)+" m")+
-      fila("Valor &euro; por m&sup2;", d.vm ? fmt(d.vm,0)+" "+esc(d.moneda)+"/m&sup2;" : "&mdash;")+
-    '</dl></div>'+
-    '<div class="tar"><h2>Proto-cabida</h2><dl>'+
+      fila("Plantas", d.pa+" p &rarr; "+d.pm+" p")+
+      fila("Altura", fmt(hHoy,1)+" &rarr; "+fmt(hTope,1)+" m")+
       fila("Ocupaci&oacute;n en planta", fmt(huella,0)+" m&sup2; &middot; "+fmt(ocupa,0)+"&#37;")+
       fila("Construido hoy", fmt(cHoy,0)+" m&sup2;c")+
       fila("Techo m&aacute;ximo", fmt(cTope,0)+" m&sup2;c")+
       fila("Edificabilidad", fmt(edifb,2)+" m&sup2;c/m&sup2;s")+
-      fila("Viviendas orientativas", vivs>0 ? "~"+vivs+" de 90 m&sup2;c" : "&mdash;")+
-    '</dl><p class="nota">El s&oacute;lido es la huella catastral por su altura '+
+      fila("Valor &euro; por m&sup2;", d.vm ? fmt(d.vm,0)+" "+esc(d.moneda)+"/m&sup2;" : "&mdash;")+
+    '</dl><p class="nota larga">El s&oacute;lido es la huella catastral por su altura '+
       'real; el fantasma, esa misma huella hasta la altura que permite la norma. '+
       'Una cabida completa a&ntilde;ade lo que aqu&iacute; no hay: retranqueos, '+
       'fondo edificable, patios, usos, bajo rasante y aparcamiento.</p></div>'+
@@ -281,6 +302,19 @@ ol.pasos b{color:var(--ink);font-weight:600}
     for(var t=0;t<n;t++) techo.push([anillo[2*t], anillo[2*t+1], z1]);
     cara(techo, aclara(color), borde, alfa);
   }
+  /* Apila n plantas entre z0 y z1. Opaco: un prisma por planta, y el forjado de
+     cada una queda a la vista. Translucido: una sola pieza y encima la linea de
+     cada forjado, porque n prismas con alfa se suman y el volumen se ensucia. */
+  function pisos(a, z0, z1, n, color, borde, alfa){
+    n = Math.max(1, Math.round(n));
+    var h = (z1-z0)/n, i;
+    if(alfa == null){
+      for(i=0;i<n;i++) prisma(a, z0+i*h, z0+(i+1)*h, color, borde);
+      return;
+    }
+    prisma(a, z0, z1, color, borde, alfa);
+    for(i=1;i<n;i++) cara(anillo(a, z0+i*h), null, borde);
+  }
   function aclara(c){
     if(c.charAt(0)!=="#") return c;
     var v=parseInt(c.slice(1),16), r=v>>16&255, g=v>>8&255, b=v&255;
@@ -323,12 +357,15 @@ ol.pasos b{color:var(--ink);font-weight:600}
       .forEach(function(v){ prisma(v.p, 0, v.h, "#242424", "#343434"); });
     (d.arboles||[]).forEach(function(a){ arbol(a[0], a[1]); });
     var orden = d.edificios.slice().sort(function(a,b){ return hondo(a)-hondo(b); });
-    orden.forEach(function(a){ prisma(a, 0, hHoy, "#E4DBC6", "#F2ECDD"); });
+    orden.forEach(function(a){ pisos(a, 0, hHoy, d.pa, "#E4DBC6", "#F2ECDD"); });
     if(hTope > hHoy + 0.1){
+      var suben = Math.max(1, d.pm - d.pa);
       if(d.edificios.length)
-        orden.forEach(function(a){ prisma(a, hHoy, hTope, "#1B54E0", "#4F7DEF", 0.42); });
+        orden.forEach(function(a){
+          pisos(a, hHoy, hTope, suben, "#1B54E0", "#4F7DEF", 0.42);
+        });
       else                              // solar sin edificar: el envolvente es la parcela
-        prisma(p, 0, hTope, "#1B54E0", "#4F7DEF", 0.32);
+        pisos(p, 0, hTope, d.pm, "#1B54E0", "#4F7DEF", 0.32);
     }
   }
 

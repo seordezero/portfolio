@@ -101,6 +101,15 @@ página de definición: qué entra, con qué umbral, y dónde falla.
   página clavada en una versión vieja para siempre.
 - **QGIS:** `reloadData()` refresca filas pero no el esquema. Si el gpkg tiene
   columnas nuevas hay que quitar y volver a poner la capa.
+- **La Y se invierte.** El lienzo crece hacia abajo y la Y del CRS crece hacia
+  el norte. El mapa 2D lo hace en `sy()`; la axonometría de la cabida no lo
+  hacía y salía en espejo, con el norte abajo. Se invierte UNA vez, al armar
+  el paquete, y todo lo de abajo queda coherente.
+- **Las dos anclas.** La marca (arriba a la izquierda) y el círculo de sesión
+  (arriba a la derecha) comparten centro vertical en las cuatro páginas: 28 px
+  en pantalla normal, 18 px en apaisado de teléfono. Se leen como pareja.
+- La portada se compone con formato `%`: un `%` literal en su CSS o su
+  JavaScript hay que doblarlo, o sacar el dato del DOM.
 - No abrir instancias nuevas de QGIS; trabajar sobre la que el usuario tenga
   abierta.
 
