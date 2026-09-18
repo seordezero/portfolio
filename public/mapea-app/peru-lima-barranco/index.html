@@ -175,11 +175,23 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
   border-color:var(--line-2); background:var(--panel-2)}
 .cab{display:flex; align-items:center; justify-content:space-between; gap:10px}
 .cmphd .cab{flex:1; justify-content:flex-end}
-.sesion-chip{font-size:11.5px; color:var(--muted); display:inline-flex;
-  align-items:center; gap:7px; white-space:nowrap}
-.sesion-chip b{color:var(--sel-ink); font-weight:600}
-.sesion-chip button{margin-left:6px; border:0; background:none; padding:0;
-  color:var(--muted); font:inherit; font-size:11px; cursor:pointer; text-decoration:underline}
+.sesion-chip{position:relative; display:inline-flex; align-items:center}
+/* Crema sobre indigo, la pareja de la casa. Redondo para que no se confunda con
+   un boton de la pagina: es quien eres, no una accion. */
+.ava{width:31px; height:31px; border-radius:50%; border:0; cursor:pointer;
+  background:var(--acc); color:var(--sel); font:inherit; font-size:14px;
+  font-weight:700; line-height:1; display:grid; place-items:center; padding:0}
+.ava:hover{filter:brightness(1.08)}
+.avamenu{position:absolute; top:38px; right:0; min-width:184px; z-index:90;
+  background:rgba(26,26,26,.96); backdrop-filter:blur(7px);
+  border:1px solid var(--line-2); border-radius:6px; padding:11px 13px;
+  display:flex; flex-direction:column; gap:9px; text-align:left}
+/* display:flex de la clase gana a display:none de [hidden]: hay que decirlo. */
+.avamenu[hidden]{display:none}
+.avamenu span{font-size:11.5px; color:var(--muted); word-break:break-all}
+.avamenu button{border:1px solid var(--line-2); border-radius:4px; padding:5px 9px;
+  background:none; color:var(--ink); font:inherit; font-size:12px; cursor:pointer}
+.avamenu button:hover{border-color:var(--acc); color:var(--acc)}
 .cmp{position:fixed; inset:0; z-index:60; background:var(--black);
   display:flex; flex-direction:column; --foco:#FFF200}
 /* Foco: todo lo que representa al mismo lote lleva data-l con su id, asi que
@@ -215,8 +227,8 @@ th.plegada .nomb,th.plegada .qx{display:none}
   background:transparent; flex:none}
 /* La sesion y los botones de la pagina, siempre en la misma esquina y sueltos.
    z-index por encima del comparador, que es una capa fija. */
-.esquina{position:fixed; top:16px; right:22px; z-index:80; display:flex;
-  align-items:center; gap:11px}
+.esquina{position:fixed; top:20px; right:26px; z-index:80; display:flex;
+  align-items:center; gap:14px}
 .esquina .btn{width:auto; background:rgba(26,26,26,.82); backdrop-filter:blur(6px)}
 .cmphd h2{margin:0; font-size:15px; font-weight:600}
 .cmphd .btn{width:auto}
@@ -722,9 +734,9 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
 <div class="paleta" id="paleta" hidden></div>
 
 <div class="esquina">
-  <span class="sesion-chip" data-sesion></span>
   <button class="btn sm" id="cmpVaciar">Vaciar</button>
   <button class="btn sm" id="cmpX">Volver</button>
+  <span class="sesion-chip" data-sesion></span>
 </div>
 
 <div class="cmp" id="cmp" hidden>
@@ -1645,13 +1657,31 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     }).catch(function(err){ aviso("No se pudo enviar: "+err.message); });
   };
 
+  /* La sesion es un circulo con la inicial, no un correo largo: el correo
+     ocupaba media esquina en un movil y no aportaba nada hasta que se quiere
+     salir. Al pulsar se abre, y ahi si esta el correo entero y Salir. Dos
+     pulsaciones para cerrar sesion, que cerrarla por error molesta. */
   function pintarQuien(){
     var html = sesion
-      ? '<b>'+esc(sesion.correo)+'</b><button type="button" data-salir>salir</button>'
-      : '<button type="button" data-entrar>Iniciar sesión</button>';
+      ? '<button type="button" class="ava" data-ava aria-haspopup="true" ' +
+        'aria-expanded="false" title="' + esc(sesion.correo) + '">' +
+        esc((sesion.correo||"?").charAt(0).toUpperCase()) + '</button>' +
+        '<div class="avamenu" data-avamenu hidden><span>' + esc(sesion.correo) +
+        '</span><button type="button" data-salir>Salir</button></div>'
+      : '<button type="button" class="btn sm" data-entrar>Iniciar sesión</button>';
     document.querySelectorAll("[data-sesion]").forEach(function(q){ q.innerHTML=html; });
   }
   document.addEventListener("click", function(e){
+    var a = e.target.closest("[data-ava]");
+    if(a){
+      var m = a.parentNode.querySelector("[data-avamenu]");
+      var abre = m.hidden;
+      m.hidden = !abre;
+      a.setAttribute("aria-expanded", abre ? "true" : "false");
+      return;
+    }
+    if(!e.target.closest("[data-avamenu]"))
+      document.querySelectorAll("[data-avamenu]").forEach(function(m){ m.hidden=true; });
     if(e.target.closest("[data-salir]")){
       cerrarSesion();
     }else if(e.target.closest("[data-entrar]")){
@@ -2068,14 +2098,45 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
        que pertenece cada huella-, no con una inventada: si no, la manzana sale
        plana y el lote elegido parece mas alto de lo que es. */
     var huellas = [], vecinos = [], vias = [], arboles = [];
-    var EL = D.edifL || [], R = 110;
-    function cerca(bb){ return bb[2]>ox-R && bb[0]<ox+R && bb[3]>oy-R && bb[1]<oy+R; }
+    var EL = D.edifL || [];
+    /* El radio de contexto sale del propio lote: en una parcela de 500 m2 sobra
+       con 70 m, en una de 5.000 haria falta mas. Mandar siempre lo mismo deja a
+       la grande sin manzana y a la pequena con media ciudad encima. */
+    var R = Math.max(70, Math.hypot(bb[2]-bb[0], bb[3]-bb[1])/2 + 45);
+    function cerca(b2){ return b2[2]>ox-R && b2[0]<ox+R && b2[3]>oy-R && b2[1]<oy+R; }
+    /* Y no se manda el poligono entero: se RECORTA al cuadrado. Un poligono de
+       viario de Madrid puede medir 400 m de largo; sin recortar viaja completo y
+       se dibuja completo para acabar saliendose de la pantalla.
+       Sutherland-Hodgman contra los cuatro lados, que para un cuadrado basta. */
+    function recorta(p){
+      var pts=[], i;
+      for(i=0;i<p.length;i+=2) pts.push([p[i],p[i+1]]);
+      var lados=[[1,0],[-1,0],[0,1],[0,-1]];
+      for(var l=0;l<4;l++){
+        var a=lados[l][0], b=lados[l][1], fuera=[];
+        for(i=0;i<pts.length;i++){
+          var A=pts[i], B=pts[(i+1)%pts.length];
+          var da=a*A[0]+b*A[1]-R, db=a*B[0]+b*B[1]-R;
+          if(da<=0) fuera.push(A);
+          if((da<0)!==(db<0)){
+            var t=da/(da-db);
+            fuera.push([A[0]+(B[0]-A[0])*t, A[1]+(B[1]-A[1])*t]);
+          }
+        }
+        pts=fuera;
+        if(pts.length<3) return null;
+      }
+      var o=[];
+      for(i=0;i<pts.length;i++) o.push(+pts[i][0].toFixed(2), +pts[i][1].toFixed(2));
+      return o;
+    }
     for(var e=0;e<edif.length;e++){
       if(EL[e]===foco){ huellas.push(rel(edif[e].p)); continue; }
       if(!cerca(edif[e].b)) continue;
       var dv = EL[e]>=0 ? lots[EL[e]].d : null;
       var hv = dv ? (dv.ha>0 ? dv.ha : (dv.pa||0)*3.5) : 0;
-      vecinos.push({p:rel(edif[e].p), h:+(hv>2 ? hv : 9).toFixed(1)});
+      var rv = recorta(rel(edif[e].p));
+      if(rv) vecinos.push({p:rv, h:+(hv>2 ? hv : 9).toFixed(1)});
     }
     /* El viario de Madrid son poligonos de espacio publico -calzada y acera
        juntas-, no ejes. Sirve de suelo; no hay dato que separe una de otra. */
@@ -2085,7 +2146,9 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
         if(q[t]<mnx)mnx=q[t]; if(q[t]>mxx)mxx=q[t];
         if(q[t+1]<mny)mny=q[t+1]; if(q[t+1]>mxy)mxy=q[t+1];
       }
-      if(cerca([mnx,mny,mxx,mxy])) vias.push(rel(q));
+      if(!cerca([mnx,mny,mxx,mxy])) continue;
+      var rq = recorta(rel(q));
+      if(rq) vias.push(rq);
     }
     var zverdes = [];
     for(var z=0;z<verdes.length;z++){
@@ -2095,11 +2158,13 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
         if(g[u]<gnx)gnx=g[u]; if(g[u]>gxx)gxx=g[u];
         if(g[u+1]<gny)gny=g[u+1]; if(g[u+1]>gxy)gxy=g[u+1];
       }
-      if(cerca([gnx,gny,gxx,gxy])) zverdes.push(rel(g));
+      if(!cerca([gnx,gny,gxx,gxy])) continue;
+      var rg = recorta(rel(g));
+      if(rg) zverdes.push(rg);
     }
     (D.arb||[]).forEach(function(a){
       var ax=a[0]*S, ay=a[1]*S;
-      if(Math.abs(ax-ox)<R && Math.abs(ay-oy)<R)
+      if(Math.abs(ax-ox)<=R && Math.abs(ay-oy)<=R)
         arboles.push([+(ax-ox).toFixed(1), +(ay-oy).toFixed(1)]);
     });
     escribir("mapea.cabida", {

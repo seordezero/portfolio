@@ -19,18 +19,32 @@
 html,body{height:100%;margin:0}
 body{background:#000;color:var(--ink);font-family:Archivo,system-ui,sans-serif;
   display:flex;flex-direction:column;overflow:hidden}
-.esquina{position:fixed;top:16px;right:22px;z-index:80;display:flex;
-  align-items:center;gap:11px}
+.esquina{position:fixed;top:20px;right:26px;z-index:80;display:flex;
+  align-items:center;gap:14px}
+.sesion-chip{position:relative;display:inline-flex;align-items:center}
+.ava{width:31px;height:31px;border-radius:50%;border:0;cursor:pointer;
+  background:var(--acc);color:var(--sel);font:inherit;font-size:14px;font-weight:700;
+  line-height:1;display:grid;place-items:center;padding:0}
+.avamenu{position:absolute;top:38px;right:0;min-width:184px;z-index:90;
+  background:rgba(26,26,26,.96);backdrop-filter:blur(7px);
+  border:1px solid var(--line-2);border-radius:6px;padding:11px 13px;
+  display:flex;flex-direction:column;gap:9px;text-align:left}
+/* display:flex de la clase gana a display:none de [hidden]: hay que decirlo. */
+.avamenu[hidden]{display:none}
+.avamenu span{font-size:11.5px;color:var(--muted);word-break:break-all}
+.avamenu button{border:1px solid var(--line-2);border-radius:4px;padding:5px 9px;
+  background:none;color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.avamenu button:hover{border-color:var(--acc);color:var(--acc)}
 .btn{border:1px solid var(--line-2);border-radius:4px;
   background:rgba(26,26,26,.82);backdrop-filter:blur(6px);
   color:var(--ink);font:inherit;font-size:12px;padding:6px 11px;cursor:pointer;
   text-decoration:none;display:inline-block}
 .btn:hover{border-color:var(--acc);color:var(--acc)}
-h1{margin:0;padding:17px 26px 12px;font-size:15px;font-weight:600}
+h1{margin:0;padding:26px 32px 16px;font-size:15px;font-weight:600}
 h1 b{color:var(--sel-ink)}
 h1 span{color:var(--muted);font-weight:400;font-size:12px;margin-left:10px}
 main{flex:1;min-height:0;display:grid;
-  grid-template-columns:minmax(0,1fr) 300px;gap:20px;padding:0 26px 22px}
+  grid-template-columns:minmax(0,1fr) 316px;gap:26px;padding:0 32px 28px}
 .vista{position:relative;border:1px solid var(--line);border-radius:5px;
   background:var(--panel);overflow:hidden}
 canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
@@ -41,9 +55,13 @@ canvas:active{cursor:grabbing}
   background:rgba(10,10,10,.72);padding:8px 10px;border-radius:4px;line-height:1.7}
 .leyenda i{display:inline-block;width:11px;height:11px;border-radius:2px;
   margin-right:7px;vertical-align:-1px}
-aside{display:flex;flex-direction:column;gap:14px;min-height:0}
+/* La pagina no se desplaza; la columna de fichas si, por dentro, como el panel
+   de resultados del navegador. Con la proto-cabida y los pasos son cinco fichas
+   y en una pantalla baja no caben sin apretarlas hasta no leerse. */
+aside{display:flex;flex-direction:column;gap:16px;min-height:0;overflow-y:auto;
+  padding-right:2px}
 .tar{border:1px solid var(--line);border-radius:5px;background:var(--panel);
-  padding:13px 15px}
+  padding:16px 18px;flex:none}
 .tar h2{margin:0 0 9px;font-size:10.5px;font-weight:600;letter-spacing:.09em;
   text-transform:uppercase;color:var(--sel-ink)}
 dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0}
@@ -51,7 +69,28 @@ dt{font-size:11px;color:var(--muted)}
 dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
 .gordo{font-size:22px;font-weight:700;color:var(--acc);text-align:right;
   font-variant-numeric:tabular-nums}
-.nota{font-size:10.5px;color:var(--muted);line-height:1.5}
+.nota{font-size:10.5px;color:var(--muted);line-height:1.55}
+ol.pasos{margin:0;padding-left:16px;font-size:11px;color:var(--ink-2);line-height:1.55}
+ol.pasos li{margin-bottom:5px}
+ol.pasos li:last-child{margin-bottom:0}
+ol.pasos b{color:var(--ink);font-weight:600}
+.imprimir{width:100%;margin-top:11px;text-align:center}
+/* Al imprimir sobra todo lo que no es informacion: mandos, esquina y leyenda.
+   El lienzo sale tal cual esta en pantalla, que es justo lo que se quiere. */
+@media print{
+  body{background:#fff;color:#111;display:block;overflow:visible;height:auto}
+  .esquina,.mandos,.imprimir{display:none !important}
+  h1{color:#111;padding:0 0 10px}
+  h1 b{color:#1B54E0}
+  main{display:block;padding:0}
+  .vista{height:78mm;border-color:#bbb;background:#141414;page-break-inside:avoid}
+  aside{display:block;overflow:visible;margin-top:8mm}
+  .tar{border-color:#ccc;background:#fff;margin-bottom:5mm;page-break-inside:avoid}
+  .tar h2{color:#1B54E0}
+  dt,.nota{color:#555} dd,ol.pasos{color:#111}
+  .gordo{color:#111}
+  .leyenda{background:none;color:#555}
+}
 .vacio{flex:1;display:flex;align-items:center;justify-content:center;
   color:var(--muted);font-size:13px;text-align:center;padding:26px}
 @media (max-width:900px){
@@ -65,7 +104,7 @@ dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
-<div class="esquina"><a class="btn" href="../">Volver</a></div>
+<div class="esquina"><a class="btn" href="../">Volver</a><span class="sesion-chip" id="ses"></span></div>
 <h1 id="tit">Cabida arquitect&oacute;nica</h1>
 <main id="cuerpo">
   <div class="vista">
@@ -110,7 +149,25 @@ dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
   // ---------------------------------------------------------------- los datos
   var hHoy = d.ha > 0 ? d.ha : d.pa * H_PISO;
   var hTope = d.pm * H_PISO;
+  var altoTotal = Math.max(hHoy, hTope);
   var suben = Math.max(0, d.pm - d.pa);
+  /* Superficie de las huellas por el teorema del zapato. Es la ocupacion real
+     medida sobre el poligono catastral, no el area de la parcela por un
+     coeficiente: aqui no hay coeficiente que valga, hay un edificio dibujado. */
+  function areaAnillo(p){
+    var a=0, n=p.length;
+    for(var i=0;i<n;i+=2){
+      var j=(i+2)%n;
+      a += p[i]*p[j+1] - p[j]*p[i+1];
+    }
+    return Math.abs(a)/2;
+  }
+  var huella = (d.edificios||[]).reduce(function(t,p){ return t+areaAnillo(p); }, 0);
+  var ocupa  = d.area>0 ? huella/d.area*100 : 0;
+  var cHoy   = huella * d.pa;
+  var cTope  = huella * d.pm;
+  var edifb  = d.area>0 ? cTope/d.area : 0;
+  var vivs   = Math.floor(cTope/90);           // 90 m2c por vivienda, orientativo
   document.getElementById("datos").innerHTML =
     '<div class="tar"><h2>Potencial</h2>'+
       '<div class="gordo">'+fmt(d.potencial,0)+' m&sup2;</div>'+
@@ -124,11 +181,49 @@ dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
       fila("Plantas permitidas", d.pm+" p &middot; ~"+fmt(hTope,1)+" m")+
       fila("Valor &euro; por m&sup2;", d.vm ? fmt(d.vm,0)+" "+esc(d.moneda)+"/m&sup2;" : "&mdash;")+
     '</dl></div>'+
-    '<div class="tar"><h2>C&oacute;mo se dibuja</h2><p class="nota">'+
-      'El volumen s&oacute;lido es la huella catastral del edificio por su altura '+
-      'real. El fantasma es esa misma huella entre la altura de hoy y la que '+
-      'permite la norma. No es un proyecto: es el envolvente m&aacute;ximo, sin '+
-      'retranqueos ni patios.</p></div>';
+    '<div class="tar"><h2>Proto-cabida</h2><dl>'+
+      fila("Ocupaci&oacute;n en planta", fmt(huella,0)+" m&sup2; &middot; "+fmt(ocupa,0)+"&#37;")+
+      fila("Construido hoy", fmt(cHoy,0)+" m&sup2;c")+
+      fila("Techo m&aacute;ximo", fmt(cTope,0)+" m&sup2;c")+
+      fila("Edificabilidad", fmt(edifb,2)+" m&sup2;c/m&sup2;s")+
+      fila("Viviendas orientativas", vivs>0 ? "~"+vivs+" de 90 m&sup2;c" : "&mdash;")+
+    '</dl><p class="nota">El s&oacute;lido es la huella catastral por su altura '+
+      'real; el fantasma, esa misma huella hasta la altura que permite la norma. '+
+      'Una cabida completa a&ntilde;ade lo que aqu&iacute; no hay: retranqueos, '+
+      'fondo edificable, patios, usos, bajo rasante y aparcamiento.</p></div>'+
+    '<div class="tar"><h2>Pr&oacute;ximos pasos</h2><ol class="pasos">'+
+      '<li><b>Nota simple</b> en el Registro de la Propiedad: qui&eacute;n es el '+
+        'titular y qu&eacute; cargas arrastra la finca.</li>'+
+      '<li><b>Consulta descriptiva y gr&aacute;fica</b> en la Sede del Catastro, '+
+        'con la referencia de arriba.</li>'+
+      '<li><b>Consulta urban&iacute;stica</b> al Ayuntamiento: los par&aacute;metros '+
+        'vinculantes son los suyos, no los de esta pantalla.</li>'+
+      '<li><b>Estudio de cabida completo</b> con un arquitecto, ya con '+
+        'retranqueos, patios y usos.</li>'+
+      '<li><b>Contacto con la propiedad</b> y, si hay acuerdo, contrato de '+
+        'arras ante la oferta en firme.</li>'+
+    '</ol><button class="btn imprimir" type="button" id="imprimir">'+
+      'Imprimir informaci&oacute;n</button></div>';
+  document.getElementById("imprimir").onclick=function(){ window.print(); };
+  /* La sesion, la misma que en el resto de la app: circulo crema con la inicial. */
+  (function(){
+    var ses=null;
+    try{ ses=JSON.parse(localStorage.getItem("mapea.sesion")); }catch(e){}
+    var caja=document.getElementById("ses");
+    if(!caja || !(ses && ses.correo)) return;
+    var co=esc(ses.correo);
+    caja.innerHTML = "<button type='button' class='ava' title='"+co+"'>"+
+      co.charAt(0).toUpperCase()+"</button><div class='avamenu' hidden><span>"+
+      co+"</span><button type='button' data-salir>Salir</button></div>";
+    var m=caja.querySelector(".avamenu");
+    caja.querySelector(".ava").onclick=function(){ m.hidden=!m.hidden; };
+    caja.querySelector("[data-salir]").onclick=function(){
+      localStorage.removeItem("mapea.sesion"); caja.innerHTML="";
+    };
+    document.addEventListener("click", function(ev){
+      if(!caja.contains(ev.target)) m.hidden=true;
+    });
+  })();
   function fila(k,v){ return "<dt>"+k+"</dt><dd>"+v+"</dd>"; }
 
   // ------------------------------------------------------------ axonometria
@@ -136,10 +231,13 @@ dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
   var W=0, H=0, esc0=1, giro=Math.PI/4, k=1, arrastra=null;
   var COS=Math.cos(Math.PI/6), SEN=Math.sin(Math.PI/6);
 
+  /* El volumen se centra ENTERO, no por su planta a cota cero. Subir medio alto
+     total pone el centro del prisma en el centro del lienzo; si no, el solido
+     cuelga hacia abajo y el fantasma se sale por arriba. */
   function proj(x,y,z){
     var xr = x*Math.cos(giro) - y*Math.sin(giro);
     var yr = x*Math.sin(giro) + y*Math.cos(giro);
-    return [(xr-yr)*COS*esc0*k, ((xr+yr)*SEN - z)*esc0*k];
+    return [(xr-yr)*COS*esc0*k, ((xr+yr)*SEN - z + altoTotal/2)*esc0*k];
   }
   function cara(pts, relleno, borde, alfa){
     cx.beginPath();
@@ -226,20 +324,22 @@ dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
     W=Math.round(r.width); H=Math.round(r.height);
     cv.width=W*dpr; cv.height=H*dpr;
     cx.setTransform(dpr,0,0,dpr,0,0);
-    /* El encuadre mira TODA la geometria: parcela, lo construido, el fantasma y
-       la manzana alrededor. Antes salia de la parcela sola y el fantasma se iba
-       por arriba de la pantalla. */
-    var m=0;
+    /* La escala se calcula con el RADIO en planta, no con la caja de este giro:
+       asi el encuadre no depende de como este girado el modelo y girar no saca
+       nada de la pantalla. Un punto a radio r cae, como mucho, a r*raiz(2)*COS
+       de ancho y a r*raiz(2)*SEN de alto; la altura suma entera.
+       La manzana NO entra: si entrara, un lote de 115 m2 y otro de 5.000
+       saldrian a la misma escala, la del radio de contexto. */
+    var r=0;
     function mide(a){
-      for(var i=0;i<a.length;i+=2) m=Math.max(m, Math.abs(a[i]), Math.abs(a[i+1]));
+      for(var i=0;i<a.length;i+=2) r=Math.max(r, Math.hypot(a[i], a[i+1]));
     }
     mide(d.parcela);
     (d.edificios||[]).forEach(mide);
-    // La manzana NO entra en el encuadre: si entrara, un lote de 115 m2 y otro de
-    // 5.000 saldrian a la misma escala, la del radio de contexto. El contexto cae
-    // donde caiga y se recorta por los bordes; es contexto, no el objeto.
-    m=Math.max(m, hTope*0.8, 15);
-    esc0 = Math.min(W,H)/(m*2.6||1);
+    var diag = Math.max(r, 7) * Math.SQRT2;
+    var anchoNec = 2*diag*COS;
+    var altoNec  = altoTotal + 2*diag*SEN;
+    esc0 = Math.min(W*0.84/(anchoNec||1), H*0.84/(altoNec||1));
     pinta();
   }
   document.getElementById("mas").onclick=function(){ k*=1.25; pinta(); };

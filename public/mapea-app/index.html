@@ -41,13 +41,18 @@ body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
    comparador. Aqui solo informa y deja salir; entrar se pide al guardar. */
 /* La sesion vive en la misma esquina en las tres paginas: portada, navegador
    y comparador. Flotando, sin barra que la sostenga. */
-.sesion-chip{position:fixed;top:12px;right:16px;z-index:40;
-  display:inline-flex;align-items:center;gap:7px;
-  font-size:11.5px;color:var(--ink-2);white-space:nowrap}
-.sesion-chip b{color:var(--acc);font-weight:600}
-.sesion-chip button{border:0;background:none;padding:0;color:var(--muted);
-  font:inherit;font-size:11.5px;cursor:pointer;text-decoration:underline}
-.sesion-chip button:hover{color:var(--acc)}
+.sesion-chip{position:fixed;top:20px;right:26px;z-index:40;display:inline-flex}
+.ava{width:31px;height:31px;border-radius:50%;border:0;cursor:pointer;
+  background:var(--acc);color:#1B54E0;font:inherit;font-size:14px;font-weight:700;
+  line-height:1;display:grid;place-items:center;padding:0}
+.avamenu{position:absolute;top:38px;right:0;min-width:184px;z-index:90;
+  background:rgba(20,20,20,.96);border:1px solid #2E2E2E;border-radius:6px;
+  padding:11px 13px;display:flex;flex-direction:column;gap:9px;text-align:left}
+.avamenu[hidden]{display:none}
+.avamenu span{font-size:11.5px;color:var(--muted);word-break:break-all}
+.avamenu button{border:1px solid #2E2E2E;border-radius:4px;padding:5px 9px;
+  background:none;color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.avamenu button:hover{border-color:var(--acc);color:var(--acc)}
 .bar nav a{padding:13px 12px;color:var(--acc);text-decoration:none;font-size:12.5px;
   letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
 .bar nav a:hover{border-bottom-color:var(--acc)}
@@ -141,11 +146,23 @@ h1{margin:0;font-family:var(--rotulo);font-weight:400;
   var k="mapea.sesion", s=null;
   try{ s=JSON.parse(localStorage.getItem(k)); }catch(e){}
   var c=document.querySelector("[data-sesion]"); if(!c) return;
-  c.innerHTML = s && s.correo
-    ? "<b>"+s.correo.replace(/[&<>]/g,"")+"</b><button type='button'>salir</button>"
-    : "";
-  var b=c.querySelector("button");
-  if(b) b.onclick=function(){ localStorage.removeItem(k); c.innerHTML=""; };
+  /* Sin sesion no hay nada que ensenar aqui: entrar se pide donde hace falta,
+     al guardar un lote. */
+  if(!(s && s.correo)){ c.innerHTML=""; return; }
+  var e=s.correo.replace(/[&<>"]/g,"");
+  c.style.position="relative";
+  c.innerHTML = "<button type='button' class='ava' title='"+e+"'>"+
+    e.charAt(0).toUpperCase()+"</button>"+
+    "<div class='avamenu' hidden><span>"+e+"</span>"+
+    "<button type='button' data-salir>Salir</button></div>";
+  var m=c.querySelector(".avamenu");
+  c.querySelector(".ava").onclick=function(){ m.hidden=!m.hidden; };
+  c.querySelector("[data-salir]").onclick=function(){
+    localStorage.removeItem(k); c.innerHTML="";
+  };
+  document.addEventListener("click", function(ev){
+    if(!c.contains(ev.target)) m.hidden=true;
+  });
 })();
 </script>
 </body>
