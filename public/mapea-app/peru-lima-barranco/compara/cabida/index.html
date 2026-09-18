@@ -3,29 +3,225 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>MAPEA App (Barranco) · cabida</title>
+<title>MAPEA App (Barranco) &middot; cabida</title>
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+:root{--panel:#1A1A1A; --line:#262626; --line-2:#2E2E2E; --ink:#F2F2F2;
+  --ink-2:#C9C9C9; --muted:#8A8A8A; --acc:#E4DBC6; --sel:#1B54E0; --sel-ink:#5C8CF7;
+  --foco:#FFF200}
 html,body{height:100%;margin:0}
-body{background:#000;color:#F2F2F2;font-family:Archivo,system-ui,sans-serif;
+body{background:#000;color:var(--ink);font-family:Archivo,system-ui,sans-serif;
   display:flex;flex-direction:column;overflow:hidden}
-.esquina{position:fixed;top:10px;right:14px;z-index:80;display:flex;gap:9px}
-.btn{border:1px solid #2E2E2E;border-radius:4px;background:rgba(26,26,26,.82);
-  color:#F2F2F2;font:inherit;font-size:12px;padding:6px 11px;cursor:pointer;
-  text-decoration:none}
-.btn:hover{border-color:#E4DBC6;color:#E4DBC6}
-h1{margin:0;padding:11px 16px 6px;font-size:15px;font-weight:600}
-main{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
-  color:#6E6E6E;font-size:13px;padding-bottom:44px}
+.esquina{position:fixed;top:16px;right:22px;z-index:80;display:flex;
+  align-items:center;gap:11px}
+.btn{border:1px solid var(--line-2);border-radius:4px;
+  background:rgba(26,26,26,.82);backdrop-filter:blur(6px);
+  color:var(--ink);font:inherit;font-size:12px;padding:6px 11px;cursor:pointer;
+  text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+h1{margin:0;padding:17px 26px 12px;font-size:15px;font-weight:600}
+h1 b{color:var(--sel-ink)}
+h1 span{color:var(--muted);font-weight:400;font-size:12px;margin-left:10px}
+main{flex:1;min-height:0;display:grid;
+  grid-template-columns:minmax(0,1fr) 300px;gap:20px;padding:0 26px 22px}
+.vista{position:relative;border:1px solid var(--line);border-radius:5px;
+  background:var(--panel);overflow:hidden}
+canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+canvas:active{cursor:grabbing}
+.mandos{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:5px}
+.mandos .btn{padding:5px 9px;background:var(--panel)}
+.leyenda{position:absolute;left:12px;bottom:12px;font-size:11px;color:var(--muted);
+  background:rgba(10,10,10,.72);padding:8px 10px;border-radius:4px;line-height:1.7}
+.leyenda i{display:inline-block;width:11px;height:11px;border-radius:2px;
+  margin-right:7px;vertical-align:-1px}
+aside{display:flex;flex-direction:column;gap:14px;min-height:0}
+.tar{border:1px solid var(--line);border-radius:5px;background:var(--panel);
+  padding:13px 15px}
+.tar h2{margin:0 0 9px;font-size:10.5px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--sel-ink)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0}
+dt{font-size:11px;color:var(--muted)}
+dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.gordo{font-size:22px;font-weight:700;color:var(--foco);text-align:right;
+  font-variant-numeric:tabular-nums}
+.nota{font-size:10.5px;color:var(--muted);line-height:1.5}
+.vacio{flex:1;display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:13px;text-align:center;padding:26px}
+@media (max-width:900px){
+  main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;
+    padding:0 12px 14px;gap:10px}
+  h1{padding:44px 12px 8px;font-size:13px}
+  aside{flex-direction:row;gap:10px}
+  .tar{flex:1;padding:9px 11px}
+  .esquina{top:10px;right:12px}
+}
 </style>
 </head>
 <body>
 <div class="esquina"><a class="btn" href="../">Volver</a></div>
-<h1>Cabida arquitectónica</h1>
-<main>Pendiente.</main>
+<h1 id="tit">Cabida arquitect&oacute;nica</h1>
+<main id="cuerpo">
+  <div class="vista">
+    <canvas id="c"></canvas>
+    <div class="mandos">
+      <button class="btn" id="gira">Girar</button>
+      <button class="btn" id="mas">&#65291;</button>
+      <button class="btn" id="menos">&minus;</button>
+      <button class="btn" id="fit">Ajustar</button>
+    </div>
+    <div class="leyenda">
+      <div><i style="background:#8C8C8C"></i>Construido hoy</div>
+      <div><i style="background:#FFF200;opacity:.45"></i>Lo que cabe encima</div>
+      <div><i style="background:#3A3A3A"></i>Parcela</div>
+    </div>
+  </div>
+  <aside id="datos"></aside>
+</main>
+<script>
+(function(){
+  var H_PISO = 3.5;                 // m; la misma tabla del PGOUM que usa la app
+  var d = null;
+  try{ d = JSON.parse(localStorage.getItem("mapea.cabida")); }catch(e){}
+
+  var cuerpo = document.getElementById("cuerpo");
+  if(!d || !d.parcela || !d.parcela.length){
+    cuerpo.innerHTML = '<div class="vacio">Elige un lote guardado en el comparador '+
+      'y pulsa <b>Generar cabida arquitect&oacute;nica</b>.</div>';
+    return;
+  }
+
+  document.getElementById("tit").innerHTML =
+    'Cabida &middot; <b>'+esc(d.dir||d.refcat)+'</b><span>'+esc(d.refcat)+'</span>';
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function fmt(v,n){ return (+v||0).toLocaleString("es-ES",
+    {minimumFractionDigits:n,maximumFractionDigits:n}); }
+
+  // ---------------------------------------------------------------- los datos
+  var hHoy = d.ha > 0 ? d.ha : d.pa * H_PISO;
+  var hTope = d.pm * H_PISO;
+  var suben = Math.max(0, d.pm - d.pa);
+  document.getElementById("datos").innerHTML =
+    '<div class="tar"><h2>Potencial</h2>'+
+      '<div class="gordo">'+fmt(d.potencial,0)+' m&sup2;</div>'+
+      '<p class="nota">'+(suben>0
+        ? 'Caben '+suben+' plantas m&aacute;s sobre lo construido.'
+        : 'El lote ya ha agotado su edificabilidad.')+'</p></div>'+
+    '<div class="tar"><h2>El lote</h2><dl>'+
+      fila("&Aacute;rea", fmt(d.area,0)+" m&sup2;")+
+      fila("Zonificaci&oacute;n", esc(d.zona||"&mdash;"))+
+      fila("Plantas construidas", d.pa+" p &middot; ~"+fmt(hHoy,1)+" m")+
+      fila("Plantas permitidas", d.pm+" p &middot; ~"+fmt(hTope,1)+" m")+
+      fila("Valor &euro; por m&sup2;", d.vm ? fmt(d.vm,0)+" "+esc(d.moneda)+"/m&sup2;" : "&mdash;")+
+    '</dl></div>'+
+    '<div class="tar"><h2>C&oacute;mo se dibuja</h2><p class="nota">'+
+      'El volumen s&oacute;lido es la huella catastral del edificio por su altura '+
+      'real. El fantasma es esa misma huella entre la altura de hoy y la que '+
+      'permite la norma. No es un proyecto: es el envolvente m&aacute;ximo, sin '+
+      'retranqueos ni patios.</p></div>';
+  function fila(k,v){ return "<dt>"+k+"</dt><dd>"+v+"</dd>"; }
+
+  // ------------------------------------------------------------ axonometria
+  var cv = document.getElementById("c"), cx = cv.getContext("2d");
+  var W=0, H=0, esc0=1, giro=Math.PI/4, k=1, arrastra=null;
+  var COS=Math.cos(Math.PI/6), SEN=Math.sin(Math.PI/6);
+
+  function proj(x,y,z){
+    var xr = x*Math.cos(giro) - y*Math.sin(giro);
+    var yr = x*Math.sin(giro) + y*Math.cos(giro);
+    return [(xr-yr)*COS*esc0*k, ((xr+yr)*SEN - z)*esc0*k];
+  }
+  function cara(pts, relleno, borde, alfa){
+    cx.beginPath();
+    for(var i=0;i<pts.length;i++){
+      var p=proj(pts[i][0],pts[i][1],pts[i][2]);
+      if(i===0) cx.moveTo(W/2+p[0], H/2+p[1]); else cx.lineTo(W/2+p[0], H/2+p[1]);
+    }
+    cx.closePath();
+    if(relleno){ cx.globalAlpha=alfa==null?1:alfa; cx.fillStyle=relleno; cx.fill(); }
+    cx.globalAlpha=1;
+    if(borde){ cx.strokeStyle=borde; cx.lineWidth=1; cx.stroke(); }
+  }
+  /* Prisma: se pintan primero las paredes que quedan detras y luego las de
+     delante, ordenadas por profundidad del punto medio. Es el algoritmo del
+     pintor: sin z-buffer, el orden ES la oclusion. */
+  function prisma(anillo, z0, z1, color, borde, alfa){
+    var n=anillo.length/2, muros=[];
+    for(var i=0;i<n;i++){
+      var j=(i+1)%n;
+      var ax=anillo[2*i], ay=anillo[2*i+1], bx=anillo[2*j], by=anillo[2*j+1];
+      var mx=(ax+bx)/2, my=(ay+by)/2;
+      var mr = mx*Math.sin(giro) + my*Math.cos(giro) + (mx*Math.cos(giro)-my*Math.sin(giro));
+      muros.push([mr, [[ax,ay,z0],[bx,by,z0],[bx,by,z1],[ax,ay,z1]]]);
+    }
+    muros.sort(function(p,q){ return p[0]-q[0]; });
+    for(var m=0;m<muros.length;m++) cara(muros[m][1], color, borde, alfa);
+    var techo=[];
+    for(var t=0;t<n;t++) techo.push([anillo[2*t], anillo[2*t+1], z1]);
+    cara(techo, aclara(color), borde, alfa);
+  }
+  function aclara(c){
+    if(c.charAt(0)!=="#") return c;
+    var v=parseInt(c.slice(1),16), r=v>>16&255, g=v>>8&255, b=v&255;
+    return "rgb("+Math.min(255,r+38)+","+Math.min(255,g+38)+","+Math.min(255,b+38)+")";
+  }
+
+  function pinta(){
+    cx.fillStyle="#141414"; cx.fillRect(0,0,W,H);
+    var suelo=[], p=d.parcela;
+    for(var i=0;i<p.length;i+=2) suelo.push([p[i],p[i+1],0]);
+    cara(suelo, "#2A2A2A", "#4A4A4A");
+    /* Los prismas tambien se ordenan entre si, no solo sus muros: con varios
+       edificios en la parcela, pintar en el orden del fichero tapa el de delante
+       con el de detras. La profundidad es la del centroide girado. */
+    function hondo(a){
+      var sx=0, sy=0, n=a.length/2;
+      for(var i=0;i<a.length;i+=2){ sx+=a[i]; sy+=a[i+1]; }
+      sx/=n; sy/=n;
+      return sx*Math.sin(giro)+sy*Math.cos(giro) + (sx*Math.cos(giro)-sy*Math.sin(giro));
+    }
+    var orden = d.edificios.slice().sort(function(a,b){ return hondo(a)-hondo(b); });
+    orden.forEach(function(a){ prisma(a, 0, hHoy, "#8C8C8C", "#B4B4B4"); });
+    if(hTope > hHoy + 0.1){
+      if(d.edificios.length)
+        orden.forEach(function(a){ prisma(a, hHoy, hTope, "#FFF200", "#FFF200", 0.30); });
+      else                              // solar sin edificar: el envolvente es la parcela
+        prisma(p, 0, hTope, "#FFF200", "#FFF200", 0.22);
+    }
+  }
+
+  function ajusta(){
+    var r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+    W=Math.round(r.width); H=Math.round(r.height);
+    cv.width=W*dpr; cv.height=H*dpr;
+    cx.setTransform(dpr,0,0,dpr,0,0);
+    var p=d.parcela, m=0;
+    for(var i=0;i<p.length;i+=2) m=Math.max(m, Math.abs(p[i]), Math.abs(p[i+1]));
+    m=Math.max(m, hTope);
+    esc0 = Math.min(W,H)/(m*3.1||1);
+    pinta();
+  }
+  document.getElementById("mas").onclick=function(){ k*=1.25; pinta(); };
+  document.getElementById("menos").onclick=function(){ k/=1.25; pinta(); };
+  document.getElementById("fit").onclick=function(){ k=1; giro=Math.PI/4; pinta(); };
+  document.getElementById("gira").onclick=function(){ giro+=Math.PI/4; pinta(); };
+  cv.addEventListener("pointerdown", function(e){ arrastra=e.clientX; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", function(e){
+    if(arrastra==null) return;
+    giro += (e.clientX-arrastra)*0.008; arrastra=e.clientX; pinta();
+  });
+  cv.addEventListener("pointerup", function(){ arrastra=null; });
+  cv.addEventListener("wheel", function(e){
+    e.preventDefault(); k *= e.deltaY<0 ? 1.12 : 1/1.12; pinta();
+  }, {passive:false});
+  addEventListener("resize", ajusta);
+  ajusta();
+})();
+</script>
 </body>
 </html>

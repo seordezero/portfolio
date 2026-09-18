@@ -2023,7 +2023,28 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   });
   document.getElementById("cabida").onclick=function(){
     if(foco==null) return;
-    // relativo a .../compara/, que es donde estamos al pulsarlo
+    /* La cabida es una pagina aparte y no puede cargar los 5,5 MB de la ciudad
+       para dibujar un edificio. Se le deja en localStorage solo lo del lote
+       elegido: su huella, las huellas construidas y las cuatro cifras que hacen
+       falta. Las coordenadas van en metros relativos al centro del lote. */
+    var l = lots[foco], d = l.d;
+    var bb = l.b, ox = (bb[0]+bb[2])/2, oy = (bb[1]+bb[3])/2;
+    function rel(p){
+      var o = [];
+      for(var k=0;k<p.length;k+=2) o.push(+(p[k]-ox).toFixed(2), +(p[k+1]-oy).toFixed(2));
+      return o;
+    }
+    var huellas = [];
+    var EL = D.edifL || [];
+    for(var e=0;e<edif.length;e++) if(EL[e]===foco) huellas.push(rel(edif[e].p));
+    escribir("mapea.cabida", {
+      ciudad: C.ciudad || "", id: C.id || "",
+      refcat: d.u || "", dir: d.ad || "", color: colorLote(foco),
+      parcela: rel(l.p), edificios: huellas,
+      pa: d.pa || 0, pm: d.pm || 0, ha: d.ha || 0,
+      area: d.a || 0, potencial: d.po || 0, zona: d.z || "",
+      moneda: C.moneda || "", vm: d.vm || 0
+    });
     location.href = "cabida/?lote=" + foco;
   };
   var paleta=document.getElementById("paleta");
