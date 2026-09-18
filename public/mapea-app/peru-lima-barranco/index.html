@@ -49,16 +49,31 @@ body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font
 .rail{background:var(--panel); display:flex; flex-direction:column; overflow:hidden; min-width:0}
 /* El panel derecho arranca por debajo de la esquina de sesion: si no, la cabecera
    de Guardados queda tapada por el correo. */
-.rail.der{padding-top:56px}
+.rail.der{padding-top:64px}
 .rail.izq{border-right:1px solid var(--line)}
 .rail.der{border-left:1px solid var(--line)}
-.mast{padding:calc(9px + env(safe-area-inset-top)) 17px 7px;
+.mast{padding:calc(14px + env(safe-area-inset-top)) 17px 11px;
   padding-left:calc(17px + env(safe-area-inset-left)); border-bottom:1px solid var(--line)}
 .volver{display:inline-block; color:var(--muted); font-size:10px; letter-spacing:.09em;
   text-transform:uppercase; text-decoration:none; margin-bottom:5px}
 .volver:hover{color:var(--acc-ink)}
-.mast h1{font-weight:600; font-size:17px; margin:0; letter-spacing:.01em}
+.mast h1{font-weight:600; font-size:17px; margin:9px 0 0; letter-spacing:.01em}
 .mast .sub{color:var(--muted); font-size:10.5px; margin-top:2px}
+/* La marca es el mismo glifo del .ttf que la portada, no una M dibujada aparte.
+   Desde cualquier pagina lleva a la portada, que es lo que se espera de un
+   logotipo en la esquina. */
+.marca{display:inline-flex; align-items:center; gap:9px; text-decoration:none;
+  color:var(--acc); font-size:15px; font-weight:700; letter-spacing:.02em}
+.marca svg{width:21px; height:21px; display:block; border-radius:3px; flex:none}
+.marca:hover{opacity:.82}
+/* Una advertencia permanente no es un titulo: gris, pequena y en una esquina
+   que no use nadie. Se pulsa para leer el aviso entero. */
+.aviso-mapa{position:absolute; left:14px; top:14px; z-index:3; border:0;
+  background:none; padding:0; cursor:pointer; text-align:left;
+  color:var(--muted); font:inherit; font-size:10px; letter-spacing:.06em;
+  text-transform:uppercase}
+.aviso-mapa:hover{color:var(--acc-ink)}
+.aviso-mapa .corto{display:none}
 
 /* Los doce caben sin desplazar el panel, pero no a base de apretarlos: las
    filas se reparten el hueco que haya. En una pantalla alta respiran solas; en
@@ -223,7 +238,9 @@ th.plegada .nomb,th.plegada .qx{display:none}
   cursor:pointer; padding:0 4px}
 .pl:hover{color:var(--acc)}
 /* Sin barra: el titulo y la nota flotan sobre el fondo de la pagina. */
-.cmphd{display:flex; align-items:baseline; gap:14px; padding:17px 26px 12px;
+/* 26 px arriba y no 17: la esquina de sesion mide 31 px y empieza a 20, asi que
+   cualquier cosa que arranque antes de 72 px le queda debajo. */
+.cmphd{display:flex; align-items:center; gap:18px; padding:26px 30px 14px;
   background:transparent; flex:none}
 /* La sesion y los botones de la pagina, siempre en la misma esquina y sueltos.
    z-index por encima del comparador, que es una capa fija. */
@@ -234,7 +251,7 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .cmphd .btn{width:auto}
 /* La pagina entera cabe en la ventana: nada de scroll de pagina. Lo unico que
    se desplaza por dentro es la tabla, que tiene mas filas que alto hay. */
-.cmpbody{flex:1; min-height:0; overflow:hidden; padding:8px 26px 18px; display:grid;
+.cmpbody{flex:1; min-height:0; overflow:hidden; padding:22px 30px 20px; display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,52%) 46px;
   grid-template-rows:minmax(0,1fr) 58px; gap:20px; align-items:stretch}
 /* Los numeros de los lotes, al pie de todo: mandan sobre la tabla y sobre los
@@ -545,6 +562,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      un movil no caben las dos en la misma franja. */
   .legend{left:10px; top:10px; bottom:auto; max-width:132px; font-size:9px;
     padding:5px 7px}
+  /* En apaisado la esquina libre es la de abajo a la derecha: arriba estan la
+     caja de colorear y los mandos, y abajo a la izquierda la ficha. */
+  .aviso-mapa{left:auto; right:12px; top:auto; bottom:10px; font-size:9px}
+  .aviso-mapa .largo{display:none} .aviso-mapa .corto{display:inline}
   .legend .lg{margin-top:2px} .legend select{margin-top:3px; padding:3px 5px}
   /* La ficha se va al lado contrario de los mandos. En un mapa de 370 px de
      ancho, ficha a la derecha y mandos a la derecha no caben: la ficha tapaba
@@ -596,6 +617,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      derecha y con 292 px de ancho no deja sitio a nada mas en esa franja. */
   .legend{left:8px; top:8px; bottom:auto; padding:6px 8px; max-width:142px;
     font-size:9.5px}
+  /* En vertical la caja de colorear ocupa arriba a la izquierda; el aviso baja. */
+  .aviso-mapa{top:auto; bottom:10px; left:9px; font-size:9px}
   .legend .lg{margin-top:3px} .tools{right:8px; top:8px}
   .tools .btn{padding:4px 7px; font-size:11px}
   /* abajo: lista a la izquierda, ficha a la derecha */
@@ -643,9 +666,9 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
 <div class="app">
   <aside class="rail izq">
     <div class="mast">
+      <a class="marca" href="/mapea-app/" title="Volver a MAPEA"><svg viewBox="0 0 1104 1104" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="1104" height="1104" fill="#EAE4D9"/><g transform="translate(288.3 331.8) scale(0.640)"><path d="M665 0V248Q665 294 668.5 342.5Q672 391 676.0 424.0Q680 457 681 466H677L550 0H377L249 465H245Q246 456 250.5 423.5Q255 391 259.0 342.5Q263 294 263 248V0H60V688H372L476 291H480L583 688H884V0Z" fill="#1B54E0" transform="translate(-60 688) scale(1 -1)"/></g></svg>MAPEA</a>
       <h1 id="mTitulo">MAPEA App</h1>
       <div class="sub num" id="mSub"></div>
-      <button class="aviso" id="avisoBtn" type="button">Prototipo de investigación</button>
     </div>
     <div class="filters" id="filters"></div>
     <div class="foot" id="foot">
@@ -660,6 +683,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   <main class="main">
     <div class="canvaswrap">
       <canvas id="cv"></canvas>
+      <button class="aviso-mapa" id="avisoBtn" type="button"><span class="largo"></span><span class="corto">Prototipo</span></button>
       <div class="tools">
         <button class="btn" id="zIn" aria-label="Acercar">＋</button>
         <button class="btn" id="zOut" aria-label="Alejar">−</button>
@@ -741,6 +765,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
 
 <div class="cmp" id="cmp" hidden>
   <div class="cmphd">
+    <a class="marca" href="/mapea-app/" title="Volver a MAPEA"><svg viewBox="0 0 1104 1104" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="1104" height="1104" fill="#EAE4D9"/><g transform="translate(288.3 331.8) scale(0.640)"><path d="M665 0V248Q665 294 668.5 342.5Q672 391 676.0 424.0Q680 457 681 466H677L550 0H377L249 465H245Q246 456 250.5 423.5Q255 391 259.0 342.5Q263 294 263 248V0H60V688H372L476 291H480L583 688H884V0Z" fill="#1B54E0" transform="translate(-60 688) scale(1 -1)"/></g></svg>MAPEA</a>
     <h2 id="cmpNota">Comparación entre lotes guardados</h2>
   </div>
   <div class="cmpbody">
@@ -821,10 +846,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   }
 
   /* ---------------- cabecera y textos ---------------- */
-  document.getElementById("mTitulo").innerHTML =
-    'MAPEA App <span style="color:var(--muted);font-weight:400">· '+esc(C.ciudad)+'</span>';
+  // La marca ya dice MAPEA; el rotulo solo tiene que decir QUE mapa se esta viendo.
+  document.getElementById("mTitulo").textContent = C.ciudad;
   document.getElementById("mSub").textContent = C.sub;
-  document.getElementById("avisoBtn").textContent = C.aviso;
+  document.querySelector("#avisoBtn .largo").textContent = C.aviso;
   document.getElementById("mBody").innerHTML = C.disclaimer || "";
 
   /* ---------------- filtros ----------------

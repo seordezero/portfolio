@@ -40,11 +40,18 @@ body{background:#000;color:var(--ink);font-family:Archivo,system-ui,sans-serif;
   color:var(--ink);font:inherit;font-size:12px;padding:6px 11px;cursor:pointer;
   text-decoration:none;display:inline-block}
 .btn:hover{border-color:var(--acc);color:var(--acc)}
-h1{margin:0;padding:26px 32px 16px;font-size:15px;font-weight:600}
+.top{display:flex;align-items:center;gap:18px;padding:26px 32px 14px}
+.marca{display:inline-flex;align-items:center;gap:9px;text-decoration:none;
+  color:var(--acc);font-size:15px;font-weight:700;letter-spacing:.02em;flex:none}
+.marca svg{width:21px;height:21px;display:block;border-radius:3px;flex:none}
+.marca:hover{opacity:.82}
+h1{margin:0;padding:0;font-size:15px;font-weight:600}
 h1 b{color:var(--sel-ink)}
 h1 span{color:var(--muted);font-weight:400;font-size:12px;margin-left:10px}
+/* 14 px arriba: la esquina de sesion acaba a 51 px y el titulo a 61; sin este
+   hueco la primera ficha nacia pegada a Volver. */
 main{flex:1;min-height:0;display:grid;
-  grid-template-columns:minmax(0,1fr) 316px;gap:26px;padding:0 32px 28px}
+  grid-template-columns:minmax(0,1fr) 316px;gap:26px;padding:22px 32px 28px}
 .vista{position:relative;border:1px solid var(--line);border-radius:5px;
   background:var(--panel);overflow:hidden}
 canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
@@ -80,7 +87,9 @@ ol.pasos b{color:var(--ink);font-weight:600}
 @media print{
   body{background:#fff;color:#111;display:block;overflow:visible;height:auto}
   .esquina,.mandos,.imprimir{display:none !important}
-  h1{color:#111;padding:0 0 10px}
+  .top{padding:0 0 10px;color:#111}
+  .marca{color:#111}
+  h1{color:#111;padding:0}
   h1 b{color:#1B54E0}
   main{display:block;padding:0}
   .vista{height:78mm;border-color:#bbb;background:#141414;page-break-inside:avoid}
@@ -96,7 +105,8 @@ ol.pasos b{color:var(--ink);font-weight:600}
 @media (max-width:900px){
   main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;
     padding:0 12px 14px;gap:10px}
-  h1{padding:44px 12px 8px;font-size:13px}
+  .top{padding:44px 12px 8px;gap:12px}
+  h1{font-size:13px}
   aside{flex-direction:row;gap:10px}
   .tar{flex:1;padding:9px 11px}
   .esquina{top:10px;right:12px}
@@ -105,7 +115,10 @@ ol.pasos b{color:var(--ink);font-weight:600}
 </head>
 <body>
 <div class="esquina"><a class="btn" href="../">Volver</a><span class="sesion-chip" id="ses"></span></div>
-<h1 id="tit">Cabida arquitect&oacute;nica</h1>
+<div class="top">
+  <a class="marca" href="/mapea-app/" title="Volver a MAPEA"><svg viewBox="0 0 1104 1104" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="1104" height="1104" fill="#EAE4D9"/><g transform="translate(288.3 331.8) scale(0.640)"><path d="M665 0V248Q665 294 668.5 342.5Q672 391 676.0 424.0Q680 457 681 466H677L550 0H377L249 465H245Q246 456 250.5 423.5Q255 391 259.0 342.5Q263 294 263 248V0H60V688H372L476 291H480L583 688H884V0Z" fill="#1B54E0" transform="translate(-60 688) scale(1 -1)"/></g></svg>MAPEA</a>
+  <h1 id="tit">Cabida arquitect&oacute;nica</h1>
+</div>
 <main id="cuerpo">
   <div class="vista">
     <canvas id="c"></canvas>
