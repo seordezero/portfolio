@@ -316,10 +316,26 @@ th.plegada .nomb,th.plegada .qx{display:none}
   .graf{padding:8px 9px 7px}
   .graf h3{margin:0 0 5px; font-size:9px}
   .cmphd{padding:8px 12px 4px} .cmphd h2{font-size:13px}
-  .cmpbody table{font-size:11px}
-  .cmpbody th,.cmpbody td{padding:3px 6px}
   .solnum{width:26px; height:26px; font-size:12px}
   .cabida{font-size:9px}
+  /* La esquina se encoge: con 420 px de alto, cada pixel que ocupa arriba se lo
+     quita a los graficos. */
+  .esquina{top:6px; right:10px; gap:7px}
+  .esquina .btn{padding:3px 8px; font-size:11px}
+  .sesion-chip{font-size:10px}
+  /* La ficha entera tiene que caber en la mitad izquierda sin recortarse. */
+  .cmpficha{padding:5px 7px 6px}
+  .cfhd{padding-bottom:3px; margin-bottom:3px}
+  .cfhd b{font-size:11px}
+  .cfgrid{gap:0 7px}
+  .cfk{font-size:8.5px}
+  .cfv{font-size:10px}
+  .cfv svg,.cfv .mini{width:22px!important; height:22px!important}
+  .cfv{font-size:9.5px}
+  .cmpfila{padding:2px 6px; margin-bottom:2px; border-width:1.5px}
+  .cmpfila .nb{font-size:10.5px}
+  .cmpfila .cnum{font-size:10.5px}
+  .cmpfila .sw{width:11px; height:11px}
 }
 /* Telefono en vertical: la tabla se da la vuelta. Una fila por lote en vez de
    una columna, porque de ancho no cabe otra cosa; los valores se leen en la
@@ -346,7 +362,7 @@ th.plegada .nomb,th.plegada .qx{display:none}
     gap:6px; font-size:8.5px}
   .cabida span{writing-mode:horizontal-tb; transform:none}
   .cabida b{font-size:13px}
-  .cmpbody table{display:none}          /* la tabla vertical, fuera */
+
   .graf{padding:7px 8px 6px}
   .graf h3{margin:0 0 4px; font-size:8px}
   .gx span,.gn,.gval{font-size:8px}
@@ -354,8 +370,34 @@ th.plegada .nomb,th.plegada .qx{display:none}
   .solnum{width:24px; height:24px; font-size:11px}
 }
 /* Las barras de lote solo existen en vertical: son la tabla girada 90 grados. */
-.cmpfilas{display:none}
-@media (max-width:1100px) and (orientation:portrait){ .cmpfilas{display:block} }
+/* Por debajo de 1100 px la matriz de una columna por lote no se lee: tres
+   columnas de 30 px no son una tabla. En su sitio van las barras y la ficha del
+   lote elegido. */
+.cmpfilas,.cmpficha{display:none}
+@media (max-width:1100px){
+  .cmpbody table{display:none}
+  .cmpfilas{display:block; flex:none}
+  .cmpficha{display:block}
+}
+/* Los datos del lote elegido en cuatro columnas: etiqueta, valor, etiqueta,
+   valor. En parejas ocupan la mitad de alto que una lista corrida. */
+.cmpficha{flex:1; min-height:0; overflow:hidden; border:2px solid; border-radius:5px;
+  padding:7px 9px 8px; margin-top:2px}
+.cmpficha.vacia{border-color:var(--line-2); color:var(--muted); font-size:11.5px;
+  display:flex; align-items:center; justify-content:center; text-align:center}
+.cfhd{display:flex; align-items:baseline; gap:7px; padding-bottom:5px;
+  border-bottom:1px solid var(--line); margin-bottom:5px}
+.cfhd b{font-size:12.5px; color:var(--sel-ink); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0}
+.cfhd .cnum{font-size:12px; flex:none}
+.cfref{font-size:9.5px; color:var(--muted); flex:none}
+.cfgrid{display:grid; grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);
+  gap:1px 9px; align-items:center}
+.cfk{font-size:9.5px; color:var(--muted); white-space:nowrap}
+.cfv{font-size:11.5px; text-align:right; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; font-variant-numeric:tabular-nums}
+.cfv svg,.cfv .mini{width:38px!important; height:38px!important; margin:0 0 0 auto}
+.cfv a{color:var(--acc-ink)}
 .cmpfila{display:flex; align-items:center; gap:9px; padding:6px 9px;
   border:2px solid; border-radius:4px; margin-bottom:5px}
 .cmpfila .cnum{flex:none; font-size:12px}
@@ -775,7 +817,11 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   (C.grupos || []).forEach(function(gr){ cajaDe(gr); });
 
   FILTROS.forEach(function(cfg){
-    var r = span(cfg.f);
+    /* Los indices urbanos van SIEMPRE de 0 a 100, no del minimo al maximo del
+       distrito. Si los topes salieran del dato, el 100 significaria "lo mejor de
+       Carabanchel" en vez de "excelente", y dos ciudades dejarian de compararse:
+       es escala relativa disfrazada de absoluta. */
+    var r = (cfg.min!=null && cfg.max!=null) ? [cfg.min, cfg.max] : span(cfg.f);
     if(!isFinite(r[0])) r=[0,100];
     cfg.lo=r[0]; cfg.hi=r[1];
     ST[cfg.f] = {lo:r[0], hi:r[1], active:true};
@@ -1131,7 +1177,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     segur:  function(d){ return d.si!=null?fmt(d.si,0)+" / 100":"—"; },
     venta:  function(d){ return d.ev===1?"sí (simulado)":"no"; },
     restr:  function(d){
-      return {libre: "sin restricción",
+      return {libre: "libre",
               fuera_de_ordenacion: "fuera de ordenación",
               protegido: "protegido"}[d.rs] || "sin determinar";
     },
@@ -1826,7 +1872,30 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
              '<button class="qx" data-q="'+i+'" title="Quitar" aria-label="Quitar">×</button>'+
              '</div>';
     }).join("") + '</div>';
-    document.getElementById("cmpbody").innerHTML=filasM+h+'</tbody></table>';
+    /* En pantalla estrecha no hay sitio para una columna por lote, asi que en vez
+       de la matriz van las barras y, debajo, los datos del lote elegido en cuatro
+       columnas: etiqueta, valor, etiqueta, valor. Se leen en parejas y ocupan la
+       mitad de alto que una lista corrida. */
+    function fichaCompacta(id){
+      if(id==null || !lots[id]) return '<div class="cmpficha vacia">'+
+        'Elige un lote para ver sus datos.</div>';
+      var d=lots[id].d, c=colorLote(id), pares=[];
+      pares.push(["Forma", silueta(lots[id], c)]);
+      pares.push(["Situación", situacion(lots[id], c)]);
+      filas.forEach(function(r){
+        if(r[1]==="u") return;              // la referencia ya va en el titulo
+        pares.push([r[0], COMP[r[2]] ? COMP[r[2]](d) : met(r[2])(d[r[1]])]);
+      });
+      return '<div class="cmpficha" style="border-color:'+c+'">'+
+        '<div class="cfhd"><span class="cnum" style="color:'+c+'">'+numeroDe(id)+
+        '</span><b>'+esc(d.ad||d.u||"—")+'</b>'+
+        '<span class="cfref">'+esc(d.u||"")+'</span></div>'+
+        '<div class="cfgrid">'+pares.map(function(p){
+          return '<div class="cfk">'+esc(p[0])+'</div><div class="cfv">'+p[1]+'</div>';
+        }).join("")+'</div></div>';
+    }
+    document.getElementById("cmpbody").innerHTML =
+      filasM + fichaCompacta(foco) + h + '</tbody></table>';
     document.getElementById("cmpgraf").innerHTML=graficos(ids, cols, tinta);
     // Los numeros van en el orden de la tabla, no en el de guardado: si ordenar
     // mueve las columnas y aqui no se mueve nada, las dos lecturas se contradicen.
