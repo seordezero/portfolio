@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<style>html,body{margin:0;padding:0;background:#EAE4D9;color-scheme:light;overscroll-behavior:none}
+<style>html,body{margin:0;padding:0;background:#000;color-scheme:dark;overscroll-behavior:none}
 img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
 :root{
@@ -287,7 +287,11 @@ th.plegada .nomb,th.plegada .qx{display:none}
    cuatro graficos, asi que no pueden vivir dentro de uno de ellos. */
 /* Filas explicitas: .pies va antes que el boton de cabida en el HTML, y sin
    decirlo la colocacion automatica mandaba el boton a la segunda fila. */
-.cmptabla,.cmpgraf,.cabida{grid-row:1}
+.cmptabla,.grafwrap,.cabida{grid-row:1}
+.grafwrap{position:relative; min-width:0; min-height:0}
+/* Las flechas solo tienen sentido donde los graficos se hojean, o sea en
+   vertical. En el resto de formatos estan los cuatro a la vez. */
+.flecha{display:none}
 .pies{grid-row:2; grid-column:1/-1; display:flex; justify-content:center;
   align-items:center; gap:13px}
 /* La salida hacia la cabida, al borde y de canto: es un paso adelante, no una
@@ -310,7 +314,7 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .cmpbody table{height:100%}
 /* Misma altura exacta que la tabla: el alto se lo pone pintarComparar, para que
    las dos mitades sean el mismo bloque y no dos cosas que casi coinciden. */
-.cmpgraf{display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
+.cmpgraf{height:100%; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
   gap:20px; min-height:0}
 .graf{border:1px solid var(--line); border-radius:5px; padding:14px 16px 12px;
   background:var(--panel); display:flex; flex-direction:column; min-height:0;
@@ -421,9 +425,19 @@ th.plegada .nomb,th.plegada .qx{display:none}
   .cmpfilas{max-height:45%; overflow:hidden; flex:0 0 auto}
   /* Un solo grafico a la vez, a toda la caja, y se hojea de lado. Cuatro
      miniaturas en un telefono no se leen; una grande si. */
-  .cmpgraf{grid-row:2; grid-column:1/-1; display:flex; gap:10px;
+  .grafwrap{grid-row:2; grid-column:1/-1}
+  .cmpgraf{display:flex; gap:10px;
     overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory;
     -webkit-overflow-scrolling:touch; scrollbar-width:none}
+  /* Redondas y sobre el grafico: dicen que hay mas a los lados sin ocupar una
+     fila para decirlo. */
+  .flecha{display:grid; place-items:center; position:absolute; top:50%;
+    transform:translateY(-50%); width:30px; height:30px; border-radius:50%;
+    border:1px solid var(--line-2); background:rgba(20,20,20,.86);
+    backdrop-filter:blur(5px); color:var(--ink); font:inherit; font-size:19px;
+    line-height:1; padding:0 0 2px; cursor:pointer; z-index:5}
+  .flecha.izq{left:4px} .flecha.der{right:4px}
+  .flecha[disabled]{opacity:.28; cursor:default}
   .cmpgraf::-webkit-scrollbar{display:none}
   .cmpgraf .graf{flex:0 0 100%; scroll-snap-align:center; min-width:0}
   .pies{grid-row:3; grid-column:1; padding:0; justify-content:flex-start}
@@ -612,8 +626,11 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
 
 /* ---------- teléfono en vertical: filtros arriba, mapa al centro, listas abajo ---------- */
 @media (orientation:portrait) and (max-width:820px){
-  .app{grid-template-columns:1fr; grid-template-rows:25vh 50vh 25vh; height:100vh}
-  @supports (height:100dvh){ .app{grid-template-rows:25dvh 50dvh 25dvh; height:100dvh} }
+  /* 25/50/25 dejaba 77 px para doce parametros. El visor cede: la regla dice que
+     la pagina no se desplaza, no que el mapa sea grande. Dentro del panel de
+     parametros si se puede desplazar, que es una de las dos excepciones. */
+  .app{grid-template-columns:1fr; grid-template-rows:44vh 30vh 26vh; height:100vh}
+  @supports (height:100dvh){ .app{grid-template-rows:44dvh 30dvh 26dvh; height:100dvh} }
   .rail.izq{border-right:0; border-bottom:1px solid var(--line-2); order:1;
     display:grid; grid-template-rows:auto minmax(0,1fr) auto}
   .main{order:2}
@@ -635,7 +652,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   .rng input{top:0; height:16px}
   .duo{margin-top:3px} .duo button{padding:3px 2px; font-size:10.5px}
   /* los tres botones en una sola fila: en vertical cada pixel cuenta */
-  .foot{padding:4px 12px 6px; display:flex; gap:5px}
+  .foot{padding:4px 12px calc(6px + env(safe-area-inset-bottom)); display:flex; gap:5px;
+    align-items:center}
   .pair{margin-bottom:0; flex:2; gap:5px}
   .foot > .btn{flex:1}
   .btn{font-size:10.5px; padding:4px 5px}
@@ -803,7 +821,13 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   </div>
   <div class="cmpbody">
     <div class="cmptabla" id="cmpbody"></div>
-    <div class="cmpgraf" id="cmpgraf"></div>
+    <div class="grafwrap">
+      <div class="cmpgraf" id="cmpgraf"></div>
+      <button class="flecha izq" id="grafIzq" type="button"
+              aria-label="Gr&aacute;fico anterior">&#8249;</button>
+      <button class="flecha der" id="grafDer" type="button"
+              aria-label="Gr&aacute;fico siguiente">&#8250;</button>
+    </div>
     <div class="pies" id="pies"></div>
     <button class="cabida" id="cabida" disabled
             title="Selecciona un lote para generar su cabida">
@@ -2075,6 +2099,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     if(tb.scrollHeight > tb.clientHeight) tb.classList.add("apretada");
     verCmp(true);
     pintarFoco();
+    // las flechas de hojear se apagan en los extremos: hay que recalcularlas
+    vCmp.dispatchEvent(new CustomEvent("cmp:pintado"));
   }
   /* Foco: un lote se marca en amarillo en la tabla y en los cuatro graficos a la
      vez. No hace falta repintar nada, solo mover una clase: cada trozo que
@@ -2147,6 +2173,26 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     var sw=e.target.closest(".sw");
     if(sw) abrirPaleta(sw, +sw.dataset.c);
   });
+  /* Hojear los graficos con las flechas. El desplazamiento es del ancho de la
+     caja, que es exactamente un grafico: el encaje lo hace scroll-snap. */
+  (function(){
+    var caja=document.getElementById("cmpgraf");
+    var izq=document.getElementById("grafIzq"), der=document.getElementById("grafDer");
+    function estado(){
+      var max = caja.scrollWidth - caja.clientWidth;
+      izq.disabled = caja.scrollLeft <= 2;
+      der.disabled = caja.scrollLeft >= max - 2;
+    }
+    function mover(d){
+      caja.scrollBy({left:d*caja.clientWidth, behavior:"smooth"});
+    }
+    izq.onclick=function(){ mover(-1); };
+    der.onclick=function(){ mover(1); };
+    caja.addEventListener("scroll", estado, {passive:true});
+    addEventListener("resize", estado);
+    estado();
+    vCmp.addEventListener("cmp:pintado", estado);   // lo lanza pintarComparar()
+  })();
   document.getElementById("cabida").onclick=function(){
     if(foco==null) return;
     /* La cabida es una pagina aparte y no puede cargar los 5,5 MB de la ciudad

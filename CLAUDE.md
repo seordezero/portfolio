@@ -13,10 +13,15 @@ Contexto y visión: `portfolio/docs/mapea-brief.md`.
 
 ## Reglas duras de interfaz
 
-**NADA SE DESPLAZA.** Las tres páginas — portada, navegador y comparador — caben
-en la ventana. Siempre. Las únicas excepciones son, en el navegador, el panel de
-resultados y el de guardados. En el teléfono en vertical el comparador puede
-desplazarse; en cualquier otro sitio, no.
+**NADA SE DESPLAZA.** El armazón de cada página — portada, navegador, comparador
+y cabida — cabe en la ventana. Siempre, en cualquier formato. Lo único que puede
+desplazarse es el **contenido de un panel, por dentro**: los resultados y los
+guardados del navegador, los parámetros, y la columna de fichas de la cabida en
+el teléfono en vertical. La página nunca.
+
+Corolario: cuando algo no cabe, el sitio sale de otro panel, no de la regla. En
+el teléfono en vertical el visor del mapa cede altura a los parámetros; en la
+cabida es al revés, el dibujo manda y las fichas se desplazan por dentro.
 
 Comprobación antes de dar algo por hecho, con la página abierta:
 
