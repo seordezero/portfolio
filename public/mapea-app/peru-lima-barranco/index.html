@@ -343,13 +343,24 @@ th.plegada .nomb,th.plegada .qx{display:none}
 @media (max-width:1100px) and (orientation:portrait){
   /* Dos columnas solo para el pie: los numeros a la izquierda y la salida a la
      cabida a la derecha. En una sola celda se montaban uno encima del otro. */
+  /* Alto FIJO para la zona de lotes: abrir o cerrar la ficha no puede mover ni
+     encoger los graficos. Lo que cambia es lo que se ve dentro de la caja, no la
+     caja. */
   .cmpbody{grid-template-columns:minmax(0,1fr) auto;
-    grid-template-rows:auto minmax(0,1fr) 44px;
+    grid-template-rows:348px minmax(0,1fr) 44px;
     gap:10px; padding:4px 12px 8px; overflow:hidden}
   .cmptabla{grid-row:1; grid-column:1/-1; padding:8px 10px; overflow:hidden;
     justify-content:flex-start}
-  .cmpgraf{grid-row:2; grid-column:1/-1; grid-template-columns:1fr 1fr;
-    grid-template-rows:1fr 1fr; gap:9px}
+  /* Las barras no pueden comerse la ficha: con muchos lotes guardados se quedan
+     en su mitad y la ficha conserva la suya. */
+  .cmpfilas{max-height:45%; overflow:hidden; flex:0 0 auto}
+  /* Un solo grafico a la vez, a toda la caja, y se hojea de lado. Cuatro
+     miniaturas en un telefono no se leen; una grande si. */
+  .cmpgraf{grid-row:2; grid-column:1/-1; display:flex; gap:10px;
+    overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none}
+  .cmpgraf::-webkit-scrollbar{display:none}
+  .cmpgraf .graf{flex:0 0 100%; scroll-snap-align:center; min-width:0}
   .pies{grid-row:3; grid-column:1; padding:0; justify-content:flex-start}
   /* El titulo baja por debajo de la esquina flotante, que es fija y le pasaba
      por encima. */
@@ -617,9 +628,9 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
         <button class="btn" id="zOut" aria-label="Alejar">−</button>
         <button class="btn" id="zFit">Ajustar</button>
         <button class="btn" id="zSel" title="Zoom a la selección"
-                aria-label="Zoom a la selección" disabled>ZS</button>
+                aria-label="Zoom a la selección" disabled>Zoom</button>
         <button class="btn" id="cSel" title="Centrar la selección"
-                aria-label="Centrar la selección" disabled>CS</button>
+                aria-label="Centrar la selección" disabled>Centrar</button>
       </div>
       <div class="pop" id="pop" hidden>
         <div class="pophd">
@@ -1149,10 +1160,15 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches){
       encuadrar(cx1,cy1,k1); draw(); return;
     }
+    /* La duracion crece con lo lejos que esta: un salto al otro extremo del
+       distrito en 520 ms se lee como un corte, no como un viaje. Entre 520 y
+       1.100 ms segun la distancia recorrida en pantalla. */
+    var dist=Math.hypot(cx1-cx0, cy1-cy0)*view.k;
+    var dur=Math.max(520, Math.min(1100, 420 + dist*0.9));
     var lk0=Math.log(k0), lk1=Math.log(k1), t0=0;
     function paso(ts){
       if(!t0) t0=ts;
-      var u=Math.min(1,(ts-t0)/520);
+      var u=Math.min(1,(ts-t0)/dur);
       var e=1-Math.pow(1-u,3);                 // frena al llegar, sin rebote
       // La ESCALA se interpola en logaritmo: de 1 a 2 se percibe igual que de 2 a
       // 4. En lineal el zoom parece acelerar al principio y atascarse al final.
