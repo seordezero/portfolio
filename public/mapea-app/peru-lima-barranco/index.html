@@ -230,6 +230,10 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .anuncios .quita{border:0; background:none; color:var(--muted); cursor:pointer;
   font:inherit; font-size:14px; line-height:1; padding:0 2px; flex:none}
 .anuncios .quita:hover{color:var(--acc)}
+.marcador{margin-top:14px; padding-top:12px; border-top:1px solid var(--line)}
+.marcador h3{margin:0 0 4px; font-size:10.5px; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--sel-ink)}
+.marcador .btn{display:inline-block; margin-top:6px; cursor:grab; width:auto}
 .popfoot .btn{width:100%}
 .popfoot .btn.on{border-color:var(--sel); color:var(--sel-ink)}
 
@@ -914,6 +918,13 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     <p class="nota-oauth" id="vAviso"></p>
     <p class="nota-oauth">Lo que publiques lo ver&aacute; todo el mundo. Pega el
       enlace del portal, no copies el anuncio.</p>
+    <div class="marcador">
+      <h3>M&aacute;s r&aacute;pido: el marcador</h3>
+      <p class="nota-oauth">Arrastra este bot&oacute;n a la barra de marcadores.
+        Desde cualquier anuncio de idealista, p&uacute;lsalo y MAPEA busca el lote
+        solo.</p>
+      <a class="btn" id="marcapaginas" href="#">&#128205; A&ntilde;adir a MAPEA</a>
+    </div>
   </div>
 </div>
 
@@ -1373,6 +1384,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     pop.hidden=!l;
     lista(); ficha();
     botonesSel();
+    if(anuncioPendiente && l){
+      var p=anuncioPendiente; anuncioPendiente=null;
+      setTimeout(function(){ abrirVenta(p.url, p.info); }, 500);
+    }
     if(mover==="centrar") volarA(l, true);
     else if(mover==="zoom") volarA(l);
     else aLaVista(l);
@@ -2087,23 +2102,28 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      pueda retirar; sin backend no hay donde publicarlo y el boton lo dice. */
   var vVenta=document.getElementById("venta");
   function avisoVenta(t){ document.getElementById("vAviso").textContent=t||""; }
-  document.getElementById("marcar").onclick=function(){
+  function abrirVenta(url, info){
     if(!st.sel) return;
     if(!SB){
-      avisoVenta("");
       alert("Los anuncios se publican en el servidor, y todavía no está "+
-            "conectado. En cuanto lo esté, este botón funciona.");
+            "conectado. En cuanto lo esté, esto funciona.");
       return;
     }
     if(!sesion){ vSesion.hidden=false; return; }
+    var d=st.sel.d;
+    var cuantas = info
+      ? (info.todo ? "todo el lote"
+                   : (d.nv>0 ? "1 de "+d.nv+" viviendas" : "una unidad"))
+      : "";
     document.getElementById("vQue").textContent =
-      (st.sel.d.ad||st.sel.d.u||"") + " · " + (st.sel.d.u||"");
-    document.getElementById("vEnlace").value="";
-    document.getElementById("vPrecio").value="";
+      (d.ad||d.u||"") + " · " + (d.u||"") + (cuantas ? " · "+cuantas : "");
+    document.getElementById("vEnlace").value = url || "";
+    document.getElementById("vPrecio").value = "";
     avisoVenta("");
     vVenta.hidden=false;
-    document.getElementById("vEnlace").focus();
-  };
+    document.getElementById(url ? "vPrecio" : "vEnlace").focus();
+  }
+  document.getElementById("marcar").onclick=function(){ abrirVenta("", null); };
   document.getElementById("ventaX").onclick=function(){ vVenta.hidden=true; };
   vVenta.addEventListener("click", function(e){ if(e.target===vVenta) vVenta.hidden=true; });
   document.getElementById("vGuardar").onclick=function(){
@@ -2118,7 +2138,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     sbCliente().then(function(c){
       return c.from("anuncios").insert({
         ciudad:C.id||"x", refcat:(l.d.u||"").trim(), enlace:url,
-        precio:isFinite(pre)&&pre>0 ? pre : null, usuario:sesion.uid
+        precio:isFinite(pre)&&pre>0 ? pre : null, usuario:sesion.uid,
+        // "todo" o "unidad": un solar entero no es lo mismo que un piso
+        alcance: (anuncioPendiente && anuncioPendiente.info && anuncioPendiente.info.todo)
+                 ? "todo" : "unidad"
       });
     }).then(function(r){
       if(r && r.error){
@@ -2140,6 +2163,108 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
               .eq("id", +b.dataset.anuncio);
     }).then(cargarAnuncios).catch(function(){});
   });
+
+  /* ---------------------- del anuncio al lote -----------------------------
+     Idealista pone la direccion CON numero en el titulo de la pagina:
+
+       "Piso en venta en Calle Valentin Llaguno, 30, San Isidro, Madrid"
+
+     Con eso basta, porque el indice de direcciones ya esta normalizado contra el
+     callejero municipal. Lo que NO se puede es leer esa pagina desde aqui: al
+     servidor le devuelve 403 -bloquean las IP de centro de datos- y al navegador
+     se lo impide CORS. Por eso el titulo llega desde el marcador, que se ejecuta
+     en la pestana del anuncio, donde la pagina ya esta cargada. */
+  var TODO_EL_LOTE = /^(edificio|solar|terreno|finca|nave|parcela)/i;
+
+  function leerTitulo(t){
+    t = String(t||"").replace(/\s*[-\u2014|]\s*idealista.*$/i, "").trim();
+    var m = t.match(/^(.+?)\s+en\s+(?:venta|alquiler)\s+en\s+(.+)$/i);
+    if(!m) return null;
+    var tipo = m[1].trim();
+    var trozos = m[2].split(",").map(function(x){ return x.trim(); }).filter(Boolean);
+    if(!trozos.length) return null;
+    var via = trozos[0], num = "";
+    // el numero es el trozo siguiente si es un numero (con letra opcional: 30, 12B)
+    if(trozos[1] && /^\d+\s*[a-z]?$/i.test(trozos[1])) num = trozos[1].replace(/\s+/g,"");
+    return {tipo:tipo, via:via, num:num,
+            direccion:(via+" "+num).trim(),
+            todo:TODO_EL_LOTE.test(tipo)};
+  }
+
+  function normDir(t){
+    return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .toUpperCase().replace(/[.,]/g," ").replace(/\s+/g," ").trim();
+  }
+
+  /* Devuelve el lote exacto, o la lista de candidatos de esa calle para que
+     elija el usuario. No se adivina: si el anuncio no da numero, no hay parcela
+     que valga y es mejor ensenar los portales de la calle. */
+  function buscarPorDireccion(info){
+    var objetivo = normDir(info.direccion), soloVia = normDir(info.via);
+    var exacto = null, calle = [];
+    for(var i=0;i<lots.length;i++){
+      var a = normDir(lots[i].d.ad);
+      if(info.num && a === objetivo){ exacto = lots[i]; break; }
+      if(a.indexOf(soloVia) === 0) calle.push(lots[i]);
+    }
+    return {exacto:exacto, calle:calle};
+  }
+
+  /* El marcador: un enlace que se arrastra a la barra del navegador. Desde el
+     anuncio trae aqui el titulo y la URL, que es lo unico que hace falta. */
+  (function(){
+    var a = document.getElementById("marcapaginas");
+    if(!a) return;
+    var destino = location.origin + location.pathname;
+    a.href = "javascript:(function(){location.href='" + destino +
+      "?anuncio='+encodeURIComponent(location.href)+'&t='+encodeURIComponent(document.title)})()";
+    a.addEventListener("click", function(e){
+      e.preventDefault();
+      // aviso() escribe dentro del cuadro de sesion, que aqui no esta abierto
+      alert("Arrastra este botón a la barra de marcadores del navegador. Desde "+
+            "aquí no hace nada: sirve estando en la página del anuncio.");
+    });
+  })();
+
+  /* Al llegar con ?anuncio=...&t=... se resuelve el lote y se abre el cuadro con
+     el enlace ya puesto. Si no hay numero en el titulo, se deja la calle en el
+     buscador para que el usuario elija el portal. */
+  (function(){
+    var q = new URLSearchParams(location.search);
+    var url = q.get("anuncio");
+    if(!url) return;
+    history.replaceState(null, "", location.pathname);
+    // en diferido: el encuadre inicial corre despues de este guion y pisaria
+    // el vuelo al lote
+    setTimeout(function(){ resolverAnuncio(url, q.get("t") || ""); }, 450);
+  })();
+  function resolverAnuncio(url, titulo){
+    var info = leerTitulo(titulo);
+    if(!info){
+      alert("No he sabido leer la dirección de ese anuncio. Búscala a mano y usa "+
+            "el botón «En venta».");
+      return;
+    }
+    var r = buscarPorDireccion(info);
+    if(r.exacto){
+      abrir(r.exacto, "zoom");
+      setTimeout(function(){ abrirVenta(url, info); }, 700);
+      return;
+    }
+    // sin numero, o numero que no existe: se deja la calle en el buscador
+    var caja = document.getElementById("buscar");
+    caja.value = info.via;
+    caja.dispatchEvent(new Event("input", {bubbles:true}));
+    anuncioPendiente = {url:url, info:info};
+    alert(r.calle.length
+      ? "El anuncio no publica el número de la calle. He dejado "+info.via+
+        " en el buscador: elige el portal en la lista y el enlace se guarda solo."
+      : "No encuentro «"+info.via+"» en este distrito.");
+  }
+
+  /* Si el anuncio llego sin numero, el siguiente lote que se abra hereda el
+     enlace: el usuario elige el portal y el cuadro se abre solo. */
+  var anuncioPendiente = null;
 
   function quitarGuardado(i){
     var k=guardados.indexOf(i); if(k<0) return;

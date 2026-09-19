@@ -120,6 +120,16 @@ anuncio de particular no publica el número de la calle, así que no se sabe de 
 parcela habla. Al revés sí funciona: quien está mirando el anuncio sabe la
 dirección, la busca en MAPEA y pega el enlace.
 
+**Del anuncio al lote en un clic.** Idealista pone la dirección CON número en el
+título de la página: «Piso en venta en Calle Valentín Llaguno, 30, San Isidro,
+Madrid». Con eso basta, porque el índice de direcciones ya está cruzado con el
+callejero municipal. Pero esa página **no se puede leer desde el servidor**
+—devuelve 403, bloquean las IP de centro de datos— ni desde el navegador —lo
+impide CORS—. Por eso el título llega desde un **marcador** que se ejecuta en la
+pestaña del anuncio, donde la página ya está cargada: `?anuncio=URL&t=TÍTULO`.
+Sin extensión, sin tienda y sin servidor. Si el anuncio no publica el número, se
+deja la calle en el buscador y elige el usuario; no se adivina la parcela.
+
 Tabla `anuncios` en Supabase, **lectura pública** (el mapa llega con los pines
 puestos, sin sesión) y escritura solo con sesión. Cada uno retira los suyos; los
 ajenos se ven y no se tocan. Retirar no borra la fila, la marca: el rastro de que
