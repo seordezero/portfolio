@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Instalar la extensión &middot; MAPEA</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#EAE4D9">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EAE4D9;--panel:#E3DCCE;--line:#CEC4AF;--ink:#16223F;--ink-2:#47526A;
+  --muted:#7D8596;--acc:#1B54E0}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--paper);color-scheme:light}
+body{color:var(--ink);font-family:Archivo,system-ui,sans-serif;font-size:15px;
+  line-height:1.55;-webkit-font-smoothing:antialiased}
+.bar{border-bottom:1px solid var(--acc);height:57px;display:flex;align-items:center;
+  padding:0 20px}
+.marca{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--acc);
+  font-weight:700;font-size:15px;letter-spacing:-.01em}
+.marca svg{width:22px;height:22px;border-radius:3px}
+main{max-width:640px;margin:0 auto;padding:34px 20px 60px}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
+.lema{color:var(--ink-2);margin:0 0 26px}
+.caja{border:1px solid var(--line);border-radius:7px;background:var(--panel);
+  padding:20px 22px;margin-bottom:16px}
+.caja h2{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--acc)}
+.btn{display:inline-block;border:1px solid var(--acc);border-radius:22px;
+  padding:11px 20px;background:var(--acc);color:var(--paper);text-decoration:none;
+  font-weight:600;font-size:14px;cursor:pointer}
+.btn:hover{filter:brightness(1.1)}
+.btn.hueco{background:none;color:var(--acc)}
+ol{margin:12px 0 0;padding-left:20px}
+li{margin-bottom:7px}
+code{background:var(--paper);border:1px solid var(--line);border-radius:3px;
+  padding:1px 6px;font-family:ui-monospace,Consolas,monospace;font-size:13px}
+.nota{font-size:13px;color:var(--muted);margin:14px 0 0}
+.pasos{display:none}
+.pasos.on{display:block}
+.volver{display:inline-block;margin-top:26px;color:var(--acc);font-size:13px}
+</style>
+</head>
+<body>
+<div class="bar"><a class="marca" href="../"><svg viewBox="0 0 1104 1104" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="1104" height="1104" fill="#EAE4D9"/><g transform="translate(288.3 331.8) scale(0.640)"><path d="M665 0V248Q665 294 668.5 342.5Q672 391 676.0 424.0Q680 457 681 466H677L550 0H377L249 465H245Q246 456 250.5 423.5Q255 391 259.0 342.5Q263 294 263 248V0H60V688H372L476 291H480L583 688H884V0Z" fill="#1B54E0" transform="translate(-60 688) scale(1 -1)"/></g></svg>MAPEA</a></div>
+<main>
+  <h1>La extensión de MAPEA</h1>
+  <p class="lema">En cualquier anuncio de idealista o fotocasa aparece un
+    bot&oacute;n <b>Ver el lote en MAPEA</b>. Lo pulsas y se abre el lote con su
+    catastro, su cabida y su rentabilidad &mdash; y el anuncio queda guardado.
+    Si la zona todav&iacute;a no est&aacute; mapeada, te lo dice y no te mueve de
+    sitio.</p>
+
+  <div class="caja pasos" id="p-firefox">
+    <h2>Firefox</h2>
+    <div id="ff-tienda"></div>
+    <div id="ff-manual">
+      <p>El complemento todav&iacute;a no est&aacute; firmado por Mozilla, as&iacute;
+        que de momento se carga <b>temporalmente</b>: dura hasta que cierres
+        Firefox.</p>
+      <ol>
+        <li><a class="btn hueco" href="../mapea-idealista.zip" download>Descargar</a>
+          y descomprimir la carpeta.</li>
+        <li>Abrir <code>about:debugging#/runtime/this-firefox</code></li>
+        <li><b>Cargar complemento temporal</b> y elegir el
+          <code>manifest.json</code> de la carpeta.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="caja pasos" id="p-chrome">
+    <h2>Chrome y Edge</h2>
+    <div id="cr-tienda"></div>
+    <div id="cr-manual">
+      <p>La extensi&oacute;n todav&iacute;a no est&aacute; en la Chrome Web Store,
+        as&iacute; que se carga desde la carpeta. Funciona igual y se queda
+        instalada.</p>
+      <ol>
+        <li><a class="btn hueco" href="../mapea-idealista.zip" download>Descargar</a>
+          y descomprimir la carpeta <b>donde vaya a quedarse</b>: si la mueves o
+          la borras, la extensi&oacute;n desaparece.</li>
+        <li>Abrir <code>chrome://extensions</code> (en Edge,
+          <code>edge://extensions</code>).</li>
+        <li>Activar <b>Modo de desarrollador</b>, arriba a la derecha.</li>
+        <li>Pulsar <b>Cargar descomprimida</b> y elegir la carpeta.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="caja pasos" id="p-movil">
+    <h2>En el m&oacute;vil</h2>
+    <p>Chrome y Safari no admiten extensiones en el tel&eacute;fono. Abre esta
+      p&aacute;gina desde un ordenador.</p>
+  </div>
+
+  <p class="nota">La extensi&oacute;n solo act&uacute;a cuando pulsas el
+    bot&oacute;n, sobre una p&aacute;gina que ya ten&iacute;as abierta. No navega
+    por su cuenta ni recoge nada de otras webs.</p>
+  <a class="volver" href="../">&larr; volver a MAPEA</a>
+</main>
+<script>
+(function(){
+  var ua = navigator.userAgent;
+  var movil = /Android|iPhone|iPad|iPod/i.test(ua);
+  var ff = /Firefox\//.test(ua) && !movil;
+  var cr = /Chrome\/|Chromium\/|Edg\//.test(ua) && !movil;
+  document.getElementById(movil ? "p-movil" : (ff ? "p-firefox" : "p-chrome"))
+    .classList.add("on");
+  // si no se reconoce el navegador, se ensenan los dos
+  if(!movil && !ff && !cr){
+    document.getElementById("p-firefox").classList.add("on");
+  }
+  var TIENDAS = {chrome:"", firefox:""};
+  function tienda(id, url, texto, quitar){
+    if(!url) return;
+    document.getElementById(id).innerHTML =
+      '<a class="btn" href="'+url+'">'+texto+'</a>';
+    document.getElementById(quitar).style.display = "none";
+  }
+  tienda("cr-tienda", TIENDAS.chrome, "Instalar desde la Chrome Web Store", "cr-manual");
+  tienda("ff-tienda", TIENDAS.firefox, "Instalar en Firefox", "ff-manual");
+})();
+</script>
+</body>
+</html>

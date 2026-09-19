@@ -44,6 +44,11 @@ body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
    comparador. Aqui solo informa y deja salir; entrar se pide al guardar. */
 /* La sesion vive en la misma esquina en las tres paginas: portada, navegador
    y comparador. Flotando, sin barra que la sostenga. */
+.ext-pie{margin:0 0 14px;font-size:12.5px;color:var(--muted);text-align:center}
+.ext{display:inline-block;margin-right:8px;border:1px solid var(--acc);
+  border-radius:16px;padding:6px 14px;color:var(--acc);text-decoration:none;
+  font-size:12.5px;font-weight:600}
+.ext:hover{background:var(--acc);color:var(--paper)}
 .sesion-chip{position:fixed;top:13px;z-index:40;display:inline-flex;
   right:calc(20px + env(safe-area-inset-right));align-items:center}
 .entrar{border:1px solid var(--acc);border-radius:15px;padding:6px 14px;
@@ -147,6 +152,9 @@ h1{margin:0;font-family:var(--rotulo);font-weight:400;
         </div>
       </a>
     </div>
+    <p class="ext-pie"><a class="ext" href="extension/">Instalar la
+    extensi&oacute;n</a> &mdash; desde cualquier anuncio de idealista, el lote en
+    MAPEA con un clic.</p>
     <p class="aviso-pie">Trabajo en desarrollo, publicado con fines de
     investigación y demostración. No es una fuente catastral oficial
     ni un servicio de tasación.</p>

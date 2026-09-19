@@ -307,6 +307,10 @@ th.plegada .nomb,th.plegada .qx{display:none}
   right:calc(20px + env(safe-area-inset-right));
   align-items:center; gap:14px}
 .esquina .btn{width:auto; background:rgba(26,26,26,.82); backdrop-filter:blur(6px)}
+/* En el telefono no hay extensiones que instalar: Chrome y Safari no las
+   admiten, asi que el boton sobra y el sitio hace falta. */
+.esquina .ext{text-decoration:none; line-height:1.5}
+@media (max-width:1100px){ .esquina .ext{display:none} }
 .cmphd h2{margin:0; font-size:14px; font-weight:600}
 .cmphd .btn{width:auto}
 /* La pagina entera cabe en la ventana: nada de scroll de pagina. Lo unico que
@@ -921,6 +925,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
 <div class="paleta" id="paleta" hidden></div>
 
 <div class="esquina">
+  <a class="btn sm ext" href="../extension/" title="Instalar la extensión del navegador">Extensión</a>
   <button class="btn sm" id="cmpVaciar">Vaciar</button>
   <button class="btn sm" id="cmpX">Volver</button>
   <span class="sesion-chip" data-sesion></span>
