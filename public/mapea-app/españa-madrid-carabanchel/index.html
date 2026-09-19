@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#000000"><!-- la app es negra: con el crema de la portada, el movil pintaba su barra de claro encima -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="MAPEA">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -669,7 +669,13 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   .rail.der{border-left:0; border-top:1px solid var(--line-2); order:3;
     min-height:0; display:grid; grid-template-columns:1fr 1fr;
     grid-template-rows:auto minmax(0,1fr)}
-  .rail.der > .lista, .rail.der > .selbox{min-height:0; overflow-y:auto}
+  /* Se desplaza la LISTA, no la caja: con overflow en .selbox se desplazaban
+     tambien su cabecera y su pie, y Comparar quedaba fuera de la pantalla. */
+  .rail.der > .lista{min-height:0; overflow-y:auto}
+  .rail.der > .selbox{min-height:0; overflow:hidden; display:flex;
+    flex-direction:column}
+  .selbox > .sect, .selbox > .foot{flex:none}
+  .selbox > #guardados{flex:1 1 auto; min-height:0; overflow-y:auto}
   /* La palabra sobra aqui: el isotipo solo sigue llevando a la portada y deja
      150 px al nombre del mapa, que es lo que hay que leer. */
   .marca span{display:none}
