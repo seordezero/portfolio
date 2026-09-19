@@ -2113,12 +2113,15 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   function avisoVenta(t){ document.getElementById("vAviso").textContent=t||""; }
   function abrirVenta(url, info){
     if(!st.sel) return;
-    if(!SB){
-      alert("Los anuncios se publican en el servidor, y todavía no está "+
-            "conectado. En cuanto lo esté, esto funciona.");
-      return;
-    }
-    if(!sesion){ vSesion.hidden=false; return; }
+    /* El cuadro se abre SIEMPRE, aunque no haya servidor ni sesion: dentro esta
+       el marcador, que no necesita ninguna de las dos cosas y es lo primero que
+       hace falta. Lo que se bloquea es publicar, no entrar. */
+    var listo = !!SB && !!sesion;
+    var g=document.getElementById("vGuardar");
+    g.disabled = !listo;
+    document.getElementById("vAviso").textContent = SB
+      ? (sesion ? "" : "Entra con tu correo para publicar.")
+      : "El servidor todavía no está conectado: de momento solo puedes coger el marcador.";
     var d=st.sel.d;
     var cuantas = info
       ? (info.todo ? "todo el lote"
@@ -2129,15 +2132,15 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     document.getElementById("vEnlace").value = url || "";
     document.getElementById("vPrecio").value =
       (anuncioDatos && anuncioDatos.precio) ? anuncioDatos.precio : "";
-    avisoVenta("");
     vVenta.hidden=false;
-    document.getElementById(url ? "vPrecio" : "vEnlace").focus();
+    if(listo) document.getElementById(url ? "vPrecio" : "vEnlace").focus();
   }
   document.getElementById("marcar").onclick=function(){ abrirVenta("", null); };
   document.getElementById("ventaX").onclick=function(){ vVenta.hidden=true; };
   vVenta.addEventListener("click", function(e){ if(e.target===vVenta) vVenta.hidden=true; });
   document.getElementById("vGuardar").onclick=function(){
-    var l=st.sel; if(!l || !sesion) return;
+    var l=st.sel; if(!l) return;
+    if(!sesion){ vVenta.hidden=true; vSesion.hidden=false; return; }
     var url=document.getElementById("vEnlace").value.trim();
     var pre=parseInt(document.getElementById("vPrecio").value,10);
     if(!/^https?:\/\//i.test(url)){
