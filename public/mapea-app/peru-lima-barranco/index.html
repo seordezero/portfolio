@@ -921,8 +921,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     <div class="marcador">
       <h3>M&aacute;s r&aacute;pido: el marcador</h3>
       <p class="nota-oauth">Arrastra este bot&oacute;n a la barra de marcadores.
-        Desde cualquier anuncio de idealista, p&uacute;lsalo y MAPEA busca el lote
-        solo.</p>
+        Desde cualquier anuncio de idealista, p&uacute;lsalo y MAPEA lee la
+        direcci&oacute;n, el precio y la superficie, y busca el lote solo.</p>
       <a class="btn" id="marcapaginas" href="#">&#128205; A&ntilde;adir a MAPEA</a>
     </div>
   </div>
@@ -1330,10 +1330,16 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     /* Buscando se mira en TODOS los lotes, no solo en los que pasan el filtro.
        Quien escribe una calle la quiere encontrar; si el filtro la esconde, el
        buscador no diria nada y pareceria que ese lote no existe. */
-    var base=vistos;
-    if(busca) base=lots.filter(function(l){
-      return llano(l.d.ad).indexOf(busca)>=0 || llano(l.d.u).indexOf(busca)>=0;
-    });
+    var base=vistos, aprox=false;
+    if(busca){
+      base=lots.filter(function(l){
+        return llano(l.d.ad).indexOf(busca)>=0 || llano(l.d.u).indexOf(busca)>=0;
+      });
+      /* Si lo escrito no aparece tal cual -una coma de mas, "C/" en vez de
+         "Calle", el barrio pegado detras-, se buscan las mejores coincidencias
+         por palabras en vez de dejar la lista vacia. */
+      if(!base.length){ base=mejores(busca, 12); aprox=true; }
+    }
     document.getElementById("rN").textContent=fmt(base.length,0);
     if(busca && !base.length){
       cont.innerHTML='<div class="vacio">Ninguna direcci\u00f3n coincide con '+
@@ -1348,7 +1354,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     for(var z=0;z<C.orden.length;z++){ if(C.orden[z].v===st.orden){ oc=C.orden[z]; break; } }
     if(!oc) oc=C.orden[0];
     var campo=oc.f, dir=oc.d;
-    var arr=base.slice().sort(function(x,y){
+    /* Cuando la busqueda es aproximada, el orden ES el resultado: lo mejor
+       primero. Reordenar por el criterio de la lista tiraba ese trabajo y ponia
+       arriba cualquier portal con el mismo numero. */
+    var arr=aprox ? base.slice() : base.slice().sort(function(x,y){
       var vx=x.d[campo], vy=y.d[campo];
       if(typeof vx==="string" || typeof vy==="string"){
         return dir*String(vx||"").localeCompare(String(vy||""),LOC);
@@ -2118,7 +2127,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     document.getElementById("vQue").textContent =
       (d.ad||d.u||"") + " · " + (d.u||"") + (cuantas ? " · "+cuantas : "");
     document.getElementById("vEnlace").value = url || "";
-    document.getElementById("vPrecio").value = "";
+    document.getElementById("vPrecio").value =
+      (anuncioDatos && anuncioDatos.precio) ? anuncioDatos.precio : "";
     avisoVenta("");
     vVenta.hidden=false;
     document.getElementById(url ? "vPrecio" : "vEnlace").focus();
@@ -2191,9 +2201,61 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
             todo:TODO_EL_LOTE.test(tipo)};
   }
 
+  /* Las abreviaturas que la gente escribe de verdad. Sin esto, "C/ Valentin"
+     no se parece a "Calle Valentin" en nada. */
+  var ABREV = {
+    "C":"CALLE", "C/":"CALLE", "CL":"CALLE", "CALLE":"CALLE",
+    "AV":"AVENIDA", "AVD":"AVENIDA", "AVDA":"AVENIDA", "AVENIDA":"AVENIDA",
+    "PZ":"PLAZA", "PZA":"PLAZA", "PL":"PLAZA", "PLAZA":"PLAZA",
+    "PS":"PASEO", "PSO":"PASEO", "PASEO":"PASEO",
+    "CR":"CARRETERA", "CTRA":"CARRETERA", "CARRETERA":"CARRETERA",
+    "CM":"CAMINO", "TR":"TRAVESIA", "TRAV":"TRAVESIA",
+    "GL":"GLORIETA", "RD":"RONDA", "PJ":"PASAJE", "CJ":"CALLEJON"
+  };
+  // ruido que no distingue nada: sobra al comparar
+  var RUIDO = {"DE":1,"DEL":1,"LA":1,"LAS":1,"LOS":1,"EL":1,"Y":1,
+               "N":1,"NUM":1,"NUMERO":1,"MADRID":1,"S":1,"SN":1};
+
   function normDir(t){
     return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-      .toUpperCase().replace(/[.,]/g," ").replace(/\s+/g," ").trim();
+      .toUpperCase().replace(/[^0-9A-Z\/]+/g," ").replace(/\s+/g," ").trim();
+  }
+  /* Parte una direccion en palabras utiles y su numero de portal. Da igual que
+     venga con comas, con "C/", con "nº" o con el barrio y la ciudad detras. */
+  function trocea(t){
+    var crudo=normDir(t).split(" "), pal=[], num=null;
+    for(var i=0;i<crudo.length;i++){
+      var p=crudo[i];
+      if(!p) continue;
+      if(ABREV[p]){ pal.push(ABREV[p]); continue; }
+      if(/^[0-9]+[A-Z]?$/.test(p)){ if(num===null) num=p; continue; }
+      if(RUIDO[p]) continue;
+      pal.push(p);
+    }
+    return {pal:pal, num:num};
+  }
+  /* Los N lotes que mejor casan con lo escrito. Puntua por palabras compartidas
+     y premia mucho que coincida el numero de portal, que es lo que de verdad
+     distingue un portal de su vecino. */
+  function mejores(texto, n){
+    var q=trocea(texto);
+    if(!q.pal.length && q.num===null) return [];
+    var out=[];
+    for(var i=0;i<lots.length;i++){
+      var a=trocea(lots[i].d.ad);
+      if(!a.pal.length) continue;
+      var comunes=0;
+      for(var k=0;k<q.pal.length;k++) if(a.pal.indexOf(q.pal[k])>=0) comunes++;
+      if(!comunes) continue;
+      var p = comunes/Math.max(q.pal.length, 1);
+      // sobrar palabras en el lote penaliza poco; faltar, mucho
+      p -= Math.max(0, a.pal.length-comunes)*0.04;
+      if(q.num!==null) p += (a.num===q.num) ? 0.6 : -0.12;
+      out.push([p, lots[i]]);
+    }
+    out.sort(function(x,y){ return y[0]-x[0]; });
+    return out.slice(0, n||8).filter(function(x){ return x[0]>0.35; })
+              .map(function(x){ return x[1]; });
   }
 
   /* Devuelve el lote exacto, o la lista de candidatos de esa calle para que
@@ -2210,14 +2272,41 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     return {exacto:exacto, calle:calle};
   }
 
-  /* El marcador: un enlace que se arrastra a la barra del navegador. Desde el
-     anuncio trae aqui el titulo y la URL, que es lo unico que hace falta. */
+  /* EL MARCADOR ------------------------------------------------------------
+     Un marcador del navegador cuya direccion, en vez de una URL, es un programa
+     de una linea. Al pulsarlo estando en el anuncio, el navegador lo ejecuta
+     DENTRO de esa pestana, donde la pagina ya esta cargada. Desde ahi se lee
+     todo lo que el anuncio ensena. Lo que no se puede es leerla desde fuera: al
+     servidor le devuelve 403 y al navegador se lo impide CORS.
+
+     El codigo va DENTRO del marcador y no en un fichero aparte: inyectar un
+     <script src> choca con la CSP del portal y el navegador lo bloquea. Los
+     marcadores si estan exentos, porque los dispara el usuario. Se pierde poder
+     cambiarlo sin reinstalarlo; se gana que funcione.
+
+     De la pagina se saca: la direccion con numero -la lista del cabecero del
+     mapa es la fuente limpia: calle, barrio, distrito, municipio-, el tipo de
+     inmueble, el precio y la superficie. */
   (function(){
     var a = document.getElementById("marcapaginas");
     if(!a) return;
     var destino = location.origin + location.pathname;
-    a.href = "javascript:(function(){location.href='" + destino +
-      "?anuncio='+encodeURIComponent(location.href)+'&t='+encodeURIComponent(document.title)})()";
+    var codigo =
+      "javascript:(function(){" +
+      "function T(s){var e=document.querySelector(s);return e?e.innerText.trim():''}" +
+      "function L(s){return [].map.call(document.querySelectorAll(s),function(e){return e.innerText.trim()})}" +
+      "function N(t){return (t||'').replace(/[^0-9]/g,'')}" +
+      "var l=L('#headerMap li'),d=l[0]||'',di='',b='';" +
+      "l.forEach(function(x){if(/^Distrito /i.test(x))di=x.slice(9);if(/^Barrio /i.test(x))b=x.slice(7)});" +
+      "var h=T('h1'),m=h.match(/^(.+?)\\s+en\\s+(?:venta|alquiler)\\s+en\\s+(.+)$/i);" +
+      "if(!d&&m)d=m[2];var tp=m?m[1]:'';" +
+      "var p=N(T('.info-data-price')),s2='';" +
+      "L('.info-features span').forEach(function(x){if(!s2&&/m\\u00b2/.test(x))s2=N(x)});" +
+      "location.href='" + destino + "?anuncio='+encodeURIComponent(location.href)" +
+      "+'&dir='+encodeURIComponent(d)+'&tipo='+encodeURIComponent(tp)" +
+      "+'&dist='+encodeURIComponent(di)+'&barrio='+encodeURIComponent(b)" +
+      "+'&precio='+p+'&m2='+s2+'&t='+encodeURIComponent(document.title)})()";
+    a.href = codigo;
     a.addEventListener("click", function(e){
       e.preventDefault();
       // aviso() escribe dentro del cuadro de sesion, que aqui no esta abierto
@@ -2236,16 +2325,41 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     history.replaceState(null, "", location.pathname);
     // en diferido: el encuadre inicial corre despues de este guion y pisaria
     // el vuelo al lote
-    setTimeout(function(){ resolverAnuncio(url, q.get("t") || ""); }, 450);
+    setTimeout(function(){
+      resolverAnuncio(url, q.get("t") || "", {
+        dir:q.get("dir"), tipo:q.get("tipo"), dist:q.get("dist"),
+        precio:q.get("precio"), m2:q.get("m2")
+      });
+    }, 450);
   })();
-  function resolverAnuncio(url, titulo){
+  function resolverAnuncio(url, titulo, extra){
+    extra = extra || {};
     var info = leerTitulo(titulo);
+    /* El marcador manda la direccion ya separada, que es mas fiable que
+       deducirla del titulo. El titulo queda de plan B. */
+    if(extra.dir){
+      var t=trocea(extra.dir);
+      info = {tipo:extra.tipo||"", via:extra.dir, num:t.num||"",
+              direccion:extra.dir,
+              todo:TODO_EL_LOTE.test(extra.tipo||"")};
+    }
     if(!info){
       alert("No he sabido leer la dirección de ese anuncio. Búscala a mano y usa "+
             "el botón «En venta».");
       return;
     }
+    // si el anuncio es de otro distrito, no hay parcela que buscar
+    if(extra.dist && C.ciudad &&
+       normDir(extra.dist).indexOf(normDir(C.ciudad))<0){
+      alert("Ese anuncio está en "+extra.dist+", y este mapa es de "+C.ciudad+".");
+      return;
+    }
+    anuncioDatos = extra;
     var r = buscarPorDireccion(info);
+    if(!r.exacto){                      // el literal falla: se prueba por palabras
+      var cand = mejores(info.direccion || info.via, 1);
+      if(cand.length && info.num) r.exacto = cand[0];
+    }
     if(r.exacto){
       abrir(r.exacto, "zoom");
       setTimeout(function(){ abrirVenta(url, info); }, 700);
@@ -2265,6 +2379,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   /* Si el anuncio llego sin numero, el siguiente lote que se abra hereda el
      enlace: el usuario elige el portal y el cuadro se abre solo. */
   var anuncioPendiente = null;
+  var anuncioDatos = null;      // lo que mando el marcador: precio, superficie...
 
   function quitarGuardado(i){
     var k=guardados.indexOf(i); if(k<0) return;

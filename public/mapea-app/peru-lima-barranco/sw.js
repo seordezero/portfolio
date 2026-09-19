@@ -1,4 +1,4 @@
-const CACHE = "mapea-peru-lima-barranco-77c9b1400e";
+const CACHE = "mapea-peru-lima-barranco-fd902b2130";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png",
                 "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
