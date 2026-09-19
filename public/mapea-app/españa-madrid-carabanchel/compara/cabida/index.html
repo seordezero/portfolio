@@ -98,6 +98,11 @@ dt{font-size:11px;color:var(--muted)}
 dd{margin:0;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
 .gordo{font-size:22px;font-weight:700;color:var(--acc);text-align:right;
   font-variant-numeric:tabular-nums}
+.gordo.neg{color:#E06A6A}
+.dosgordos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dosgordos .gordo{font-size:19px}
+.dosgordos .pie{display:block;text-align:right;font-size:9.5px;color:var(--muted);
+  letter-spacing:.04em;margin-top:2px}
 .nota{font-size:10.5px;color:var(--muted);line-height:1.55}
 ol.pasos{margin:0;padding-left:16px;font-size:11px;color:var(--ink-2);line-height:1.55}
 ol.pasos li{margin-bottom:5px}
@@ -256,11 +261,16 @@ ol.pasos b{color:var(--ink);font-weight:600}
   var edifb  = d.area>0 ? cTope/d.area : 0;
   var vivs   = Math.floor(cTope/90);           // 90 m2c por vivienda, orientativo
   document.getElementById("datos").innerHTML =
-    '<div class="tar"><h2>Potencial</h2>'+
-      '<div class="gordo">'+fmt(d.potencial,0)+' m&sup2;</div>'+
-      '<p class="nota">'+(suben>0
-        ? 'Caben '+suben+' plantas m&aacute;s sobre lo construido.'
-        : 'El lote ya ha agotado su edificabilidad.')+'</p></div>'+
+    /* Dos cifras de cabecera en la misma ficha y no en dos: cuantos metros
+       caben, y cuanto mas puede valer el lote por ponerlos. */
+    '<div class="tar"><h2>Potencial y rentabilidad</h2><div class="dosgordos">'+
+      '<div><div class="gordo">'+fmt(d.potencial,0)+' m&sup2;</div>'+
+        '<span class="pie">'+(suben>0 ? 'caben '+suben+' plantas m&aacute;s'
+                                      : 'edificabilidad agotada')+'</span></div>'+
+      '<div><div class="gordo'+(d.rent!=null && d.rent<0 ? ' neg':'')+'">'+
+        (d.rent==null ? '&mdash;' : fmt(d.rent,1)+'&#37;')+'</div>'+
+        '<span class="pie">a '+(d.rentAnios||5)+' a&ntilde;os</span></div>'+
+    '</div></div>'+
     /* Una sola tarjeta y no dos: con dos, la columna no cabia en la ventana y
        habia que desplazarla. Las mismas cifras, sin el segundo titulo ni el
        hueco entre tarjetas. */

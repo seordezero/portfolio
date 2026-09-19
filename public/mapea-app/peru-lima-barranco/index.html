@@ -609,6 +609,12 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
 .sect .cnt{font-size:13.5px; color:var(--sel-ink); font-weight:600}
 .gaviso{font-size:10.5px; color:var(--acc); flex:1; text-align:right}
 .ordwrap{padding:8px 15px; border-bottom:1px solid var(--line)}
+.buscawrap{padding:0 15px 7px; flex:none}
+.buscar{width:100%; padding:6px 9px; border:1px solid var(--line-2); border-radius:4px;
+  background:var(--panel-2); color:var(--ink); font:inherit; font-size:12.5px}
+.buscar::placeholder{color:var(--muted)}
+.buscar:focus{outline:none; border-color:var(--acc)}
+.buscar::-webkit-search-cancel-button{filter:invert(.6)}
 .ordwrap select{width:100%; padding:5px 7px; border:1px solid var(--line-2); border-radius:4px;
   background:var(--panel-2); color:var(--ink); font:inherit; font-size:13px}
 .lista{flex:1; min-height:60px; overflow-y:auto; -webkit-overflow-scrolling:touch}
@@ -866,6 +872,11 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     <div class="sect">
       <h2>Resultados</h2>
       <span class="cnt num" id="rN">0</span>
+    </div>
+    <div class="buscawrap">
+      <input class="buscar" id="buscar" type="search" autocomplete="off"
+             placeholder="Buscar dirección o referencia"
+             aria-label="Buscar dirección o referencia catastral">
     </div>
     <div class="ordwrap">
       <select id="orden" aria-label="Ordenar por"></select>
@@ -1260,10 +1271,33 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   document.getElementById("orden").addEventListener("change", function(){
     st.orden=this.value; lista(); guardarFiltros();
   });
+  /* Buscar por direccion o por referencia. Filtra la LISTA y no el mapa: quien
+     escribe una calle quiere encontrar un lote, no apagar el distrito entero.
+     Sin tildes y sin mayusculas, porque nadie escribe "Tulípero" con tilde. */
+  var busca="";
+  function llano(t){
+    return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
+  }
+  document.getElementById("buscar").addEventListener("input", function(){
+    busca=llano(this.value).trim();
+    lista();
+  });
   function lista(){
     var cont=document.getElementById("lista");
-    document.getElementById("rN").textContent=fmt(vistos.length,0);
-    if(!vistos.length){
+    /* Buscando se mira en TODOS los lotes, no solo en los que pasan el filtro.
+       Quien escribe una calle la quiere encontrar; si el filtro la esconde, el
+       buscador no diria nada y pareceria que ese lote no existe. */
+    var base=vistos;
+    if(busca) base=lots.filter(function(l){
+      return llano(l.d.ad).indexOf(busca)>=0 || llano(l.d.u).indexOf(busca)>=0;
+    });
+    document.getElementById("rN").textContent=fmt(base.length,0);
+    if(busca && !base.length){
+      cont.innerHTML='<div class="vacio">Ninguna direcci\u00f3n coincide con '+
+        esc(document.getElementById("buscar").value)+'.</div>';
+      return;
+    }
+    if(!base.length){
       cont.innerHTML='<div class="vacio">Mueve un filtro para empezar. Sin filtros activos no hay lotes seleccionados.</div>';
       return;
     }
@@ -1271,7 +1305,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     for(var z=0;z<C.orden.length;z++){ if(C.orden[z].v===st.orden){ oc=C.orden[z]; break; } }
     if(!oc) oc=C.orden[0];
     var campo=oc.f, dir=oc.d;
-    var arr=vistos.slice().sort(function(x,y){
+    var arr=base.slice().sort(function(x,y){
       var vx=x.d[campo], vy=y.d[campo];
       if(typeof vx==="string" || typeof vy==="string"){
         return dir*String(vx||"").localeCompare(String(vy||""),LOC);
@@ -2392,6 +2426,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       refcat: d.u || "", dir: d.ad || "", color: colorLote(foco),
       parcela: rel(l.p), edificios: huellas,
       vecinos: vecinos, vias: vias, arboles: arboles, verdes: zverdes,
+      rent: (function(){ var r=retorno(d); return r ? +r.ret.toFixed(1) : null; })(),
+      rentAnios: RET.horizonte,
       pa: d.pa || 0, pm: d.pm || 0, ha: d.ha || 0,
       area: d.a || 0, potencial: d.po || 0, zona: d.z || "",
       moneda: C.moneda || "", vm: d.vm || 0
