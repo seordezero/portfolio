@@ -113,30 +113,30 @@ gráfico. Son un **borrador con criterio de mercado**, no una calibración contr
 ventas reales: cuando haya serie de transacciones cambian los números, no la
 forma.
 
-## En venta: lo ponen los usuarios
+## En venta: la extensión
 
 Rascar los portales choca con sus condiciones y, sobre todo, con el cruce: un
-anuncio de particular no publica el número de la calle, así que no se sabe de qué
-parcela habla. Al revés sí funciona: quien está mirando el anuncio sabe la
-dirección, la busca en MAPEA y pega el enlace.
+anuncio de particular no publica el número de la calle. Al revés sí funciona, y
+la **extensión de navegador es la única puerta** — en la app no hay botón de
+«marcar en venta», porque eso era pedirle al usuario que repitiera un trabajo
+que la extensión ya ha hecho.
 
-**Del anuncio al lote en un clic.** Idealista pone la dirección CON número en el
-título de la página: «Piso en venta en Calle Valentín Llaguno, 30, San Isidro,
-Madrid». Con eso basta, porque el índice de direcciones ya está cruzado con el
-callejero municipal. Pero esa página **no se puede leer desde el servidor**
-—devuelve 403, bloquean las IP de centro de datos— ni desde el navegador —lo
-impide CORS—. Por eso el título llega desde un **marcador** que se ejecuta en la
-pestaña del anuncio, donde la página ya está cargada: `?anuncio=URL&t=TÍTULO`.
-Sin extensión, sin tienda y sin servidor. Si el anuncio no publica el número, se
-deja la calle en el buscador y elige el usuario; no se adivina la parcela.
+La extensión corre **dentro** de la página del anuncio, que es el único sitio
+desde el que se puede leer: al servidor le devuelve 403 y al navegador se lo
+impide CORS. Los guiones de contenido están además exentos de la CSP del portal,
+que es lo que tumbaba al marcador.
 
-Tabla `anuncios` en Supabase, **lectura pública** (el mapa llega con los pines
-puestos, sin sesión) y escritura solo con sesión. Cada uno retira los suyos; los
-ajenos se ven y no se tocan. Retirar no borra la fila, la marca: el rastro de que
-ese lote estuvo en venta es justo lo que interesa dentro de un año.
+- Un lector por portal (idealista, fotocasa) y, para los demás, los datos
+  estructurados de schema.org.
+- La zona se reconoce por **distrito o por barrio**: fotocasa no dice
+  «Carabanchel», dice «Comillas». La tabla sale de `CIUDADES` más los barrios.
+- Zona no cubierta → lo dice en la propia página, no abre un mapa inútil.
 
-El pin va **en el centro de la parcela**, que es lo más cerca que se puede estar
-sin inventarse una dirección que el portal no publica.
+Al llegar a MAPEA, el anuncio **se guarda solo**: en `localStorage` siempre —es
+igual de «mi data» y hace que funcione sin servidor— y además en Supabase si hay
+sesión, y entonces lo ve todo el mundo. El pin va en el centro de la parcela, que
+es lo más cerca que se puede estar sin inventarse un número que el portal no
+publica.
 
 **Un anuncio marca que algo está en venta y NADA MÁS.** No entra en el valor por
 m² ni en la rentabilidad. Un precio pedido no es un precio pagado: el valor se

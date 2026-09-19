@@ -220,7 +220,7 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .popfoot{padding:10px 15px calc(12px + env(safe-area-inset-bottom));
   border-top:1px solid var(--line); display:flex; gap:6px}
 .popfoot .btn{flex:1}
-/* Los anuncios que ha puesto la gente, dentro de la ficha. */
+/* Los anuncios que trae la extension, dentro de la ficha. */
 .anuncios{margin:0 0 9px; padding:0; list-style:none}
 .anuncios li{display:flex; align-items:baseline; gap:7px; padding:3px 0;
   font-size:12px; border-bottom:1px solid var(--line)}
@@ -230,14 +230,6 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .anuncios .quita{border:0; background:none; color:var(--muted); cursor:pointer;
   font:inherit; font-size:14px; line-height:1; padding:0 2px; flex:none}
 .anuncios .quita:hover{color:var(--acc)}
-.marcador{margin-top:14px; padding-top:12px; border-top:1px solid var(--line)}
-.marcador h3{margin:0 0 4px; font-size:10.5px; font-weight:700; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--sel-ink)}
-.marcador .btn{display:inline-block; margin-top:6px; width:auto}
-.marcador #marcapaginas{cursor:grab}
-.marcador details{margin-top:10px}
-.marcador summary{font-size:11.5px; color:var(--muted); cursor:pointer}
-.marcador summary:hover{color:var(--acc)}
 .popfoot .btn{width:100%}
 .popfoot .btn.on{border-color:var(--sel); color:var(--sel-ink)}
 
@@ -866,10 +858,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
         </div>
         <div class="who" id="popWho"></div>
         <div class="selbody" id="selbody"></div>
-        <div class="popfoot">
-          <button class="btn sm" id="guardar">Guardar</button>
-          <button class="btn sm" id="marcar">En venta</button>
-        </div>
+        <div class="popfoot"><button class="btn sm" id="guardar">Guardar</button></div>
       </div>
       <div class="legend">
         <div class="t">Colorear por</div>
@@ -905,46 +894,6 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     </div>
     <div class="lista" id="lista"></div>
   </aside>
-</div>
-
-<div class="modal" id="venta" hidden>
-  <div class="modalbox" role="dialog" aria-modal="true" aria-labelledby="vTit"
-       style="max-width:420px">
-    <button class="mx" id="ventaX" aria-label="Cerrar">&times;</button>
-    <h2 id="vTit">Marcar en venta</h2>
-    <p id="vQue" class="nota-oauth"></p>
-    <input class="ed correo" id="vEnlace" type="url" inputmode="url"
-           placeholder="https://www.idealista.com/inmueble/..."
-           aria-label="Enlace al anuncio">
-    <input class="ed correo" id="vPrecio" type="number" min="1" step="1000"
-           placeholder="Precio en euros (opcional)" aria-label="Precio">
-    <button class="btn" id="vGuardar">Publicar anuncio</button>
-    <p class="nota-oauth" id="vAviso"></p>
-    <p class="nota-oauth">Lo que publiques lo ver&aacute; todo el mundo. Pega el
-      enlace del portal, no copies el anuncio.</p>
-    <div class="marcador">
-      <h3>Desde el anuncio, en un clic</h3>
-      <p class="nota-oauth">Con la extensi&oacute;n instalada, cualquier anuncio de
-        idealista ense&ntilde;a un bot&oacute;n <b>Ver el lote en MAPEA</b>: lee la
-        direcci&oacute;n, el precio y la superficie, y abre el lote aqu&iacute;.</p>
-      <a class="btn" href="../mapea-idealista.zip" download>&#11015; Descargar la extensi&oacute;n</a>
-      <p class="nota-oauth"><b>Chrome o Edge:</b> descomprime la carpeta, abre
-        <b>chrome://extensions</b>, activa <b>Modo de desarrollador</b> y pulsa
-        <b>Cargar descomprimida</b>.</p>
-      <p class="nota-oauth"><b>Firefox:</b> abre
-        <b>about:debugging#/runtime/this-firefox</b>, pulsa <b>Cargar complemento
-        temporal</b> y elige el <b>manifest.json</b> de la carpeta. Dura hasta que
-        cierres Firefox; para que se quede, el complemento tiene que ir firmado
-        por Mozilla.</p>
-      <details>
-        <summary>Sin instalar nada: el marcador</summary>
-        <p class="nota-oauth">Arrastra este bot&oacute;n a la barra de marcadores
-          (<b>Ctrl+May&uacute;s+B</b> para verla). Hace lo mismo, pero hay portales
-          que lo bloquean.</p>
-        <a class="btn" id="marcapaginas" href="#">&#128205; A&ntilde;adir a MAPEA</a>
-      </details>
-    </div>
-  </div>
 </div>
 
 <div class="modal" id="sesion" hidden>
@@ -1414,7 +1363,12 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     botonesSel();
     if(anuncioPendiente && l){
       var p=anuncioPendiente; anuncioPendiente=null;
-      setTimeout(function(){ abrirVenta(p.url, p.info); }, 500);
+      guardarAnuncio((l.d.u||"").trim(), {
+        enlace:p.url, precio:+(p.extra&&p.extra.precio)||null,
+        m2:+(p.extra&&p.extra.m2)||null, tipo:p.info.tipo,
+        alcance:p.info.todo ? "todo" : "unidad"
+      });
+      cargarAnuncios();
     }
     if(mover==="centrar") volarA(l, true);
     else if(mover==="zoom") volarA(l);
@@ -1590,11 +1544,12 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   function listaAnuncios(d){
     if(!d.an || !d.an.length) return "";
     return '<ul class="anuncios">'+d.an.map(function(a){
-      var mio = sesion && sesion.uid && a.usuario===sesion.uid;
+      // los locales son mios por definicion; los del servidor, si los puse yo
+      var mio = !a.usuario || (sesion && sesion.uid && a.usuario===sesion.uid);
       return '<li><a href="'+esc(a.enlace)+'" target="_blank" rel="noopener nofollow">'+
         esc(dominio(a.enlace))+'</a>'+
         (a.precio ? '<span class="pre">'+met("dinero")(a.precio)+'</span>' : '')+
-        (mio ? '<button class="quita" data-anuncio="'+a.id+
+        (mio ? '<button class="quita" data-enlace="'+esc(a.enlace)+
                '" title="Retirar" aria-label="Retirar">&times;</button>' : '')+
         '</li>';
     }).join("")+'</ul>';
@@ -2095,7 +2050,58 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     }
     return PORREF;
   }
+  /* Los anuncios se guardan SIEMPRE en local: es igual de "mi data" y hace que
+     la herramienta funcione hoy, sin servidor. Cuando hay sesion, ademas suben,
+     y entonces los ve todo el mundo. */
+  var LLAVE_A = "mapea.anuncios."+(C.id||"x");
+  function localesGuardados(){ return leer(LLAVE_A, []) || []; }
+  function guardarAnuncio(refcat, datos){
+    var a = localesGuardados();
+    for(var i=0;i<a.length;i++){
+      if(a[i].refcat===refcat && a[i].enlace===datos.enlace) return false;
+    }
+    a.push({refcat:refcat, enlace:datos.enlace,
+            precio:datos.precio||null, m2:datos.m2||null,
+            tipo:datos.tipo||"", alcance:datos.alcance||"unidad",
+            creado:new Date().toISOString()});
+    escribir(LLAVE_A, a);
+    if(SB && sesion && sesion.uid){
+      sbCliente().then(function(c){
+        return c.from("anuncios").insert({
+          ciudad:C.id||"x", refcat:refcat, enlace:datos.enlace,
+          precio:datos.precio||null, usuario:sesion.uid,
+          alcance:datos.alcance||"unidad"
+        });
+      }).catch(function(){});
+    }
+    return true;
+  }
+  function quitarAnuncio(enlace){
+    var a = localesGuardados().filter(function(x){ return x.enlace!==enlace; });
+    escribir(LLAVE_A, a);
+    if(SB && sesion && sesion.uid){
+      sbCliente().then(function(c){
+        return c.from("anuncios").update({retirado:new Date().toISOString()})
+                .eq("enlace", enlace).eq("usuario", sesion.uid);
+      }).catch(function(){});
+    }
+    cargarAnuncios();
+  }
+
+  // retirar un anuncio desde su papelera en la ficha
+  document.getElementById("selbody").addEventListener("click", function(e){
+    var b=e.target.closest("[data-enlace]"); if(!b) return;
+    quitarAnuncio(b.dataset.enlace);
+  });
   function cargarAnuncios(){
+    var ix=indiceRef();
+    lots.forEach(function(l){ if(l.d.an) delete l.d.an; });
+    localesGuardados().forEach(function(a){
+      var l=ix[(a.refcat||"").trim()]; if(!l) return;
+      (l.d.an = l.d.an || []).push(a);
+      l.d.ev = 1;
+    });
+    apply(); ficha();
     if(!SB) return;
     sbCliente().then(function(c){
       if(!c) return null;
@@ -2105,10 +2111,12 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
               .is("retirado", null);
     }).then(function(r){
       if(!r || r.error || !r.data) return;
-      var ix=indiceRef(), tocados=0;
-      lots.forEach(function(l){ if(l.d.an) delete l.d.an; });
+      var ix2=indiceRef(), tocados=0;
       r.data.forEach(function(a){
-        var l=ix[(a.refcat||"").trim()]; if(!l) return;
+        var l=ix2[(a.refcat||"").trim()]; if(!l) return;
+        // sin duplicar lo que ya esta en local
+        var ya=(l.d.an||[]).some(function(x){ return x.enlace===a.enlace; });
+        if(ya) return;
         (l.d.an = l.d.an || []).push(a);
         l.d.ev = 1;
         tocados++;
@@ -2126,76 +2134,6 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   /* Un unico camino de borrado: lo llaman la ficha, la lista de guardados y la
      cabecera del comparador. Si cada sitio borrase por su cuenta habria tres
      sitios donde olvidarse de Supabase o de repintar. */
-  /* Marcar en venta. Hace falta sesion para que cada anuncio tenga dueno y se
-     pueda retirar; sin backend no hay donde publicarlo y el boton lo dice. */
-  var vVenta=document.getElementById("venta");
-  function avisoVenta(t){ document.getElementById("vAviso").textContent=t||""; }
-  function abrirVenta(url, info){
-    if(!st.sel) return;
-    /* El cuadro se abre SIEMPRE, aunque no haya servidor ni sesion: dentro esta
-       el marcador, que no necesita ninguna de las dos cosas y es lo primero que
-       hace falta. Lo que se bloquea es publicar, no entrar. */
-    var listo = !!SB && !!sesion;
-    var g=document.getElementById("vGuardar");
-    g.disabled = !listo;
-    document.getElementById("vAviso").textContent = SB
-      ? (sesion ? "" : "Entra con tu correo para publicar.")
-      : "El servidor todavía no está conectado: de momento solo puedes coger el marcador.";
-    var d=st.sel.d;
-    var cuantas = info
-      ? (info.todo ? "todo el lote"
-                   : (d.nv>0 ? "1 de "+d.nv+" viviendas" : "una unidad"))
-      : "";
-    document.getElementById("vQue").textContent =
-      (d.ad||d.u||"") + " · " + (d.u||"") + (cuantas ? " · "+cuantas : "");
-    document.getElementById("vEnlace").value = url || "";
-    document.getElementById("vPrecio").value =
-      (anuncioDatos && anuncioDatos.precio) ? anuncioDatos.precio : "";
-    vVenta.hidden=false;
-    if(listo) document.getElementById(url ? "vPrecio" : "vEnlace").focus();
-  }
-  document.getElementById("marcar").onclick=function(){ abrirVenta("", null); };
-  document.getElementById("ventaX").onclick=function(){ vVenta.hidden=true; };
-  vVenta.addEventListener("click", function(e){ if(e.target===vVenta) vVenta.hidden=true; });
-  document.getElementById("vGuardar").onclick=function(){
-    var l=st.sel; if(!l) return;
-    if(!sesion){ vVenta.hidden=true; vSesion.hidden=false; return; }
-    var url=document.getElementById("vEnlace").value.trim();
-    var pre=parseInt(document.getElementById("vPrecio").value,10);
-    if(!/^https?:\/\//i.test(url)){
-      avisoVenta("Pega la dirección completa del anuncio, con https://");
-      return;
-    }
-    avisoVenta("Publicando…");
-    sbCliente().then(function(c){
-      return c.from("anuncios").insert({
-        ciudad:C.id||"x", refcat:(l.d.u||"").trim(), enlace:url,
-        precio:isFinite(pre)&&pre>0 ? pre : null, usuario:sesion.uid,
-        // "todo" o "unidad": un solar entero no es lo mismo que un piso
-        alcance: (anuncioPendiente && anuncioPendiente.info && anuncioPendiente.info.todo)
-                 ? "todo" : "unidad"
-      });
-    }).then(function(r){
-      if(r && r.error){
-        avisoVenta(/duplicate|unique/i.test(r.error.message||"")
-          ? "Ese enlace ya está publicado para este lote."
-          : "No se pudo publicar: "+r.error.message);
-        return;
-      }
-      vVenta.hidden=true;
-      cargarAnuncios();
-    }).catch(function(err){ avisoVenta("No se pudo publicar: "+err.message); });
-  };
-  /* Retirar: no se borra la fila, se marca. Asi queda el rastro de que ese lote
-     estuvo en venta, que es justo lo que interesa de aqui a un ano. */
-  document.getElementById("selbody").addEventListener("click", function(e){
-    var b=e.target.closest("[data-anuncio]"); if(!b || !sesion) return;
-    sbCliente().then(function(c){
-      return c.from("anuncios").update({retirado:new Date().toISOString()})
-              .eq("id", +b.dataset.anuncio);
-    }).then(cargarAnuncios).catch(function(){});
-  });
-
   /* ---------------------- del anuncio al lote -----------------------------
      Idealista pone la direccion CON numero en el titulo de la pagina:
 
@@ -2294,49 +2232,6 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     return {exacto:exacto, calle:calle};
   }
 
-  /* EL MARCADOR ------------------------------------------------------------
-     Un marcador del navegador cuya direccion, en vez de una URL, es un programa
-     de una linea. Al pulsarlo estando en el anuncio, el navegador lo ejecuta
-     DENTRO de esa pestana, donde la pagina ya esta cargada. Desde ahi se lee
-     todo lo que el anuncio ensena. Lo que no se puede es leerla desde fuera: al
-     servidor le devuelve 403 y al navegador se lo impide CORS.
-
-     El codigo va DENTRO del marcador y no en un fichero aparte: inyectar un
-     <script src> choca con la CSP del portal y el navegador lo bloquea. Los
-     marcadores si estan exentos, porque los dispara el usuario. Se pierde poder
-     cambiarlo sin reinstalarlo; se gana que funcione.
-
-     De la pagina se saca: la direccion con numero -la lista del cabecero del
-     mapa es la fuente limpia: calle, barrio, distrito, municipio-, el tipo de
-     inmueble, el precio y la superficie. */
-  (function(){
-    var a = document.getElementById("marcapaginas");
-    if(!a) return;
-    var destino = location.origin + location.pathname;
-    var codigo =
-      "javascript:(function(){" +
-      "function T(s){var e=document.querySelector(s);return e?e.innerText.trim():''}" +
-      "function L(s){return [].map.call(document.querySelectorAll(s),function(e){return e.innerText.trim()})}" +
-      "function N(t){return (t||'').replace(/[^0-9]/g,'')}" +
-      "var l=L('#headerMap li'),d=l[0]||'',di='',b='';" +
-      "l.forEach(function(x){if(/^Distrito /i.test(x))di=x.slice(9);if(/^Barrio /i.test(x))b=x.slice(7)});" +
-      "var h=T('h1'),m=h.match(/^(.+?)\\s+en\\s+(?:venta|alquiler)\\s+en\\s+(.+)$/i);" +
-      "if(!d&&m)d=m[2];var tp=m?m[1]:'';" +
-      "var p=N(T('.info-data-price')),s2='';" +
-      "L('.info-features span').forEach(function(x){if(!s2&&/m\\u00b2/.test(x))s2=N(x)});" +
-      "location.href='" + destino + "?anuncio='+encodeURIComponent(location.href)" +
-      "+'&dir='+encodeURIComponent(d)+'&tipo='+encodeURIComponent(tp)" +
-      "+'&dist='+encodeURIComponent(di)+'&barrio='+encodeURIComponent(b)" +
-      "+'&precio='+p+'&m2='+s2+'&t='+encodeURIComponent(document.title)})()";
-    a.href = codigo;
-    a.addEventListener("click", function(e){
-      e.preventDefault();
-      // aviso() escribe dentro del cuadro de sesion, que aqui no esta abierto
-      alert("Arrastra este botón a la barra de marcadores del navegador. Desde "+
-            "aquí no hace nada: sirve estando en la página del anuncio.");
-    });
-  })();
-
   /* Al llegar con ?anuncio=...&t=... se resuelve el lote y se abre el cuadro con
      el enlace ya puesto. Si no hay numero en el titulo, se deja la calle en el
      buscador para que el usuario elija el portal. */
@@ -2384,14 +2279,22 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     }
     if(r.exacto){
       abrir(r.exacto, "zoom");
-      setTimeout(function(){ abrirVenta(url, info); }, 700);
+      /* Se guarda solo: la extension ya sabia de que anuncio venia, y pedir una
+         confirmacion aqui es hacerle repetir al usuario algo que ya dijo. */
+      var nuevo = guardarAnuncio((r.exacto.d.u||"").trim(), {
+        enlace:url, precio:+extra.precio||null, m2:+extra.m2||null,
+        tipo:info.tipo, alcance:info.todo ? "todo" : "unidad"
+      });
+      cargarAnuncios();
+      abrir(r.exacto, "zoom");
+      if(!nuevo) alert("Ese anuncio ya estaba guardado en este lote.");
       return;
     }
     // sin numero, o numero que no existe: se deja la calle en el buscador
     var caja = document.getElementById("buscar");
     caja.value = info.via;
     caja.dispatchEvent(new Event("input", {bubbles:true}));
-    anuncioPendiente = {url:url, info:info};
+    anuncioPendiente = {url:url, info:info, extra:extra};
     alert(r.calle.length
       ? "El anuncio no publica el número de la calle. He dejado "+info.via+
         " en el buscador: elige el portal en la lista y el enlace se guarda solo."

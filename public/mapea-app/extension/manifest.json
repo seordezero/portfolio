@@ -5,7 +5,12 @@
   "description": "En cualquier anuncio de idealista, abre el lote en MAPEA con su catastro, su cabida y su rentabilidad.",
   "icons": {"128": "icon128.png"},
   "content_scripts": [{
-    "matches": ["https://www.idealista.com/inmueble/*"],
+    "matches": [
+      "https://www.idealista.com/inmueble/*",
+      "https://www.fotocasa.es/es/comprar/vivienda/*",
+      "https://www.pisos.com/comprar/*",
+      "https://www.habitaclia.com/*"
+    ],
     "js": ["content.js"],
     "run_at": "document_idle"
   }],
