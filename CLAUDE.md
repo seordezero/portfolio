@@ -20,8 +20,15 @@ guardados del navegador, los parámetros, y la columna de fichas de la cabida en
 el teléfono en vertical. La página nunca.
 
 Corolario: cuando algo no cabe, el sitio sale de otro panel, no de la regla. En
-el teléfono en vertical el visor del mapa cede altura a los parámetros; en la
-cabida es al revés, el dibujo manda y las fichas se desplazan por dentro.
+la cabida el dibujo manda y las fichas se desplazan por dentro; en el navegador
+en vertical el visor es un cuadrado centrado (`1fr / 100vw / 1fr`) y los dos
+paneles se reparten el resto y se desplazan por dentro.
+
+**Y el documento se clava.** `height:100dvh` en el contenedor NO basta: la caja
+encaja pero el documento sigue siendo desplazable, y en un teléfono eso ya es el
+fallo — el navegador deja arrastrar la página para plegar su barra. El `body` va
+`position:fixed; inset:0; overflow:hidden` y el `html` con `height:100%;
+overflow:hidden`. Al imprimir se sueltan los dos, que la hoja necesita fluir.
 
 Comprobación antes de dar algo por hecho, con la página abierta:
 
@@ -113,8 +120,11 @@ página de definición: qué entra, con qué umbral, y dónde falla.
 - **Las dos anclas.** La marca (arriba a la izquierda) y el círculo de sesión
   (arriba a la derecha) comparten centro vertical en las cuatro páginas: 28 px
   en pantalla normal, 18 px en apaisado de teléfono. Se leen como pareja.
-- La portada se compone con formato `%`: un `%` literal en su CSS o su
-  JavaScript hay que doblarlo, o sacar el dato del DOM.
+- **La portada Y la plantilla de la aplicación** se componen con formato `%`: un
+  `%` literal en su CSS o su JavaScript hay que doblarlo (`100%%`), o sacar el
+  dato del DOM. Solo la de la cabida usa `.replace()`. Y `publicar_mapea.py`
+  nunca se ejecuta con la salida de error silenciada: un fallo de formato deja
+  el sitio publicado en la versión anterior sin decir nada.
 - No abrir instancias nuevas de QGIS; trabajar sobre la que el usuario tenga
   abierta.
 

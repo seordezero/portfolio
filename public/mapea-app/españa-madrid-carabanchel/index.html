@@ -14,7 +14,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<style>html,body{margin:0;padding:0;background:#000;color-scheme:dark;overscroll-behavior:none}
+<style>html{height:100%;overflow:hidden}
+html,body{margin:0;padding:0;background:#000;color-scheme:dark;overscroll-behavior:none}
 img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
 :root{
@@ -41,7 +42,13 @@ img{max-width:100%}[hidden]{display:none!important}</style>
 }
 *{box-sizing:border-box}
 ::selection{background:var(--sel); color:var(--acc-ink)}
-body{margin:0; background:var(--black); color:var(--ink); font-family:var(--font);
+/* El documento se clava al area visible. Con solo height:100dvh en .app la caja
+   encajaba pero el DOCUMENTO seguia siendo desplazable, y en un telefono eso
+   basta: el navegador deja arrastrar la pagina para plegar su barra. Sacando el
+   body del flujo -fixed e inset:0- no queda nada que mover. */
+html{height:100%; overflow:hidden}
+body{margin:0; position:fixed; inset:0; overflow:hidden;
+  background:var(--black); color:var(--ink); font-family:var(--font);
   font-size:15px; line-height:1.45; -webkit-font-smoothing:antialiased}
 .num{font-variant-numeric:tabular-nums; letter-spacing:.01em}
 .app{display:grid; grid-template-columns:332px minmax(0,1fr) 356px;
@@ -651,13 +658,18 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   /* 25/50/25 dejaba 77 px para doce parametros. El visor cede: la regla dice que
      la pagina no se desplaza, no que el mapa sea grande. Dentro del panel de
      parametros si se puede desplazar, que es una de las dos excepciones. */
-  .app{grid-template-columns:1fr; grid-template-rows:44vh 30vh 26vh; height:100vh}
-  @supports (height:100dvh){ .app{grid-template-rows:44dvh 30dvh 26dvh; height:100dvh} }
+  /* El visor, cuadrado y centrado: 100vw de alto por 100vw de ancho, con los dos
+     paneles repartiendose a partes iguales lo que sobra arriba y abajo. Si no
+     les llega, se desplazan por dentro, que es lo unico que puede desplazarse. */
+  .app{grid-template-columns:1fr; grid-template-rows:1fr 100vw 1fr; height:100vh}
+  @supports (height:100dvh){ .app{height:100dvh} }
   .rail.izq{border-right:0; border-bottom:1px solid var(--line-2); order:1;
-    display:grid; grid-template-rows:auto minmax(0,1fr) auto}
-  .main{order:2}
+    min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr) auto}
+  .main{order:2; min-height:0}
   .rail.der{border-left:0; border-top:1px solid var(--line-2); order:3;
-    display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto 1fr}
+    min-height:0; display:grid; grid-template-columns:1fr 1fr;
+    grid-template-rows:auto minmax(0,1fr)}
+  .rail.der > .lista, .rail.der > .selbox{min-height:0; overflow-y:auto}
   /* La palabra sobra aqui: el isotipo solo sigue llevando a la portada y deja
      150 px al nombre del mapa, que es lo que hay que leer. */
   .marca span{display:none}
@@ -679,8 +691,12 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   .rng input{top:0; height:16px}
   .duo{margin-top:3px} .duo button{padding:3px 2px; font-size:10.5px}
   /* los tres botones en una sola fila: en vertical cada pixel cuenta */
+  /* Una sola linea: partidos en dos, los tres botones se comian 24 px que ahora
+     son del panel de parametros, que es donde de verdad hacen falta. */
   .foot{padding:4px 12px calc(6px + env(safe-area-inset-bottom)); display:flex; gap:5px;
-    align-items:center}
+    align-items:center; flex:none}
+  .foot .btn{white-space:nowrap; font-size:9.5px; padding:5px 4px}
+  .mast{height:48px}
   .pair{margin-bottom:0; flex:2; gap:5px}
   .foot > .btn{flex:1}
   .btn{font-size:10.5px; padding:4px 5px}

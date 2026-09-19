@@ -7,7 +7,8 @@
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#000000">
-<style>html,body{background:#000;color-scheme:dark;overscroll-behavior:none}</style>
+<style>html{height:100%;overflow:hidden}
+html,body{background:#000;color-scheme:dark;overscroll-behavior:none}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,9 +19,11 @@
      amarillo. Crema para lo que esta, indigo para lo que cabe, verde solo para
      lo que es verde. */
   --verde:#4E7F45}
+/* Igual que la aplicacion: el body se saca del flujo desplazable para que el
+   navegador del telefono no tenga nada que arrastrar. */
 html,body{height:100%;margin:0}
 body{background:#000;color:var(--ink);font-family:Archivo,system-ui,sans-serif;
-  display:flex;flex-direction:column;overflow:hidden}
+  position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden}
 .esquina{position:fixed;top:13px;height:30px;z-index:80;display:flex;
   right:calc(20px + env(safe-area-inset-right));align-items:center;gap:14px}
 .sesion-chip{position:relative;display:inline-flex;align-items:center}
@@ -112,7 +115,9 @@ ol.pasos b{color:var(--ink);font-weight:600}
   /* Dos columnas: en una sola, las cuatro fichas se iban a la segunda hoja. */
   aside{display:grid;grid-template-columns:1fr 1fr;gap:5mm;align-items:start}
   aside > .tar:last-child{grid-column:1/-1;display:block}
-  body{background:#fff;color:#111;display:block;overflow:visible;height:auto}
+  html{height:auto;overflow:visible}
+  body{background:#fff;color:#111;display:block;overflow:visible;height:auto;
+    position:static;inset:auto}
   .esquina,.mandos,.imprimir{display:none !important}
   .top{height:auto;padding:0 0 10px;color:#111}
   #tit{border:0;background:none;padding:0}
