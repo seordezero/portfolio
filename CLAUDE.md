@@ -67,7 +67,7 @@ página de definición: qué entra, con qué umbral, y dónde falla.
 
 ---
 
-## Retorno estimado
+## Rentabilidad
 
 No es solo lo que queda por construir. Tres sumandos, y puede ser **negativo**:
 
@@ -83,7 +83,7 @@ La plusvalía de reformar depende de la **edad**: nula por debajo de 10 años,
 máxima (22 % del valor) a partir de 70. Sin año de construcción se supone 60.
 Fuera de ordenación además anula el potencial: no se puede levantar.
 
-Un retorno negativo **no** dice «no se puede construir». Dice que ese lote no va
+Una rentabilidad negativa **no** dice «no se puede construir». Dice que ese lote no va
 a valer mañana más de lo que vale hoy. En Carabanchel: 1.873 de 9.979 negativos,
 ninguno exactamente cero, mediana +6,8 %, rango −17,7 % a +138 %.
 

@@ -2452,10 +2452,11 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      ponytail: SVG a mano; una libreria de graficos para esto seria cargar
      cientos de KB para dibujar rectangulos. */
   var NUM = {m2:1, m1:1, p:1, n0:1, n1:1, dinero:1, dineroM2:1, pct:1, idx:1};
-  /* --------------------------------- retorno estimado ---------------------
+  /* ------------------------------------ rentabilidad ----------------------
      NO es solo lo que queda por construir. Un lote agotado puede seguir ganando
      valor -se compra, se reforma y se vende- o perderlo, si esta en un sitio que
-     no mejora. De ahi que el retorno tenga tres sumandos y pueda ser negativo:
+     no mejora. De ahi que la rentabilidad tenga tres sumandos y pueda ser
+     negativa:
 
        margen  = (venta - obra) / capital invertido        %
        prima   = recorrido que da el sitio                 puntos
@@ -2465,8 +2466,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      de reformar lo ya construido, que depende de la edad. Un edificio de 1966
      tiene mucho que ganar con una reforma; uno de 2015, casi nada.
 
-     Un retorno negativo no dice "no se puede construir". Dice que ese lote no va
-     a valer manana mas de lo que vale hoy.
+     Una rentabilidad negativa no dice "no se puede construir". Dice que ese lote
+     no va a valer manana mas de lo que vale hoy.
 
      Es un BORRADOR honesto: los coeficientes estan puestos con criterio y
      escritos aqui para poder discutirlos, no calibrados contra ventas reales.
@@ -2810,16 +2811,16 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      la lleva el retorno, que es el unico que no se entiende mirandolo. */
   var EXPLICA = {
     ret: {
-      tit: "C\u00f3mo se calcula el retorno estimado",
+      tit: "C\u00f3mo se calcula la rentabilidad",
       html: function(){
         var c=+C.coste||0, m=met("dineroM2");
         function pp(v){ return (v>0?"+":"")+fmt(v,0)+" pp"; }
         return '' +
-        '<p>El retorno <b>no</b> es solo lo que queda por construir. Un lote con ' +
+        '<p>La rentabilidad <b>no</b> es solo lo que queda por construir. Un lote con ' +
         'la edificabilidad agotada puede seguir ganando valor &mdash;se compra, se ' +
         'reforma y se vende&mdash; o perderlo, si est&aacute; en un sitio que no ' +
-        'mejora. Por eso se compone de tres sumandos y puede salir negativo.</p>' +
-        '<p><b>Un retorno negativo no dice &laquo;no se puede construir&raquo;. ' +
+        'mejora. Por eso se compone de tres sumandos y puede salir negativa.</p>' +
+        '<p><b>Una rentabilidad negativa no dice &laquo;no se puede construir&raquo;. ' +
         'Dice que ese lote no va a valer ma&ntilde;ana m&aacute;s de lo que vale ' +
         'hoy.</b></p>' +
         '<h3>1 &middot; Margen de la operaci&oacute;n</h3>' +
@@ -2898,7 +2899,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       });
     })();
     var out=[
-      caja("Retorno estimado", "ret",
+      caja("Rentabilidad", "ret",
            barras(ids, r.map(function(x){ return x?x.ret:null; }), pies, tinta)),
       caja("Análisis multivariable", "multi", radar(ids, cols, tinta)),
       caja("Análisis urbano", "urb", urbano(ids, cols, tinta)),
@@ -2906,7 +2907,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     ].filter(Boolean);
     document.getElementById("cmpNota").title =
       "Estimación, no tasación. Obra a "+met("dineroM2")(+C.coste||0)+
-      ". Retorno = (potencial × valor por m² − obra) ÷ (valor actual + obra). "+
+      ". La rentabilidad suma margen de operación, prima de sitio y ajustes por "+
+      "incertidumbre; la «i» de su gráfico tiene el cálculo entero. "+
       "El análisis solar sale de la orientación real de las fachadas, sin sombras vecinas.";
     return out.join("");
   }
