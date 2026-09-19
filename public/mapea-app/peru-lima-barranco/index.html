@@ -218,7 +218,18 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .pop .tabs{padding:0 15px 9px}
 .pop .selbody{flex:1}
 .popfoot{padding:10px 15px calc(12px + env(safe-area-inset-bottom));
-  border-top:1px solid var(--line)}
+  border-top:1px solid var(--line); display:flex; gap:6px}
+.popfoot .btn{flex:1}
+/* Los anuncios que ha puesto la gente, dentro de la ficha. */
+.anuncios{margin:0 0 9px; padding:0; list-style:none}
+.anuncios li{display:flex; align-items:baseline; gap:7px; padding:3px 0;
+  font-size:12px; border-bottom:1px solid var(--line)}
+.anuncios a{color:var(--acc-ink); flex:1; min-width:0; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap}
+.anuncios .pre{color:var(--ink); font-variant-numeric:tabular-nums; flex:none}
+.anuncios .quita{border:0; background:none; color:var(--muted); cursor:pointer;
+  font:inherit; font-size:14px; line-height:1; padding:0 2px; flex:none}
+.anuncios .quita:hover{color:var(--acc)}
 .popfoot .btn{width:100%}
 .popfoot .btn.on{border-color:var(--sel); color:var(--sel-ink)}
 
@@ -847,7 +858,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
         </div>
         <div class="who" id="popWho"></div>
         <div class="selbody" id="selbody"></div>
-        <div class="popfoot"><button class="btn sm" id="guardar">Guardar</button></div>
+        <div class="popfoot">
+          <button class="btn sm" id="guardar">Guardar</button>
+          <button class="btn sm" id="marcar">En venta</button>
+        </div>
       </div>
       <div class="legend">
         <div class="t">Colorear por</div>
@@ -883,6 +897,24 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     </div>
     <div class="lista" id="lista"></div>
   </aside>
+</div>
+
+<div class="modal" id="venta" hidden>
+  <div class="modalbox" role="dialog" aria-modal="true" aria-labelledby="vTit"
+       style="max-width:420px">
+    <button class="mx" id="ventaX" aria-label="Cerrar">&times;</button>
+    <h2 id="vTit">Marcar en venta</h2>
+    <p id="vQue" class="nota-oauth"></p>
+    <input class="ed correo" id="vEnlace" type="url" inputmode="url"
+           placeholder="https://www.idealista.com/inmueble/..."
+           aria-label="Enlace al anuncio">
+    <input class="ed correo" id="vPrecio" type="number" min="1" step="1000"
+           placeholder="Precio en euros (opcional)" aria-label="Precio">
+    <button class="btn" id="vGuardar">Publicar anuncio</button>
+    <p class="nota-oauth" id="vAviso"></p>
+    <p class="nota-oauth">Lo que publiques lo ver&aacute; todo el mundo. Pega el
+      enlace del portal, no copies el anuncio.</p>
+  </div>
 </div>
 
 <div class="modal" id="sesion" hidden>
@@ -1483,6 +1515,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     /* El porcentaje es el dato; el enlace es lo que el usuario quiere pulsar.
        Se manda al anuncio en vez de copiarlo: enlazar no es republicar. */
     ventapct: function(d){
+      // los anuncios que ha puesto la gente mandan sobre el dato de origen:
+      // son de hoy, y llevan enlace al portal
+      var n = d.an ? d.an.length : 0;
+      if(n) return n===1 ? "sí · 1 anuncio" : "sí · "+n+" anuncios";
       if(d.vp==null) return "no";
       var t = fmt(d.vp,1)+" % de las unidades";
       return d.vu ? '<a href="'+esc(d.vu)+'" target="_blank" rel="noopener">'+
@@ -1503,7 +1539,26 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       var txt = COMP[tipo] ? COMP[tipo](d) : met(tipo)(d[campo]);
       return "<dt>"+esc(etiqueta)+"</dt><dd>"+txt+"</dd>";
     }).join("");
-    c.innerHTML=cab+'<dl>'+rows+'</dl>';
+    c.innerHTML=cab+listaAnuncios(d)+'<dl>'+rows+'</dl>';
+  }
+
+  /* Los anuncios de un lote, con su enlace al portal. La papelera sale solo en
+     los que ha puesto uno mismo: los ajenos se ven pero no se tocan. */
+  function listaAnuncios(d){
+    if(!d.an || !d.an.length) return "";
+    return '<ul class="anuncios">'+d.an.map(function(a){
+      var mio = sesion && sesion.uid && a.usuario===sesion.uid;
+      return '<li><a href="'+esc(a.enlace)+'" target="_blank" rel="noopener nofollow">'+
+        esc(dominio(a.enlace))+'</a>'+
+        (a.precio ? '<span class="pre">'+met("dinero")(a.precio)+'</span>' : '')+
+        (mio ? '<button class="quita" data-anuncio="'+a.id+
+               '" title="Retirar" aria-label="Retirar">&times;</button>' : '')+
+        '</li>';
+    }).join("")+'</ul>';
+  }
+  function dominio(u){
+    try{ return new URL(u).hostname.replace(/^www\./,""); }
+    catch(e){ return u.slice(0,40); }
   }
 
   /* ---------------- canvas ---------------- */
@@ -1621,10 +1676,38 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
       }
     }
     if(view.k>1.6) rotular();
+    pines();
     if(st.sel){                                   // lo seleccionado, siempre amarillo
       path(st.sel.p);
       ctx.fillStyle=FOCO; ctx.fill();
       ctx.lineWidth=2.2; ctx.strokeStyle="#FFF3BF"; ctx.stroke();
+    }
+  }
+  /* Un pin por lote con anuncio, en el centro de la parcela: es lo mas cerca
+     que se puede estar del sitio en venta sin inventarse una direccion, porque el
+     portal no publica el numero exacto. Indigo con aro crema: se ve igual sobre
+     el relleno crema de un lote que sobre el fondo negro.
+
+     OJO: el anuncio marca que algo esta en venta, NADA MAS. No entra en el valor
+     por m2 ni en la rentabilidad. Un precio pedido no es un precio pagado; el
+     valor se apoya en ventas consumadas y esto no lo toca. */
+  function pines(){
+    var r = view.k>2 ? 5.5 : 4;
+    for(var i=0;i<lots.length;i++){
+      var d=lots[i].d;
+      if(!d.an || !d.an.length) continue;
+      var bb=lots[i].b;
+      var x=sx((bb[0]+bb[2])/2), y=sy((bb[1]+bb[3])/2);
+      if(x<-20||x>W+20||y<-20||y>H+20) continue;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832);
+      ctx.fillStyle=css("--map-sel"); ctx.fill();
+      ctx.lineWidth=1.6; ctx.strokeStyle=css("--map-hit"); ctx.stroke();
+      if(d.an.length>1 && view.k>2){
+        ctx.fillStyle=css("--map-hit");
+        ctx.font='700 8px '+css('--font');
+        ctx.textAlign="center"; ctx.textBaseline="middle";
+        ctx.fillText(String(d.an.length), x, y+0.5);
+      }
     }
   }
   function rotular(){
@@ -1671,7 +1754,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   function leyenda(){
     var h="", m=st.modo;
     if(m==="match") h=lg(css("--map-hit"),"Cumple el filtro")+lg(css("--map-miss"),"No cumple")+
-                      lg(FOCO,"Lote abierto")+lg(css("--map-verde"),"Zona verde");
+                      lg(FOCO,"Lote abierto")+lg(css("--map-verde"),"Zona verde")+
+                      lg(css("--map-sel"),"Anuncio en venta");
     else if(m==="zona") (C.zonasLeyenda||[]).forEach(function(z){
       h+=lg((C.zonas||{})[z[0]]||css("--map-none"), z[1]); });
     else if(m==="valor"){ var rv=rangoDe("vm");
@@ -1954,6 +2038,42 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   }
 
   function estaGuardado(l){ return l && guardados.indexOf(l.i)>=0; }
+  /* ------------------------------ anuncios en venta ----------------------
+     Se leen SIN sesion: la politica de la tabla los deja publicos para que el
+     mapa llegue ya con ellos puestos. Al fusionarlos se toca el mismo campo que
+     usa el filtro "En venta", asi que no hay que tocar ni el filtro ni el mapa. */
+  var PORREF = null;
+  function indiceRef(){
+    if(PORREF) return PORREF;
+    PORREF = {};
+    for(var i=0;i<lots.length;i++){
+      var u=(lots[i].d.u||"").trim();
+      if(u) PORREF[u]=lots[i];
+    }
+    return PORREF;
+  }
+  function cargarAnuncios(){
+    if(!SB) return;
+    sbCliente().then(function(c){
+      if(!c) return null;
+      return c.from("anuncios")
+              .select("id,refcat,enlace,precio,usuario")
+              .eq("ciudad", C.id||"x")
+              .is("retirado", null);
+    }).then(function(r){
+      if(!r || r.error || !r.data) return;
+      var ix=indiceRef(), tocados=0;
+      lots.forEach(function(l){ if(l.d.an) delete l.d.an; });
+      r.data.forEach(function(a){
+        var l=ix[(a.refcat||"").trim()]; if(!l) return;
+        (l.d.an = l.d.an || []).push(a);
+        l.d.ev = 1;
+        tocados++;
+      });
+      if(tocados){ apply(); ficha(); }
+    }).catch(function(){});
+  }
+
   function pintarGuardar(){
     var b=document.getElementById("guardar");
     var g=estaGuardado(st.sel);
@@ -1963,6 +2083,64 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   /* Un unico camino de borrado: lo llaman la ficha, la lista de guardados y la
      cabecera del comparador. Si cada sitio borrase por su cuenta habria tres
      sitios donde olvidarse de Supabase o de repintar. */
+  /* Marcar en venta. Hace falta sesion para que cada anuncio tenga dueno y se
+     pueda retirar; sin backend no hay donde publicarlo y el boton lo dice. */
+  var vVenta=document.getElementById("venta");
+  function avisoVenta(t){ document.getElementById("vAviso").textContent=t||""; }
+  document.getElementById("marcar").onclick=function(){
+    if(!st.sel) return;
+    if(!SB){
+      avisoVenta("");
+      alert("Los anuncios se publican en el servidor, y todavía no está "+
+            "conectado. En cuanto lo esté, este botón funciona.");
+      return;
+    }
+    if(!sesion){ vSesion.hidden=false; return; }
+    document.getElementById("vQue").textContent =
+      (st.sel.d.ad||st.sel.d.u||"") + " · " + (st.sel.d.u||"");
+    document.getElementById("vEnlace").value="";
+    document.getElementById("vPrecio").value="";
+    avisoVenta("");
+    vVenta.hidden=false;
+    document.getElementById("vEnlace").focus();
+  };
+  document.getElementById("ventaX").onclick=function(){ vVenta.hidden=true; };
+  vVenta.addEventListener("click", function(e){ if(e.target===vVenta) vVenta.hidden=true; });
+  document.getElementById("vGuardar").onclick=function(){
+    var l=st.sel; if(!l || !sesion) return;
+    var url=document.getElementById("vEnlace").value.trim();
+    var pre=parseInt(document.getElementById("vPrecio").value,10);
+    if(!/^https?:\/\//i.test(url)){
+      avisoVenta("Pega la dirección completa del anuncio, con https://");
+      return;
+    }
+    avisoVenta("Publicando…");
+    sbCliente().then(function(c){
+      return c.from("anuncios").insert({
+        ciudad:C.id||"x", refcat:(l.d.u||"").trim(), enlace:url,
+        precio:isFinite(pre)&&pre>0 ? pre : null, usuario:sesion.uid
+      });
+    }).then(function(r){
+      if(r && r.error){
+        avisoVenta(/duplicate|unique/i.test(r.error.message||"")
+          ? "Ese enlace ya está publicado para este lote."
+          : "No se pudo publicar: "+r.error.message);
+        return;
+      }
+      vVenta.hidden=true;
+      cargarAnuncios();
+    }).catch(function(err){ avisoVenta("No se pudo publicar: "+err.message); });
+  };
+  /* Retirar: no se borra la fila, se marca. Asi queda el rastro de que ese lote
+     estuvo en venta, que es justo lo que interesa de aqui a un ano. */
+  document.getElementById("selbody").addEventListener("click", function(e){
+    var b=e.target.closest("[data-anuncio]"); if(!b || !sesion) return;
+    sbCliente().then(function(c){
+      return c.from("anuncios").update({retirado:new Date().toISOString()})
+              .eq("id", +b.dataset.anuncio);
+    }).then(cargarAnuncios).catch(function(){});
+  });
+
   function quitarGuardado(i){
     var k=guardados.indexOf(i); if(k<0) return;
     guardados.splice(k,1);
@@ -3004,6 +3182,8 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   }
 
   pintarQuien(); pintarGuardados();
+  // los anuncios se leen sin sesion: el mapa llega ya con los pines puestos
+  cargarAnuncios();
 
   window.addEventListener("resize", function(){
     // el numero de columnas que caben depende del ancho, asi que se recalcula

@@ -113,6 +113,26 @@ gráfico. Son un **borrador con criterio de mercado**, no una calibración contr
 ventas reales: cuando haya serie de transacciones cambian los números, no la
 forma.
 
+## En venta: lo ponen los usuarios
+
+Rascar los portales choca con sus condiciones y, sobre todo, con el cruce: un
+anuncio de particular no publica el número de la calle, así que no se sabe de qué
+parcela habla. Al revés sí funciona: quien está mirando el anuncio sabe la
+dirección, la busca en MAPEA y pega el enlace.
+
+Tabla `anuncios` en Supabase, **lectura pública** (el mapa llega con los pines
+puestos, sin sesión) y escritura solo con sesión. Cada uno retira los suyos; los
+ajenos se ven y no se tocan. Retirar no borra la fila, la marca: el rastro de que
+ese lote estuvo en venta es justo lo que interesa dentro de un año.
+
+El pin va **en el centro de la parcela**, que es lo más cerca que se puede estar
+sin inventarse una dirección que el portal no publica.
+
+**Un anuncio marca que algo está en venta y NADA MÁS.** No entra en el valor por
+m² ni en la rentabilidad. Un precio pedido no es un precio pagado: el valor se
+apoya en ventas consumadas, y los módulos del Catastro —calculados con todas las
+compraventas ante notario— son la fuente para eso, no los portales.
+
 ## Reglas de los índices
 
 - **Escala absoluta 0–100**, nunca relativa al distrito. Un 80 significa lo mismo
