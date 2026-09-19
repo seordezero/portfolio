@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "MAPEA · ver el lote",
+  "version": "1.0.0",
+  "description": "En cualquier anuncio de idealista, abre el lote en MAPEA con su catastro, su cabida y su rentabilidad.",
+  "icons": {"128": "icon128.png"},
+  "content_scripts": [{
+    "matches": ["https://www.idealista.com/inmueble/*"],
+    "js": ["content.js"],
+    "run_at": "document_idle"
+  }],
+  "browser_specific_settings": {
+    "gecko": {"id": "mapea@sebastianortizdezevallos.com", "strict_min_version": "109.0"}
+  }
+}

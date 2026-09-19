@@ -233,7 +233,11 @@ canvas{display:block; width:100%; height:100%; cursor:crosshair; touch-action:no
 .marcador{margin-top:14px; padding-top:12px; border-top:1px solid var(--line)}
 .marcador h3{margin:0 0 4px; font-size:10.5px; font-weight:700; letter-spacing:.1em;
   text-transform:uppercase; color:var(--sel-ink)}
-.marcador .btn{display:inline-block; margin-top:6px; cursor:grab; width:auto}
+.marcador .btn{display:inline-block; margin-top:6px; width:auto}
+.marcador #marcapaginas{cursor:grab}
+.marcador details{margin-top:10px}
+.marcador summary{font-size:11.5px; color:var(--muted); cursor:pointer}
+.marcador summary:hover{color:var(--acc)}
 .popfoot .btn{width:100%}
 .popfoot .btn.on{border-color:var(--sel); color:var(--sel-ink)}
 
@@ -919,11 +923,21 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     <p class="nota-oauth">Lo que publiques lo ver&aacute; todo el mundo. Pega el
       enlace del portal, no copies el anuncio.</p>
     <div class="marcador">
-      <h3>M&aacute;s r&aacute;pido: el marcador</h3>
-      <p class="nota-oauth">Arrastra este bot&oacute;n a la barra de marcadores.
-        Desde cualquier anuncio de idealista, p&uacute;lsalo y MAPEA lee la
-        direcci&oacute;n, el precio y la superficie, y busca el lote solo.</p>
-      <a class="btn" id="marcapaginas" href="#">&#128205; A&ntilde;adir a MAPEA</a>
+      <h3>Desde el anuncio, en un clic</h3>
+      <p class="nota-oauth">Con la extensi&oacute;n instalada, cualquier anuncio de
+        idealista ense&ntilde;a un bot&oacute;n <b>Ver el lote en MAPEA</b>: lee la
+        direcci&oacute;n, el precio y la superficie, y abre el lote aqu&iacute;.</p>
+      <a class="btn" href="../mapea-idealista.zip" download>&#11015; Descargar la extensi&oacute;n</a>
+      <p class="nota-oauth">Descomprime la carpeta. En Chrome o Edge:
+        <b>chrome://extensions</b> &rarr; activa <b>Modo de desarrollador</b> &rarr;
+        <b>Cargar descomprimida</b> y elige la carpeta. Se instala una vez.</p>
+      <details>
+        <summary>Sin instalar nada: el marcador</summary>
+        <p class="nota-oauth">Arrastra este bot&oacute;n a la barra de marcadores
+          (<b>Ctrl+May&uacute;s+B</b> para verla). Hace lo mismo, pero hay portales
+          que lo bloquean.</p>
+        <a class="btn" id="marcapaginas" href="#">&#128205; A&ntilde;adir a MAPEA</a>
+      </details>
     </div>
   </div>
 </div>
