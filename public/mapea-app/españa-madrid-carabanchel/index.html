@@ -374,20 +374,22 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .gnota{margin-top:6px; font-size:9.5px; line-height:1.4; color:var(--muted)}
 .gnota.centro{margin:0; display:flex; align-items:center; justify-content:center;
   text-align:center; height:100%; min-height:90px; padding:0 14px}
-/* Las barras crecen desde la linea de cero, arriba o abajo. Con solo el borde
-   inferior como base, un -3% y un +3% se dibujaban iguales. */
+/* Eje clavado de 0 a 100: las barras crecen desde abajo y la raya del 50 da la
+   referencia. Con la escala abierta a los datos, la misma barra cambiaba de
+   altura segun con quien se comparara. */
 .gplot{flex:1; min-height:0; position:relative; display:flex; gap:10px;
   padding:0 3px; border-left:1px solid var(--line-2); border-bottom:1px solid var(--line-2)}
-.gplot::after{content:""; position:absolute; left:0; right:0; top:var(--cero,100%);
-  border-top:1px dashed var(--line-2); pointer-events:none}
+.gplot::after{content:""; position:absolute; left:0; right:0; top:50%;
+  border-top:1px dashed var(--line-2); opacity:.55; pointer-events:none}
 .gcol{flex:1; min-width:0; height:100%; position:relative}
 .gval{position:absolute; left:0; right:0; text-align:center;
   font-size:10px; font-weight:600; color:var(--ink-2);
   white-space:nowrap; font-variant-numeric:tabular-nums}
 .gval.neg{color:#E06A6A}
-.gcol i{position:absolute; left:18%; right:18%; min-height:2px;
+/* min-height:3px para que un lote a cero o en negativo deje su marca en la base
+   y no parezca que falta la columna. */
+.gcol i{position:absolute; left:18%; right:18%; bottom:0; min-height:3px;
   border-radius:2px 2px 0 0}
-.gcol.neg i{border-radius:0 0 2px 2px}
 /* La "i" de como se calcula, al lado del titulo del grafico. */
 .info{width:17px; height:17px; flex:none; margin-left:auto; border-radius:50%;
   border:1px solid var(--line-2); background:none; color:var(--muted);
@@ -2566,28 +2568,31 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
        cero -"los tres lotes estan agotados" es una respuesta-, y si no hay cifra
        se dibujan igual las columnas vacias y se dice por que. Un hueco en la
        rejilla solo hace dudar de si la pagina esta rota. */
-    /* Y ahora hay negativos de verdad: un lote que no va a valer mas manana da un
-       numero bajo cero. La escala se abre a los dos lados y la linea de cero se
-       dibuja donde caiga, que sin ella un -3% y un +3% se leen igual. */
-    var alto=Math.max(0, hay.length?Math.max.apply(null,hay):0);
-    var bajo=Math.min(0, hay.length?Math.min.apply(null,hay):0);
-    var span=(alto-bajo)||1;
-    var cero=alto/span*100;                       // % desde arriba
+    /* El eje va CLAVADO de 0 a 100. Es un porcentaje: con la escala abierta a los
+       datos, la misma barra cambiaba de altura segun con quien se comparara, y
+       asi no se puede leer nada. Lo que se sale del eje se dice con el numero,
+       no moviendo el eje:
+         - por encima de 100, la barra llega arriba del todo
+         - un negativo se dibuja a cero, en rojo, con su cifra
+       La raya del 50 esta para que un 20% no parezca lo mismo que un 70%. */
+    var ROJO="#E06A6A";
     var cols=vals.map(function(v,k){
-      var h=(v==null||!isFinite(v)) ? 0 : Math.abs(v)/span*100;
-      var arriba=(v>=0) ? (cero-h) : cero;
-      var yTxt=(v<0) ? Math.min(90, cero+h+1) : Math.max(0, cero-h-14);
-      return '<div class="gcol'+(v<0?' neg':'')+'" data-l="'+ids[k]+'">'+
-             '<b class="gval'+(v<0?' neg':'')+'" style="top:'+yTxt.toFixed(1)+'%">'+
+      var nulo=(v==null || !isFinite(v));
+      var neg=(!nulo && v<0);
+      var h=nulo ? 0 : Math.max(0, Math.min(100, v));     // % de alto, 0..100
+      // Encima del 88% el rotulo no cabe sobre la barra: se pega a lo alto de la
+      // columna, que es justo al lado de la punta.
+      var rot = h>88 ? 'top:0' : 'bottom:calc('+h.toFixed(1)+'% + 3px)';
+      return '<div class="gcol'+(neg?' neg':'')+'" data-l="'+ids[k]+'">'+
+             '<b class="gval'+(neg?' neg':'')+'" style="'+rot+'">'+
              met("pct")(v)+'</b>'+
-             '<i style="top:'+arriba.toFixed(1)+'%;height:'+h.toFixed(1)+
-             '%;background:'+tinta[k]+'"></i></div>';
+             '<i style="height:'+h.toFixed(1)+'%;background:'+
+             (neg?ROJO:tinta[k])+'"></i></div>';
     }).join("");
     var nota = hay.length ? "" :
       '<div class="gnota">Sin valor por m&sup2; ni &iacute;ndices urbanos: no hay '+
       'con qu&eacute; estimar este lote.</div>';
-    return '<div class="gplot" style="--cero:'+cero.toFixed(1)+'%">'+cols+
-           '</div><div class="gx">'+
+    return '<div class="gplot">'+cols+'</div><div class="gx">'+
            pies.map(function(p){
              return '<span title="'+esc(p)+'">'+esc(p)+'</span>'; }).join("")+
            '</div>'+nota;

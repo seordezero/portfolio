@@ -87,6 +87,12 @@ Un retorno negativo **no** dice «no se puede construir». Dice que ese lote no 
 a valer mañana más de lo que vale hoy. En Carabanchel: 1.873 de 9.979 negativos,
 ninguno exactamente cero, mediana +6,8 %, rango −17,7 % a +138 %.
 
+El **eje del gráfico va clavado de 0 a 100**, con la raya del 50 de referencia:
+es un porcentaje, y con la escala abierta a los datos la misma barra cambiaba de
+altura según con quién se comparara. Lo que se sale del eje se dice con el
+número, no moviendo el eje — por encima de 100 la barra llega arriba, y un
+negativo se dibuja a cero en rojo con su cifra al lado.
+
 Los coeficientes viven en `RET` dentro de `logic.js`, una ciudad puede pisarlos
 desde `C.retorno`, y están escritos íntegros en la ficha que abre la «i» del
 gráfico. Son un **borrador con criterio**, no una calibración contra ventas
