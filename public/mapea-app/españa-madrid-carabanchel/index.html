@@ -341,7 +341,8 @@ th.plegada .nomb,th.plegada .qx{display:none}
   overflow:hidden}
 .graf h3{margin:0 0 11px; font-size:10.5px; font-weight:600; letter-spacing:.09em;
   text-transform:uppercase; color:var(--sel-ink); flex:none;
-  display:flex; align-items:center; justify-content:space-between; gap:8px}
+  display:flex; align-items:center; gap:8px}
+.graf h3 > .ord:last-child{margin-left:auto}
 .ord{border:1px solid var(--line-2); border-radius:3px; background:none;
   color:var(--muted); font:inherit; font-size:9.5px; letter-spacing:.06em;
   text-transform:uppercase; padding:2px 7px; cursor:pointer}
@@ -373,14 +374,27 @@ th.plegada .nomb,th.plegada .qx{display:none}
 .gnota{margin-top:6px; font-size:9.5px; line-height:1.4; color:var(--muted)}
 .gnota.centro{margin:0; display:flex; align-items:center; justify-content:center;
   text-align:center; height:100%; min-height:90px; padding:0 14px}
-.gplot{flex:1; min-height:0; display:flex; align-items:flex-end; gap:10px;
+/* Las barras crecen desde la linea de cero, arriba o abajo. Con solo el borde
+   inferior como base, un -3% y un +3% se dibujaban iguales. */
+.gplot{flex:1; min-height:0; position:relative; display:flex; gap:10px;
   padding:0 3px; border-left:1px solid var(--line-2); border-bottom:1px solid var(--line-2)}
-.gcol{flex:1; min-width:0; height:100%; display:flex; flex-direction:column;
-  justify-content:flex-end; align-items:center}
-.gval{font-size:10px; font-weight:600; color:var(--ink-2); margin-bottom:3px;
+.gplot::after{content:""; position:absolute; left:0; right:0; top:var(--cero,100%);
+  border-top:1px dashed var(--line-2); pointer-events:none}
+.gcol{flex:1; min-width:0; height:100%; position:relative}
+.gval{position:absolute; left:0; right:0; text-align:center;
+  font-size:10px; font-weight:600; color:var(--ink-2);
   white-space:nowrap; font-variant-numeric:tabular-nums}
 .gval.neg{color:#E06A6A}
-.gcol i{display:block; width:64%; min-height:2px; border-radius:2px 2px 0 0}
+.gcol i{position:absolute; left:18%; right:18%; min-height:2px;
+  border-radius:2px 2px 0 0}
+.gcol.neg i{border-radius:0 0 2px 2px}
+/* La "i" de como se calcula, al lado del titulo del grafico. */
+.info{width:17px; height:17px; flex:none; margin-left:auto; border-radius:50%;
+  border:1px solid var(--line-2); background:none; color:var(--muted);
+  font:inherit; font-size:10px; font-weight:700; line-height:1; cursor:pointer;
+  font-style:italic}
+.info:hover{border-color:var(--acc); color:var(--acc)}
+.graf h3 .ord{margin-left:0}
 .gx{display:flex; gap:10px; padding:5px 3px 0}
 .gx span{flex:1; min-width:0; text-align:center; font-size:9.5px; color:var(--muted);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -494,13 +508,17 @@ th.plegada .nomb,th.plegada .qx{display:none}
   .cmpbody table{display:none}
   .cmpfilas{display:block; flex:none}
   .cmpficha{display:block}
+  .cmpficha.vacia{display:flex}
 }
 /* Los datos del lote elegido en cuatro columnas: etiqueta, valor, etiqueta,
    valor. En parejas ocupan la mitad de alto que una lista corrida. */
 .cmpficha{flex:1; min-height:0; overflow:hidden; border:2px solid; border-radius:5px;
   padding:7px 9px 8px; margin-top:2px}
+/* Sin display:flex aqui: esta regla va despues de .cmpficha{display:none} y le
+   ganaba, asi que la caja vacia aparecia tambien en escritorio, donde no pinta
+   nada, y al elegir un lote desaparecia y la tabla daba un salto. */
 .cmpficha.vacia{border-color:var(--line-2); color:var(--muted); font-size:11.5px;
-  display:flex; align-items:center; justify-content:center; text-align:center}
+  align-items:center; justify-content:center; text-align:center}
 .cfhd{display:flex; align-items:baseline; gap:7px; padding-bottom:5px;
   border-bottom:1px solid var(--line); margin-bottom:5px}
 .cfhd b{font-size:12.5px; color:var(--sel-ink); overflow:hidden;
@@ -751,7 +769,9 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   cursor:pointer; text-align:left; width:100%}
 .aviso:hover{border-color:var(--acc); color:var(--acc-ink)}
 .modal{position:fixed; inset:0; background:rgba(0,0,0,.78); display:flex;
-  align-items:center; justify-content:center; padding:22px; z-index:50}
+  align-items:center; justify-content:center; padding:22px; z-index:90}
+/* 90 y no 50: el comparador es una capa fija a 60 y la esquina esta a 80. Con
+   50, la explicacion del grafico se abria DETRAS del comparador y no se veia. */
 .modalbox{position:relative; max-width:560px; max-height:82vh; overflow-y:auto;
   background:var(--panel); border:1px solid var(--line-2); border-radius:6px; padding:22px 24px}
 .modalbox h2{margin:0 0 10px; font-size:17px; color:var(--acc-ink)}
@@ -759,6 +779,14 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
 .modalbox ul{margin:0 0 12px; padding-left:17px; color:var(--ink-2); font-size:13.5px; line-height:1.55}
 .modalbox li{margin-bottom:6px}
 .modalbox b{color:var(--ink)}
+/* La explicacion de un calculo lleva formulas: van en bloque y en monoespaciada,
+   que una formula en prosa no se lee. */
+.modalbox h3{margin:16px 0 6px; font-size:10.5px; font-weight:700;
+  letter-spacing:.11em; text-transform:uppercase; color:var(--sel-ink)}
+.modalbox pre{margin:0 0 10px; padding:9px 11px; border:1px solid var(--line);
+  border-radius:4px; background:var(--panel-2); color:var(--ink-2);
+  font-family:ui-monospace,Consolas,monospace; font-size:11.5px; line-height:1.55;
+  white-space:pre-wrap; overflow-x:auto}
 .mono{font-family:ui-monospace,Consolas,monospace; font-size:11.5px}
 .mx{position:absolute; top:8px; right:11px; border:0; background:none; color:var(--muted);
   font-size:20px; line-height:1; cursor:pointer; padding:2px 6px}
@@ -967,7 +995,6 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   document.getElementById("mTitulo").textContent = C.ciudad;
   document.getElementById("mSub").textContent = C.sub;
   document.querySelector("#avisoBtn .largo").textContent = C.aviso;
-  document.getElementById("mBody").innerHTML = C.disclaimer || "";
 
   /* ---------------- filtros ----------------
      Todos arrancan activos y abiertos de par en par: la seleccion por defecto es
@@ -1718,7 +1745,16 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   }, {passive:false});
 
   var modal=document.getElementById("modal");
-  document.getElementById("avisoBtn").onclick=function(){ modal.hidden=false; };
+  /* Un solo cuadro para todas las explicaciones: el aviso de prototipo y, desde
+     el comparador, el calculo de cada grafico. */
+  function abrirModal(titulo, html){
+    document.getElementById("mTit").textContent = titulo;
+    document.getElementById("mBody").innerHTML = html;
+    modal.hidden=false;
+  }
+  document.getElementById("avisoBtn").onclick=function(){
+    abrirModal(C.aviso || "Prototipo", C.disclaimer || "");
+  };
   document.getElementById("modalX").onclick=function(){ modal.hidden=true; };
   modal.addEventListener("click", function(e){ if(e.target===modal) modal.hidden=true; });
   window.addEventListener("keydown", function(e){
@@ -2124,8 +2160,9 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
        columnas: etiqueta, valor, etiqueta, valor. Se leen en parejas y ocupan la
        mitad de alto que una lista corrida. */
     function fichaCompacta(id){
-      if(id==null || !lots[id]) return '<div class="cmpficha vacia">'+
-        'Elige un lote para ver sus datos.</div>';
+      // Sin texto: la caja vacia ya dice que ahi va algo, y el rotulo hacia que
+      // el hueco cambiara de alto al elegir y al soltar, moviendo la tabla.
+      if(id==null || !lots[id]) return '<div class="cmpficha vacia"></div>';
       var d=lots[id].d, c=colorLote(id), pares=[];
       pares.push(["Forma", silueta(lots[id], c)]);
       pares.push(["Situación", situacion(lots[id], c)]);
@@ -2189,7 +2226,7 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     pintarComparar();
   }
   vCmp.addEventListener("click", function(e){
-    if(e.target.closest(".sw,.qx,.pl,.btn,.ord")) return;   // esos ya hacen lo suyo
+    if(e.target.closest(".sw,.qx,.pl,.btn,.ord,.info")) return;  // ya hacen lo suyo
     var t=e.target.closest("[data-l]");
     // pinchar fuera de cualquier lote suelta la seleccion
     enfocar(t && String(foco)!==t.dataset.l ? +t.dataset.l : null);
@@ -2197,6 +2234,10 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   /* Ordenar: cada grafico ordena por lo que ese grafico mide. Cambia el orden de
      las columnas y de las barras; los numeros de abajo no se mueven, que son la
      identidad del lote y no su puesto. */
+  vCmp.addEventListener("click", function(e){
+    var b=e.target.closest(".info"); if(!b) return;
+    var x=EXPLICA[b.dataset.info]; if(x) abrirModal(x.tit, x.html());
+  });
   vCmp.addEventListener("click", function(e){
     var b=e.target.closest(".ord"); if(!b) return;
     var k=b.dataset.ord;
@@ -2409,29 +2450,83 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      ponytail: SVG a mano; una libreria de graficos para esto seria cargar
      cientos de KB para dibujar rectangulos. */
   var NUM = {m2:1, m1:1, p:1, n0:1, n1:1, dinero:1, dineroM2:1, pct:1, idx:1};
-  /* Retorno de construir lo que al lote le queda de potencial. La tabla de al
-     lado ya lista el catastro; aqui solo va lo que decide una compra.
+  /* --------------------------------- retorno estimado ---------------------
+     NO es solo lo que queda por construir. Un lote agotado puede seguir ganando
+     valor -se compra, se reforma y se vende- o perderlo, si esta en un sitio que
+     no mejora. De ahi que el retorno tenga tres sumandos y pueda ser negativo:
 
-       ingreso = potencial x valor_m2
-       obra    = potencial x coste_m2
-       retorno = (ingreso - obra) / (valor_actual + obra)
+       margen  = (venta - obra) / capital invertido        %
+       prima   = recorrido que da el sitio                 puntos
+       ajustes = lo que resta la incertidumbre normativa   puntos
 
-     Es una estimacion, no una tasacion: el coste de obra es un numero por
-     ciudad, no por proyecto. Un lote ya agotado da 0, que es la respuesta. */
+     La venta tiene dos partes: lo que se levanta del potencial, y la plusvalia
+     de reformar lo ya construido, que depende de la edad. Un edificio de 1966
+     tiene mucho que ganar con una reforma; uno de 2015, casi nada.
+
+     Un retorno negativo no dice "no se puede construir". Dice que ese lote no va
+     a valer manana mas de lo que vale hoy.
+
+     Es un BORRADOR honesto: los coeficientes estan puestos con criterio y
+     escritos aqui para poder discutirlos, no calibrados contra ventas reales.
+     Cuando haya serie de transacciones se recalibran y esta funcion no cambia de
+     forma, solo de numeros. Una ciudad puede pisarlos desde su configuracion. */
+  var RET = {
+    costeReforma:   0.30,   // reformar cuesta el 30% de la obra nueva
+    upliftMax:      0.22,   // plusvalia maxima por reformar, sobre el valor
+    edadPlena:      70,     // a partir de aqui la reforma rinde todo
+    edadNula:       10,     // por debajo, reformar no aporta valor
+    edadPorDefecto: 60,     // mediana del distrito cuando falta el ano
+    primaK:         14,     // puntos entre el peor sitio posible y el mejor
+    penPendiente:   -4,     // normativa no fijada
+    penFuera:       -9,     // fuera de ordenacion
+    penSinDato:     -3      // restriccion sin determinar
+  };
+  if(C.retorno) for(var _k in C.retorno) RET[_k]=C.retorno[_k];
+
   function totalDe(d){
     // Carabanchel llama "ve" al valor total y Barranco "vl"; si falta, se compone
     if(d.ve!=null) return d.ve;
     if(d.vl!=null) return d.vl;
     return (d.vm!=null && d.a!=null) ? d.vm*d.a : null;
   }
+  function edadDe(d){
+    var y=new Date().getFullYear();
+    return (d.ao>1500 && d.ao<=y) ? y-d.ao : RET.edadPorDefecto;
+  }
+  function upliftDe(edad){
+    var t=(edad-RET.edadNula)/(RET.edadPlena-RET.edadNula);
+    return Math.max(0, Math.min(1, t))*RET.upliftMax;
+  }
   function retorno(d){
-    var po=d.po, vm=d.vm, base=totalDe(d), coste=+C.coste||0;
-    // Sin valor por m2 no hay retorno que calcular: el modelo de valor solo
-    // cubre residencial, y un solar sin tasar daria -100% en vez de "no se sabe".
-    if(po==null || !(vm>0) || base==null || !coste) return null;
-    var obra=po*coste, inv=base+obra;
-    if(!(inv>0)) return null;
-    return {ben:po*vm-obra, inv:inv, ret:(po*vm-obra)/inv*100};
+    var coste=+C.coste||0;
+    /* La prima de sitio sale de los cuatro indices urbanos, que son absolutos
+       0-100. El ancla es 50, no la mediana del distrito: con la mediana seria
+       una escala relativa disfrazada y un barrio malo saldria del medio. */
+    var ix=[d.xn,d.xs,d.xo,d.xm].filter(function(v){ return v!=null && isFinite(v); });
+    var prima = ix.length
+      ? (ix.reduce(function(a,b){ return a+b; },0)/ix.length/100 - 0.5)*RET.primaK
+      : null;
+    var aj=0;
+    if(d.zg==="pendiente") aj+=RET.penPendiente;
+    if(d.rs==="fuera_de_ordenacion") aj+=RET.penFuera;
+    else if(!d.rs) aj+=RET.penSinDato;
+
+    var vm=d.vm, base=totalDe(d);
+    var sc=d.sc>0 ? d.sc : 0;
+    var po=d.po>0 ? d.po : 0;
+    if(d.rs==="fuera_de_ordenacion") po=0;   // fuera de ordenacion no se levanta
+    var margen=null, benef=null, inv=null, uplift=upliftDe(edadDe(d));
+    if(vm>0 && base!=null && coste>0){
+      var obraD=po*coste, obraR=sc*coste*RET.costeReforma;
+      var ventaD=po*vm,   ventaR=sc*vm*uplift;
+      inv=base+obraD+obraR;
+      benef=ventaD+ventaR-obraD-obraR;
+      if(inv>0) margen=benef/inv*100;
+    }
+    // Sin indices y sin valor no hay nada que decir de ese lote.
+    if(margen==null && prima==null) return null;
+    return {ret:(margen||0)+(prima||0)+aj, margen:margen, prima:prima, aj:aj,
+            benef:benef, inv:inv, uplift:uplift, soloSitio:margen==null};
   }
   /* --------- color por lote ---------
      Ocho tonos con luminosidad suficiente para leerse sobre negro. El usuario
@@ -2471,17 +2566,28 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
        cero -"los tres lotes estan agotados" es una respuesta-, y si no hay cifra
        se dibujan igual las columnas vacias y se dice por que. Un hueco en la
        rejilla solo hace dudar de si la pagina esta rota. */
-    var max=hay.length ? (Math.max.apply(null, hay.map(Math.abs)) || 1) : 1;
+    /* Y ahora hay negativos de verdad: un lote que no va a valer mas manana da un
+       numero bajo cero. La escala se abre a los dos lados y la linea de cero se
+       dibuja donde caiga, que sin ella un -3% y un +3% se leen igual. */
+    var alto=Math.max(0, hay.length?Math.max.apply(null,hay):0);
+    var bajo=Math.min(0, hay.length?Math.min.apply(null,hay):0);
+    var span=(alto-bajo)||1;
+    var cero=alto/span*100;                       // % desde arriba
     var cols=vals.map(function(v,k){
-      var t=(v==null||!isFinite(v)) ? 0 : Math.max(0,v)/max;   // lo negativo no crece
-      return '<div class="gcol" data-l="'+ids[k]+'"><b class="gval'+
-             (v<0?' neg':'')+'">'+met("pct")(v)+'</b>'+
-             '<i style="height:'+(t*100).toFixed(1)+'%;background:'+tinta[k]+'"></i></div>';
+      var h=(v==null||!isFinite(v)) ? 0 : Math.abs(v)/span*100;
+      var arriba=(v>=0) ? (cero-h) : cero;
+      var yTxt=(v<0) ? Math.min(90, cero+h+1) : Math.max(0, cero-h-14);
+      return '<div class="gcol'+(v<0?' neg':'')+'" data-l="'+ids[k]+'">'+
+             '<b class="gval'+(v<0?' neg':'')+'" style="top:'+yTxt.toFixed(1)+'%">'+
+             met("pct")(v)+'</b>'+
+             '<i style="top:'+arriba.toFixed(1)+'%;height:'+h.toFixed(1)+
+             '%;background:'+tinta[k]+'"></i></div>';
     }).join("");
     var nota = hay.length ? "" :
-      '<div class="gnota">Sin valor estimado por m&sup2;: el modelo de valor solo '+
-      'cubre uso residencial.</div>';
-    return '<div class="gplot">'+cols+'</div><div class="gx">'+
+      '<div class="gnota">Sin valor por m&sup2; ni &iacute;ndices urbanos: no hay '+
+      'con qu&eacute; estimar este lote.</div>';
+    return '<div class="gplot" style="--cero:'+cero.toFixed(1)+'%">'+cols+
+           '</div><div class="gx">'+
            pies.map(function(p){
              return '<span title="'+esc(p)+'">'+esc(p)+'</span>'; }).join("")+
            '</div>'+nota;
@@ -2695,10 +2801,68 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
 
   /* Los cuatro graficos estan SIEMPRE. Si a uno le falta el dato lo dice dentro
      de su caja; quitarlo deja un hueco en la rejilla y parece un fallo. */
+  /* Cada grafico puede llevar su explicacion detras del titulo. De momento solo
+     la lleva el retorno, que es el unico que no se entiende mirandolo. */
+  var EXPLICA = {
+    ret: {
+      tit: "C\u00f3mo se calcula el retorno estimado",
+      html: function(){
+        var c=+C.coste||0, m=met("dineroM2");
+        function pp(v){ return (v>0?"+":"")+fmt(v,0)+" pp"; }
+        return '' +
+        '<p>El retorno <b>no</b> es solo lo que queda por construir. Un lote con ' +
+        'la edificabilidad agotada puede seguir ganando valor &mdash;se compra, se ' +
+        'reforma y se vende&mdash; o perderlo, si est&aacute; en un sitio que no ' +
+        'mejora. Por eso se compone de tres sumandos y puede salir negativo.</p>' +
+        '<p><b>Un retorno negativo no dice &laquo;no se puede construir&raquo;. ' +
+        'Dice que ese lote no va a valer ma&ntilde;ana m&aacute;s de lo que vale ' +
+        'hoy.</b></p>' +
+        '<h3>1 &middot; Margen de la operaci&oacute;n</h3>' +
+        '<pre>venta  = potencial \u00d7 valor m\u00b2\n' +
+        '       + construido \u00d7 valor m\u00b2 \u00d7 plusval\u00eda de reforma\n' +
+        'obra   = potencial \u00d7 ' + m(c) + '\n' +
+        '       + construido \u00d7 ' + m(c*RET.costeReforma) + '  (reforma)\n' +
+        'margen = (venta \u2212 obra) \u00f7 (valor actual + obra) \u00d7 100</pre>' +
+        '<p>La plusval&iacute;a de reformar depende de la <b>edad</b>: nula por ' +
+        'debajo de ' + RET.edadNula + ' a&ntilde;os y m&aacute;xima ' +
+        '(' + fmt(RET.upliftMax*100,0) + '&#37; del valor) a partir de ' +
+        RET.edadPlena + '. Un edificio de 1966 tiene mucho que ganar con una ' +
+        'reforma; uno de 2015, casi nada. Sin a&ntilde;o de construcci&oacute;n se ' +
+        'supone ' + RET.edadPorDefecto + ' a&ntilde;os.</p>' +
+        '<h3>2 &middot; Prima de sitio</h3>' +
+        '<pre>prima = (media de los 4 \u00edndices \u00f7 100 \u2212 0,5) \u00d7 ' +
+        fmt(RET.primaK,0) + '</pre>' +
+        '<p>Exposici&oacute;n natural, servicios, vida social y movilidad ligera ' +
+        'son absolutos de 0 a 100, as&iacute; que el ancla es <b>50</b>, no la ' +
+        'mediana del distrito: con la mediana ser&iacute;a una escala relativa ' +
+        'disfrazada y un barrio malo saldr&iacute;a del medio. El mejor sitio ' +
+        'posible suma ' + pp(RET.primaK/2) + ' y el peor ' + pp(-RET.primaK/2) + '.</p>' +
+        '<h3>3 &middot; Ajustes por incertidumbre</h3>' +
+        '<ul>' +
+        '<li>Normativa <b>pendiente</b> de plan: ' + pp(RET.penPendiente) + '</li>' +
+        '<li><b>Fuera de ordenaci&oacute;n</b>: ' + pp(RET.penFuera) + ', y el ' +
+        'potencial no cuenta, porque no se puede levantar.</li>' +
+        '<li>Restricci&oacute;n <b>sin determinar</b>: ' + pp(RET.penSinDato) + '</li>' +
+        '</ul>' +
+        '<h3>Lo que este c&aacute;lculo no sabe</h3>' +
+        '<p>No conoce el estado real del edificio, ni los inquilinos, ni las ' +
+        'cargas registrales, ni el coste del suelo frente al de la obra en cada ' +
+        'proyecto. El valor por m&sup2; sale de un modelo que solo cubre uso ' +
+        'residencial: donde falta, solo queda la prima de sitio y se dice.</p>' +
+        '<p><b>Es un borrador.</b> Los coeficientes est&aacute;n puestos con ' +
+        'criterio y escritos a la vista para poder discutirlos, no calibrados ' +
+        'contra ventas reales. Cuando haya serie de transacciones se recalibran: ' +
+        'cambian los n&uacute;meros, no la forma del c&aacute;lculo.</p>';
+      }
+    }
+  };
   function caja(titulo, clave, cuerpo){
     if(!cuerpo) cuerpo = '<div class="gnota centro">Sin datos suficientes para '+
       'este an&aacute;lisis.</div>';
-    return '<div class="graf"><h3>'+esc(titulo)+
+    var info = EXPLICA[clave]
+      ? '<button class="info" data-info="'+clave+'" title="C&oacute;mo se calcula" '+
+        'aria-label="C&oacute;mo se calcula">i</button>' : "";
+    return '<div class="graf"><h3>'+esc(titulo)+info+
            '<button class="ord" data-ord="'+clave+'">Ordenar</button></h3>'+cuerpo+'</div>';
   }
   function graficos(ids, cols, tinta){

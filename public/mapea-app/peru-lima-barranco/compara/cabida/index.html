@@ -164,6 +164,21 @@ ol.pasos b{color:var(--ink);font-weight:600}
    ultimo, y el general dejaba las fichas en fila y el dibujo en 272 px.
    En vertical el dibujo manda -se lleva media pantalla- y las fichas van
    debajo, en columna, desplazandose por dentro. */
+/* En apaisado no se colapsa a una columna: con 375 px de alto, el dibujo arriba y
+   tres fichas en fila debajo deja las dos cosas ilegibles. Se mantiene el reparto
+   de escritorio -dibujo a la izquierda, fichas a la derecha- y la columna de
+   fichas se desplaza por dentro. */
+@media (max-width:900px) and (orientation:landscape){
+  main{grid-template-columns:minmax(0,1fr) 252px;
+    grid-template-rows:minmax(0,1fr); gap:10px; padding:0 12px 10px}
+  aside{flex-direction:column; overflow-y:auto; gap:8px; min-height:0}
+  aside > .tar{flex:0 0 auto; display:block; padding:9px 11px}
+  .tar h2{margin-bottom:5px}
+  dt{font-size:10px} dd{font-size:11px}
+  .gordo{font-size:17px}
+  .nota,ol.pasos{font-size:9.5px;line-height:1.4}
+  .top{height:auto;padding:38px 12px 6px}
+}
 @media (max-width:900px) and (orientation:portrait){
   main{grid-template-rows:52dvh minmax(0,1fr);gap:12px}
   aside{flex-direction:column;overflow-y:auto;gap:12px}

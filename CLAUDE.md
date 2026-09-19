@@ -67,6 +67,31 @@ página de definición: qué entra, con qué umbral, y dónde falla.
 
 ---
 
+## Retorno estimado
+
+No es solo lo que queda por construir. Tres sumandos, y puede ser **negativo**:
+
+```
+margen  = (venta − obra) ÷ (valor actual + obra) × 100
+          venta = potencial×valor_m² + construido×valor_m²×plusvalía_reforma
+          obra  = potencial×coste   + construido×coste×0,30
+prima   = (media de los 4 índices ÷ 100 − 0,5) × 14        puntos
+ajustes = −4 normativa pendiente · −9 fuera de ordenación · −3 sin determinar
+```
+
+La plusvalía de reformar depende de la **edad**: nula por debajo de 10 años,
+máxima (22 % del valor) a partir de 70. Sin año de construcción se supone 60.
+Fuera de ordenación además anula el potencial: no se puede levantar.
+
+Un retorno negativo **no** dice «no se puede construir». Dice que ese lote no va
+a valer mañana más de lo que vale hoy. En Carabanchel: 1.873 de 9.979 negativos,
+ninguno exactamente cero, mediana +6,8 %, rango −17,7 % a +138 %.
+
+Los coeficientes viven en `RET` dentro de `logic.js`, una ciudad puede pisarlos
+desde `C.retorno`, y están escritos íntegros en la ficha que abre la «i» del
+gráfico. Son un **borrador con criterio**, no una calibración contra ventas
+reales: cuando haya serie de transacciones cambian los números, no la forma.
+
 ## Reglas de los índices
 
 - **Escala absoluta 0–100**, nunca relativa al distrito. Un 80 significa lo mismo
