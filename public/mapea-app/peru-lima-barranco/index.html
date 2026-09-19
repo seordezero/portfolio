@@ -2453,36 +2453,59 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
      cientos de KB para dibujar rectangulos. */
   var NUM = {m2:1, m1:1, p:1, n0:1, n1:1, dinero:1, dineroM2:1, pct:1, idx:1};
   /* ------------------------------------ rentabilidad ----------------------
-     NO es solo lo que queda por construir. Un lote agotado puede seguir ganando
-     valor -se compra, se reforma y se vende- o perderlo, si esta en un sitio que
-     no mejora. De ahi que la rentabilidad tenga tres sumandos y pueda ser
-     negativa:
+     QUE MIDE: cuanto mas puede valer el lote dentro de cinco anos, en tanto por
+     ciento sobre el capital que hay que poner hoy -comprarlo mas la obra-.
 
-       margen  = (venta - obra) / capital invertido        %
-       prima   = recorrido que da el sitio                 puntos
-       ajustes = lo que resta la incertidumbre normativa   puntos
+     Un porcentaje sin periodo no significa nada, asi que el horizonte es fijo y
+     el mismo para todos: cinco anos. Asi dos lotes se comparan con el mismo
+     reloj. La ficha de la "i" da tambien el equivalente anual.
 
-     La venta tiene dos partes: lo que se levanta del potencial, y la plusvalia
-     de reformar lo ya construido, que depende de la edad. Un edificio de 1966
-     tiene mucho que ganar con una reforma; uno de 2015, casi nada.
+         inversion = valor de compra + obra nueva + reforma
+         futuro    = (valor + lo que anade la obra + lo que anade la reforma)
+                     x crecimiento del mercado a 5 anos
+                     x (1 - lastre por fuera de ordenacion)
+         rentabilidad = (futuro - inversion) / inversion x 100
 
-     Una rentabilidad negativa no dice "no se puede construir". Dice que ese lote
-     no va a valer manana mas de lo que vale hoy.
+     TRES COSAS QUE EL MODELO VIEJO HACIA MAL:
 
-     Es un BORRADOR honesto: los coeficientes estan puestos con criterio y
-     escritos aqui para poder discutirlos, no calibrados contra ventas reales.
-     Cuando haya serie de transacciones se recalibran y esta funcion no cambia de
-     forma, solo de numeros. Una ciudad puede pisarlos desde su configuracion. */
+     1. Construir mas no era gratis. Cada metro que se levanta aporta
+        (valor por m2 - coste por m2), no el valor entero. Donde la norma permite
+        mas de lo que el mercado paga, construir RESTA. Ahora el coste de la obra
+        entra en el capital invertido y esa resta aparece sola.
+
+     2. Reformar no siempre compensa. Solo se reforma si la plusvalia que deja
+        supera lo que cuesta; si no, el inversor no lo hace, y el modelo tampoco.
+        El corte cae solo donde tiene que caer: en Madrid, edificios anteriores a
+        los anos setenta.
+
+     3. No habia mercado. Un lote sin nada que construir no se queda quieto: el
+        suelo de Madrid sube. El suelo de esta cuenta es esa subida.
+
+     LOS NUMEROS, de mercado y citables (Madrid, 2026):
+       - obra nueva 2.100 EUR/m2: ejecucion 1.750-1.950 mas 8-15 % de licencias,
+         proyecto y direccion. Va en la configuracion de cada ciudad.
+       - reforma integral 800 EUR/m2: la horquilla de Madrid es 650-1.300 y la
+         gama media se consolida entre 700 y 900.
+       - subida base 3,5 % anual: media de ciclo largo. El +15/+20 % interanual
+         que marca Carabanchel en 2026 es un ano caliente, no una serie, y
+         proyectarlo a cinco anos seria mentir.
+       - el sitio mueve esa subida +/-1,5 puntos al ano, segun los cuatro indices.
+
+     Es un BORRADOR con criterio. Cuando haya serie de transacciones se calibra:
+     cambian los numeros, no la forma. Una ciudad puede pisarlos en C.retorno. */
   var RET = {
-    costeReforma:   0.30,   // reformar cuesta el 30% de la obra nueva
-    upliftMax:      0.22,   // plusvalia maxima por reformar, sobre el valor
-    edadPlena:      70,     // a partir de aqui la reforma rinde todo
+    horizonte:      5,      // anos
+    subidaBase:     3.5,    // % anual, media de ciclo largo en Madrid
+    subidaSitio:    1.5,    // puntos/ano que mueve el sitio, arriba o abajo
+    costeReforma:   800,    // EUR/m2 de reforma integral, gama media
+    upliftMax:      0.35,   // plusvalia de reformar: un piso reformado frente a
+                            // uno "para reformar" en el mismo edificio
+    edadPlena:      70,     // anos a partir de los cuales la reforma rinde todo
     edadNula:       10,     // por debajo, reformar no aporta valor
     edadPorDefecto: 60,     // mediana del distrito cuando falta el ano
-    primaK:         14,     // puntos entre el peor sitio posible y el mejor
-    penPendiente:   -4,     // normativa no fijada
-    penFuera:       -9,     // fuera de ordenacion
-    penSinDato:     -3      // restriccion sin determinar
+    fiablePendiente: 0.60,  // del potencial, si la norma no esta fijada
+    fiableSinDato:   0.80,  // del potencial, si la restriccion no se sabe
+    lastreFuera:     0.15   // recorte al valor futuro si esta fuera de ordenacion
   };
   if(C.retorno) for(var _k in C.retorno) RET[_k]=C.retorno[_k];
 
@@ -2500,37 +2523,49 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     var t=(edad-RET.edadNula)/(RET.edadPlena-RET.edadNula);
     return Math.max(0, Math.min(1, t))*RET.upliftMax;
   }
-  function retorno(d){
-    var coste=+C.coste||0;
-    /* La prima de sitio sale de los cuatro indices urbanos, que son absolutos
-       0-100. El ancla es 50, no la mediana del distrito: con la mediana seria
-       una escala relativa disfrazada y un barrio malo saldria del medio. */
+  /* La subida anual del mercado para ESTE lote. El ancla de los indices es 50 y
+     no la mediana del distrito: son absolutos 0-100 por diseno, y anclar en la
+     mediana seria una escala relativa disfrazada. */
+  function subidaDe(d){
     var ix=[d.xn,d.xs,d.xo,d.xm].filter(function(v){ return v!=null && isFinite(v); });
-    var prima = ix.length
-      ? (ix.reduce(function(a,b){ return a+b; },0)/ix.length/100 - 0.5)*RET.primaK
-      : null;
-    var aj=0;
-    if(d.zg==="pendiente") aj+=RET.penPendiente;
-    if(d.rs==="fuera_de_ordenacion") aj+=RET.penFuera;
-    else if(!d.rs) aj+=RET.penSinDato;
-
-    var vm=d.vm, base=totalDe(d);
-    var sc=d.sc>0 ? d.sc : 0;
-    var po=d.po>0 ? d.po : 0;
-    if(d.rs==="fuera_de_ordenacion") po=0;   // fuera de ordenacion no se levanta
-    var margen=null, benef=null, inv=null, uplift=upliftDe(edadDe(d));
-    if(vm>0 && base!=null && coste>0){
-      var obraD=po*coste, obraR=sc*coste*RET.costeReforma;
-      var ventaD=po*vm,   ventaR=sc*vm*uplift;
-      inv=base+obraD+obraR;
-      benef=ventaD+ventaR-obraD-obraR;
-      if(inv>0) margen=benef/inv*100;
-    }
-    // Sin indices y sin valor no hay nada que decir de ese lote.
-    if(margen==null && prima==null) return null;
-    return {ret:(margen||0)+(prima||0)+aj, margen:margen, prima:prima, aj:aj,
-            benef:benef, inv:inv, uplift:uplift, soloSitio:margen==null};
+    if(!ix.length) return null;
+    var urb=ix.reduce(function(a,b){ return a+b; },0)/ix.length/100;
+    return RET.subidaBase + (urb-0.5)*2*RET.subidaSitio;
   }
+  function retorno(d){
+    var coste=+C.coste||0, vm=d.vm, base=totalDe(d);
+    var anual=subidaDe(d);
+    if(anual==null || !(vm>0) || base==null || !(base>0) || !coste) return null;
+
+    // el potencial, descontado por lo que no se sabe de la norma
+    var po=d.po>0 ? d.po : 0, fiab=1;
+    if(d.rs==="fuera_de_ordenacion") fiab=0;      // no se puede levantar
+    else if(!d.rs) fiab=RET.fiableSinDato;
+    if(d.zg==="pendiente") fiab*=RET.fiablePendiente;
+    po*=fiab;
+
+    /* Reformar SOLO si compensa. Si la plusvalia por m2 no llega al coste, el
+       inversor no reforma, y este calculo tampoco: contarlo seria restarle valor
+       al lote por una obra que nadie haria. */
+    var sc=d.sc>0 ? d.sc : 0, uplift=upliftDe(edadDe(d));
+    var reforma = (vm*uplift > RET.costeReforma);
+    var cRef = reforma ? sc*RET.costeReforma : 0;
+    var vRef = reforma ? sc*vm*uplift : 0;
+
+    var cDes=po*coste, vDes=po*vm;                // construir cuesta y aporta
+    var inv=base+cDes+cRef;
+    if(!(inv>0)) return null;
+
+    var crec=Math.pow(1+anual/100, RET.horizonte);
+    var lastre=(d.rs==="fuera_de_ordenacion") ? (1-RET.lastreFuera) : 1;
+    var futuro=(base+vDes+vRef)*crec*lastre;
+
+    var ret=(futuro-inv)/inv*100;
+    return {ret:ret, anual:anual, crec:crec, inv:inv, futuro:futuro,
+            porObra:po>0 ? po*(vm-coste) : 0, reforma:reforma,
+            uplift:uplift, anualizada:(Math.pow(futuro/inv, 1/RET.horizonte)-1)*100};
+  }
+
   /* --------- color por lote ---------
      Ocho tonos con luminosidad suficiente para leerse sobre negro. El usuario
      puede cambiarlos; el color manda en la tabla y en los cuatro graficos, asi
@@ -2813,52 +2848,71 @@ tr.hnom .nomb{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
     ret: {
       tit: "C\u00f3mo se calcula la rentabilidad",
       html: function(){
-        var c=+C.coste||0, m=met("dineroM2");
-        function pp(v){ return (v>0?"+":"")+fmt(v,0)+" pp"; }
+        var c=+C.coste||0, m=met("dineroM2"), H=RET.horizonte;
+        var lo=RET.subidaBase-RET.subidaSitio, hi=RET.subidaBase+RET.subidaSitio;
+        function pc(v,n){ return fmt(v, n==null?1:n)+"&#37;"; }
         return '' +
-        '<p>La rentabilidad <b>no</b> es solo lo que queda por construir. Un lote con ' +
-        'la edificabilidad agotada puede seguir ganando valor &mdash;se compra, se ' +
-        'reforma y se vende&mdash; o perderlo, si est&aacute; en un sitio que no ' +
-        'mejora. Por eso se compone de tres sumandos y puede salir negativa.</p>' +
-        '<p><b>Una rentabilidad negativa no dice &laquo;no se puede construir&raquo;. ' +
-        'Dice que ese lote no va a valer ma&ntilde;ana m&aacute;s de lo que vale ' +
-        'hoy.</b></p>' +
-        '<h3>1 &middot; Margen de la operaci&oacute;n</h3>' +
-        '<pre>venta  = potencial \u00d7 valor m\u00b2\n' +
-        '       + construido \u00d7 valor m\u00b2 \u00d7 plusval\u00eda de reforma\n' +
-        'obra   = potencial \u00d7 ' + m(c) + '\n' +
-        '       + construido \u00d7 ' + m(c*RET.costeReforma) + '  (reforma)\n' +
-        'margen = (venta \u2212 obra) \u00f7 (valor actual + obra) \u00d7 100</pre>' +
-        '<p>La plusval&iacute;a de reformar depende de la <b>edad</b>: nula por ' +
-        'debajo de ' + RET.edadNula + ' a&ntilde;os y m&aacute;xima ' +
-        '(' + fmt(RET.upliftMax*100,0) + '&#37; del valor) a partir de ' +
-        RET.edadPlena + '. Un edificio de 1966 tiene mucho que ganar con una ' +
-        'reforma; uno de 2015, casi nada. Sin a&ntilde;o de construcci&oacute;n se ' +
-        'supone ' + RET.edadPorDefecto + ' a&ntilde;os.</p>' +
-        '<h3>2 &middot; Prima de sitio</h3>' +
-        '<pre>prima = (media de los 4 \u00edndices \u00f7 100 \u2212 0,5) \u00d7 ' +
-        fmt(RET.primaK,0) + '</pre>' +
-        '<p>Exposici&oacute;n natural, servicios, vida social y movilidad ligera ' +
-        'son absolutos de 0 a 100, as&iacute; que el ancla es <b>50</b>, no la ' +
-        'mediana del distrito: con la mediana ser&iacute;a una escala relativa ' +
-        'disfrazada y un barrio malo saldr&iacute;a del medio. El mejor sitio ' +
-        'posible suma ' + pp(RET.primaK/2) + ' y el peor ' + pp(-RET.primaK/2) + '.</p>' +
-        '<h3>3 &middot; Ajustes por incertidumbre</h3>' +
-        '<ul>' +
-        '<li>Normativa <b>pendiente</b> de plan: ' + pp(RET.penPendiente) + '</li>' +
-        '<li><b>Fuera de ordenaci&oacute;n</b>: ' + pp(RET.penFuera) + ', y el ' +
-        'potencial no cuenta, porque no se puede levantar.</li>' +
-        '<li>Restricci&oacute;n <b>sin determinar</b>: ' + pp(RET.penSinDato) + '</li>' +
-        '</ul>' +
+        '<p><b>Qu&eacute; mide.</b> Cu&aacute;nto m&aacute;s puede valer el lote ' +
+        'dentro de <b>' + H + ' a&ntilde;os</b>, en tanto por ciento sobre el ' +
+        'capital que hay que poner hoy: comprarlo, m&aacute;s la obra. Un ' +
+        'porcentaje sin periodo no significa nada, as&iacute; que el horizonte es ' +
+        'el mismo para todos los lotes y se comparan con el mismo reloj.</p>' +
+        '<pre>inversi\u00f3n = compra + obra nueva + reforma\n' +
+        'futuro    = (valor + lo que a\u00f1ade la obra + lo que a\u00f1ade la reforma)\n' +
+        '            \u00d7 subida del mercado a ' + H + ' a\u00f1os\n' +
+        'rentab.   = (futuro \u2212 inversi\u00f3n) \u00f7 inversi\u00f3n \u00d7 100</pre>' +
+
+        '<h3>1 &middot; El mercado</h3>' +
+        '<p>Un lote sin nada que construir no se queda quieto: el suelo de Madrid ' +
+        'sube. La base es <b>' + pc(RET.subidaBase) + ' anual</b>, media de ciclo ' +
+        'largo, y el sitio la mueve <b>&plusmn;' + pc(RET.subidaSitio) + '</b> ' +
+        'seg&uacute;n los cuatro &iacute;ndices urbanos &mdash;entre ' +
+        pc(lo) + ' y ' + pc(hi) + ' al a&ntilde;o&mdash;. El ancla de los ' +
+        '&iacute;ndices es <b>50</b>, no la mediana del distrito: son absolutos de ' +
+        '0 a 100 por dise&ntilde;o, y anclar en la mediana ser&iacute;a una escala ' +
+        'relativa disfrazada.</p>' +
+        '<p>Carabanchel marca +15&#37; y +20&#37; interanual en 2026. Eso es un ' +
+        'a&ntilde;o caliente, no una serie: proyectarlo a cinco a&ntilde;os ' +
+        'ser&iacute;a mentir.</p>' +
+
+        '<h3>2 &middot; Construir</h3>' +
+        '<pre>cada m\u00b2 levantado aporta   valor por m\u00b2 \u2212 ' + m(c) + '</pre>' +
+        '<p><b>Construir m&aacute;s no es gratis.</b> Un metro nuevo no suma su ' +
+        'precio de venta, suma la diferencia con lo que cuesta levantarlo. Donde ' +
+        'la norma permite m&aacute;s de lo que el mercado paga, construir ' +
+        '<b>resta</b>, y aqu&iacute; sale con signo negativo. Obra nueva a ' +
+        m(c) + ': ejecuci&oacute;n de 1.750 a 1.950 m&aacute;s un 8&ndash;15&#37; ' +
+        'de licencias, proyecto y direcci&oacute;n.</p>' +
+        '<p>Del potencial se descuenta lo que no se sabe: con la normativa ' +
+        '<b>pendiente</b> de plan cuenta el ' + fmt(RET.fiablePendiente*100,0) +
+        '&#37;, con la restricci&oacute;n <b>sin determinar</b> el ' +
+        fmt(RET.fiableSinDato*100,0) + '&#37;, y <b>fuera de ordenaci&oacute;n</b> ' +
+        'no cuenta nada &mdash;no se puede levantar&mdash; adem&aacute;s de un ' +
+        'recorte del ' + fmt(RET.lastreFuera*100,0) + '&#37; al valor futuro.</p>' +
+
+        '<h3>3 &middot; Reformar</h3>' +
+        '<p>Un piso reformado se vende hasta un <b>' + fmt(RET.upliftMax*100,0) +
+        '&#37;</b> por encima de uno &laquo;para reformar&raquo; en el mismo ' +
+        'edificio. Esa plusval&iacute;a depende de la <b>edad</b>: nula por debajo ' +
+        'de ' + RET.edadNula + ' a&ntilde;os y m&aacute;xima a partir de ' +
+        RET.edadPlena + '. Sin a&ntilde;o de construcci&oacute;n se supone ' +
+        RET.edadPorDefecto + '.</p>' +
+        '<p>Y <b>solo se reforma si compensa</b>: si la plusval&iacute;a por m&sup2; ' +
+        'no llega a los ' + m(RET.costeReforma) + ' que cuesta una reforma ' +
+        'integral de gama media, el inversor no la hace y este c&aacute;lculo ' +
+        'tampoco. En Madrid el corte cae solo donde tiene que caer: en edificios ' +
+        'anteriores a los a&ntilde;os setenta.</p>' +
+
         '<h3>Lo que este c&aacute;lculo no sabe</h3>' +
         '<p>No conoce el estado real del edificio, ni los inquilinos, ni las ' +
-        'cargas registrales, ni el coste del suelo frente al de la obra en cada ' +
-        'proyecto. El valor por m&sup2; sale de un modelo que solo cubre uso ' +
-        'residencial: donde falta, solo queda la prima de sitio y se dice.</p>' +
+        'cargas registrales, ni la financiaci&oacute;n, ni los impuestos de la ' +
+        'operaci&oacute;n. Trabaja en euros corrientes, sin descontar ' +
+        'inflaci&oacute;n. El valor por m&sup2; sale de un modelo que solo cubre ' +
+        'uso residencial: donde falta, no hay rentabilidad que dar y se dice.</p>' +
         '<p><b>Es un borrador.</b> Los coeficientes est&aacute;n puestos con ' +
-        'criterio y escritos a la vista para poder discutirlos, no calibrados ' +
-        'contra ventas reales. Cuando haya serie de transacciones se recalibran: ' +
-        'cambian los n&uacute;meros, no la forma del c&aacute;lculo.</p>';
+        'criterio de mercado y escritos a la vista para poder discutirlos, no ' +
+        'calibrados contra ventas reales. Cuando haya serie de transacciones se ' +
+        'recalibran: cambian los n&uacute;meros, no la forma del c&aacute;lculo.</p>';
       }
     }
   };

@@ -69,34 +69,49 @@ página de definición: qué entra, con qué umbral, y dónde falla.
 
 ## Rentabilidad
 
-No es solo lo que queda por construir. Tres sumandos, y puede ser **negativo**:
+**Qué mide:** cuánto más puede valer el lote dentro de **5 años**, en % sobre el
+capital que hay que poner hoy (compra + obra). Horizonte fijo e igual para todos:
+un porcentaje sin periodo no significa nada.
 
 ```
-margen  = (venta − obra) ÷ (valor actual + obra) × 100
-          venta = potencial×valor_m² + construido×valor_m²×plusvalía_reforma
-          obra  = potencial×coste   + construido×coste×0,30
-prima   = (media de los 4 índices ÷ 100 − 0,5) × 14        puntos
-ajustes = −4 normativa pendiente · −9 fuera de ordenación · −3 sin determinar
+inversión = compra + obra nueva + reforma
+futuro    = (valor + lo que añade la obra + lo que añade la reforma)
+            × (1 + subida anual)^5 × (1 − lastre fuera de ordenación)
+rentab.   = (futuro − inversión) ÷ inversión × 100
 ```
 
-La plusvalía de reformar depende de la **edad**: nula por debajo de 10 años,
-máxima (22 % del valor) a partir de 70. Sin año de construcción se supone 60.
-Fuera de ordenación además anula el potencial: no se puede levantar.
+**Mercado.** Base **3,5 %/año** (media de ciclo largo en Madrid), que el sitio
+mueve **±1,5 pp** según los cuatro índices, ancla en 50. El +15/+20 % interanual
+de Carabanchel en 2026 es un año caliente, no una serie.
 
-Una rentabilidad negativa **no** dice «no se puede construir». Dice que ese lote no va
-a valer mañana más de lo que vale hoy. En Carabanchel: 1.873 de 9.979 negativos,
-ninguno exactamente cero, mediana +6,8 %, rango −17,7 % a +138 %.
+**Construir.** Cada m² levantado aporta `valor − coste`, no su precio de venta.
+Donde la norma permite más de lo que el mercado paga, construir **resta**. Obra
+nueva Madrid 2026: **2.100 €/m²** (ejecución 1.750–1.950 + 8–15 % de licencias,
+proyecto y dirección). Del potencial se descuenta lo que no se sabe: normativa
+pendiente 60 %, restricción sin determinar 80 %, fuera de ordenación 0 % y −15 %
+al valor futuro.
 
-El **eje del gráfico va clavado de 0 a 100**, con la raya del 50 de referencia:
-es un porcentaje, y con la escala abierta a los datos la misma barra cambiaba de
-altura según con quién se comparara. Lo que se sale del eje se dice con el
-número, no moviendo el eje — por encima de 100 la barra llega arriba, y un
-negativo se dibuja a cero en rojo con su cifra al lado.
+**Reformar.** Plusvalía hasta **35 %** (un piso reformado frente a uno «para
+reformar»), proporcional a la edad: nula bajo 10 años, plena a partir de 70. Y
+**solo si compensa**: si la plusvalía por m² no llega a los **800 €/m²** de una
+reforma integral de gama media, no se reforma. El corte cae en los edificios
+anteriores a los setenta.
+
+**Distribución en Carabanchel** (9.979 lotes, 1.347 sin valor por m²):
+mediana **+31,5 % a 5 años** (5,6 %/año) · q10 19,9 · q25 24,6 · q75 38,8 ·
+q90 49,8 · máx 145,8 · **9 negativos** · ninguno exactamente 0. 6.009 lotes
+(60 %) entran en el supuesto de reforma.
+
+Va en euros corrientes, sin descontar inflación. **El eje del gráfico va clavado
+de 0 a 100**, con la raya del 50: es un porcentaje, y con la escala abierta a los
+datos la misma barra cambiaba de altura según con quién se comparara. Por encima
+de 100 la barra llega arriba; un negativo se dibuja a cero, en rojo, con su cifra.
 
 Los coeficientes viven en `RET` dentro de `logic.js`, una ciudad puede pisarlos
 desde `C.retorno`, y están escritos íntegros en la ficha que abre la «i» del
-gráfico. Son un **borrador con criterio**, no una calibración contra ventas
-reales: cuando haya serie de transacciones cambian los números, no la forma.
+gráfico. Son un **borrador con criterio de mercado**, no una calibración contra
+ventas reales: cuando haya serie de transacciones cambian los números, no la
+forma.
 
 ## Reglas de los índices
 
