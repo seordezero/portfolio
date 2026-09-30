@@ -1,0 +1,634 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
+<title>Telar Generator by Ale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* Layout: a working sidebar of controls on the left; the telar grid hangs on a gallery wall filling the rest. */
+:root{
+  --wall:#F1F0EB; --panel:#FBFAF7; --ink:#26221C; --muted:#756E63; --line:#DDD8CE;
+  --twine:#B8841A; --warn:#B3261E; --ok:#2E7D4F;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--wall:#1B1A17;--panel:#23211D;--ink:#EDE8DE;--muted:#A0998D;--line:#3A3630;--twine:#D9A93A;--warn:#F2877E;--ok:#6CC592;color-scheme:dark}}
+:root[data-theme="dark"]{--wall:#1B1A17;--panel:#23211D;--ink:#EDE8DE;--muted:#A0998D;--line:#3A3630;--twine:#D9A93A;--warn:#F2877E;--ok:#6CC592;color-scheme:dark}
+html,body{height:100%}
+body{background:var(--wall);color:var(--ink);font:14px/1.45 var(--body)}
+.app{display:grid;grid-template-columns:360px minmax(0,1fr);height:100%}
+aside{background:var(--panel);border-right:1px solid var(--line);overflow:auto;padding:20px 18px 28px;display:flex;flex-direction:column;gap:22px;min-width:0}
+main{position:relative;min-width:0;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+h1{font:600 26px/1.05 var(--display);margin:0;letter-spacing:-.015em}
+.by{font:400 15px var(--body);color:var(--muted);letter-spacing:0;white-space:nowrap}
+.sub{color:var(--muted);font-size:12.5px;margin-top:5px}
+section{display:flex;flex-direction:column;gap:10px}
+h2{font:600 11px/1 var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button{font:500 13px var(--body);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button:disabled{opacity:.35;cursor:default;border-color:var(--line)}
+button.primary{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--twine);outline-offset:2px}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+.pill{align-self:flex-start;font:500 12px var(--body);padding:3px 9px;border-radius:99px;border:1px solid currentColor}
+.pill.ok{color:var(--ok)} .pill.bad{color:var(--warn)} .pill.wait{color:var(--muted)}
+label.chk{display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer}
+.slider{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;font-size:13px}
+.slider input{grid-column:1/-1;width:100%;accent-color:var(--twine)}
+.val{font:12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.field{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);min-width:0}
+input[type=number],input[type=text],select{font:13px var(--mono);color:var(--ink);background:var(--wall);border:1px solid var(--line);border-radius:5px;padding:5px 7px;width:100%;min-width:0}
+.pal{display:grid;grid-template-columns:auto 34px minmax(0,1fr) auto 26px;gap:6px 8px;align-items:center}
+.pal b{font:500 13px var(--mono)}
+.pal input[type=color]{width:34px;height:26px;border:1px solid var(--line);border-radius:5px;padding:0;background:none;cursor:pointer}
+.pal .x{padding:0;width:26px;height:26px;line-height:1;color:var(--muted)}
+.role{font-size:11px;color:var(--muted);text-align:right}
+.role.both{color:var(--warn)}
+.prow{display:flex;flex-direction:column;gap:4px}
+.plab{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
+.plab b{color:var(--ink);font-weight:600}
+.strip{display:flex;height:7px;border-radius:2px;overflow:hidden}
+.strip i{flex:1}
+.warn{font-size:12.5px;color:var(--warn);margin:0}
+.cut{display:flex;flex-direction:column;gap:4px;font:11.5px var(--mono);font-variant-numeric:tabular-nums}
+.cut .r{display:grid;grid-template-columns:20px 80px minmax(0,1fr);gap:8px;align-items:center}
+.bar{display:flex;height:9px;border-radius:2px;overflow:hidden}
+.bar i{display:block}
+.cut .t{color:var(--muted)}
+textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);color:var(--ink);border:1px solid var(--line);border-radius:5px}
+.legend{position:absolute;left:16px;right:16px;bottom:10px;font-size:12px;color:var(--muted);pointer-events:none}
+.gridbtn{position:absolute;display:flex;gap:6px}
+.gridbtn button{width:32px;height:32px;padding:0;border-radius:50%;background:var(--panel);font-size:18px;line-height:1}
+#colBtns{flex-direction:column}
+@media (max-width:800px){
+  .app{grid-template-columns:1fr;grid-template-rows:72vh auto;height:auto}
+  main{order:-1}
+  aside{border-right:0;border-top:1px solid var(--line);overflow:visible}
+}
+</style>
+
+<div class="app">
+  <aside>
+    <div>
+      <h1>Telar Generator <span class="by">by Ale</span></h1>
+      <div class="sub" id="sub"></div>
+    </div>
+
+    <section>
+      <h2>Figure</h2>
+      <div class="btns">
+        <button id="drawNew" class="primary">Draw by points</button>
+        <button id="drawFree" class="primary">Draw freehand</button>
+        <button id="preRhombus">Rhombus</button>
+        <button id="preCircle">Circle</button>
+      </div>
+      <span id="status" class="pill wait"></span>
+      <label class="chk"><input type="checkbox" id="outline"> Show outline</label>
+      <label class="chk"><input type="checkbox" id="explode"> Separate the telares (figure disappears)</label>
+    </section>
+
+    <section>
+      <h2>Noise</h2>
+      <div class="slider"><label for="noise">Edge noise</label><span class="val" id="noiseVal"></span><input type="range" id="noise" min="0" max="100" step="1"></div>
+      <div class="slider"><label for="grain">Grain (shortest wrap)</label><span class="val" id="grainVal"></span><input type="range" id="grain" min="1" max="15" step="0.5"></div>
+      <div class="btns"><button id="reroll">New noise seed</button></div>
+      <p class="hint">At 0 the figure edge is exact. Higher values scatter figure colour outside the shape and background colour inside it, in wraps no shorter than the grain.</p>
+    </section>
+
+    <section>
+      <h2>Palette</h2>
+      <div class="pal" id="pal"></div>
+      <div class="btns"><button id="addColor">+ Add colour</button></div>
+    </section>
+
+    <section>
+      <h2>Patterns</h2>
+      <p class="hint">One letter per bastón, top to bottom. If a pattern is shorter than the bastones, it repeats.</p>
+      <div id="patterns" style="display:flex;flex-direction:column;gap:12px"></div>
+      <div class="prow">
+        <div class="plab"><b>Figure</b><span>runs continuous across all telares</span></div>
+        <input type="text" id="fig" spellcheck="false" autocomplete="off">
+      </div>
+      <p class="warn" id="conflict" hidden></p>
+      <div class="btns"><button id="shuffle">Shuffle telar patterns</button></div>
+    </section>
+
+    <section>
+      <h2>Base grid</h2>
+      <div class="grid2">
+        <label class="field">Colour<input type="color" id="netColor" style="width:100%;height:30px;border:1px solid var(--line);border-radius:5px;padding:0;background:none;cursor:pointer"></label>
+        <div class="slider"><label for="netWidth">Cord width</label><span class="val" id="netWidthVal"></span><input type="range" id="netWidth" min="0.05" max="1.5" step="0.05"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Dimensions (cm)</h2>
+      <div class="grid2">
+        <label class="field">Net width<input type="number" id="W" min="10" step="1"></label>
+        <label class="field">Net height<input type="number" id="H" min="10" step="1"></label>
+        <label class="field">Bastones per telar<input type="number" id="n" min="1" step="1"></label>
+        <label class="field">Bastón thickness<input type="number" id="t" min="0.5" step="0.1"></label>
+        <label class="field">Fringe per side<input type="number" id="fringe" min="0" step="0.5"></label>
+        <label class="field">Gap, horizontal<input type="number" id="gx" min="0" step="1"></label>
+        <label class="field">Gap, vertical<input type="number" id="gy" min="0" step="1"></label>
+      </div>
+      <p class="hint">Gaps are measured between nets. Wrapped length = net width.</p>
+    </section>
+
+    <section>
+      <h2>Weaving instructions</h2>
+      <div class="btns"><button id="pdf" class="primary">Export A4 PDF</button><button id="copy">Copy CSV</button></div>
+      <span class="val" id="copied"></span>
+      <textarea id="csvbox" hidden aria-label="CSV"></textarea>
+      <select id="tel" aria-label="Telar"></select>
+      <p class="hint">Bastón 1 is the top one. Lengths in cm, left to right, seen from the front.</p>
+      <div class="cut" id="cut"></div>
+      <div class="btns"><button id="reset">Reset everything</button></div>
+    </section>
+  </aside>
+  <main>
+    <canvas id="cv"></canvas>
+    <div class="gridbtn" id="colBtns"><button id="addCol" aria-label="Add a column of telares" title="Add a column">+</button><button id="remCol" aria-label="Remove the last column" title="Remove the last column">&minus;</button></div>
+    <div class="gridbtn" id="rowBtns"><button id="addRow" aria-label="Add a row of telares" title="Add a row">+</button><button id="remRow" aria-label="Remove the last row" title="Remove the last row">&minus;</button></div>
+    <div class="legend" id="legend"></div>
+  </main>
+</div>
+
+<script>
+const COLS = 6, ROWS = 12, STEP = 0.5, MAXG = 6;  // net is fixed; STEP = sampling along each bastón (cm)
+const STRAW = '#CFB585';
+const NEWHEX = ['#4F6D3A', '#2F4858', '#A3542B', '#6B4E8A', '#C9A227', '#1F1F1F', '#9BB7C4', '#E08E45'];
+const DEF = {
+  W: 60, H: 120, n: 24, t: 3.2, fringe: 8, gx: 18, gy: 6, noise: 0, grain: 4, seed: 1, cols: 2, rows: 2, netColor: '#D4A536', netWidth: .25,
+  pal: [['A','Mostaza','#B98A1C'],['B','Ocre oliva','#8C6A1E'],['C','Coral','#D8736A'],
+        ['D','Burdeos','#7A1E3A'],['E','Chocolate','#3B2820'],['F','Oro claro','#E6CE78']],
+  bg: ['ACAD','BCDC','DABA','CBAB'], fig: 'EF',
+  shape: [[0,-60],[33,0],[0,60],[-33,0]], closed: true, outline: true, explode: false, tel: 0,
+};
+const $ = id => document.getElementById(id);
+let S = load(), segs = [], hits = [], prev = null, drag = null, cursor = null, downloads = null, free = false;
+
+function load() {
+  try {
+    const v = JSON.parse(localStorage.getItem('cuatro-telares'));
+    if (v && v.pal) { const s = Object.assign(structuredClone(DEF), v); if (s.bg.length === s.cols * s.rows) return s; }
+  } catch (e) {}
+  return structuredClone(DEF);
+}
+function save() { try { localStorage.setItem('cuatro-telares', JSON.stringify(S)); } catch (e) {} }
+
+const count = () => S.cols * S.rows;
+const pm = () => Object.fromEntries(S.pal.map(p => [p[0], p]));
+const letters = () => S.pal.map(p => p[0]).join('');
+const snap = v => Math.round(v * 2) / 2;
+const fmt = v => String(+v.toFixed(1));
+const place = i => `row ${Math.floor(i / S.cols) + 1}, column ${i % S.cols + 1}`;
+const compW = gx => S.cols * S.W + (S.cols - 1) * gx;
+const compH = gy => S.rows * S.H + (S.rows - 1) * gy;
+const rectOf = (i, gx, gy) => [-compW(gx) / 2 + (i % S.cols) * (S.W + gx), -compH(gy) / 2 + Math.floor(i / S.cols) * (S.H + gy)];
+const ink = hex => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * .299 + (n >> 8 & 255) * .587 + (n & 255) * .114) > 150 ? '#000000' : '#FFFFFF'; };
+
+function rnd(a, b, c) {                          // deterministic hash -> [0,1)
+  let h = Math.imul(a + 1, 0x9E3779B1) ^ Math.imul(b + 7, 0x85EBCA77) ^ Math.imul(c + 13, 0xC2B2AE3D) ^ Math.imul(S.seed, 0x27D4EB2F);
+  h = Math.imul(h ^ h >>> 15, 0x2C1B3C6D); h = Math.imul(h ^ h >>> 12, 0x297A2D39);
+  return ((h ^ h >>> 15) >>> 0) / 4294967296;
+}
+function segDist(x, y, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy;
+  const t = L ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L)) : 0;
+  const px = ax + t * dx, py = ay + t * dy;
+  return { d: Math.hypot(x - px, y - py), px, py };
+}
+function sdist(x, y, P) {                        // signed distance to polygon, + inside
+  let inside = false, m = Infinity;
+  for (let i = 0, j = P.length - 1; i < P.length; j = i++) {
+    const [ax, ay] = P[j], [bx, by] = P[i];
+    if ((by > y) !== (ay > y) && x < (ax - bx) * (y - by) / (ay - by) + bx) inside = !inside;
+    m = Math.min(m, segDist(x, y, ax, ay, bx, by).d);
+  }
+  return inside ? m : -m;
+}
+
+function compute() {
+  const P = S.closed && S.shape.length >= 3 ? S.shape : null;
+  const spread = S.noise / 100 * S.W;            // 100% = transition band as wide as a telar
+  const fig = S.fig || letters()[0], pitch = S.H / S.n, N = Math.max(1, Math.round(S.W / STEP));
+  hits = Array(count()).fill(0);
+  segs = hits.map((_, i) => {
+    const [x0, y0] = rectOf(i, S.gx, S.gy), seq = S.bg[i] || letters()[0];
+    return Array.from({ length: S.n }, (_, j) => {
+      const row = Math.floor(i / S.cols) * S.n + j, wy = y0 + (j + .5) * pitch, out = [];
+      for (let k = 0; k < N; k++) {
+        const sx = (k + .5) * STEP;
+        let c = seq[j % seq.length];
+        if (P) {
+          const d = sdist(x0 + sx, wy, P);
+          if (d > 0) hits[i]++;
+          const p = spread ? Math.min(1, Math.max(0, .5 + d / spread)) : (d > 0 ? 1 : 0);
+          if (p >= 1 || (p > 0 && rnd(i, j, Math.floor(sx / S.grain)) < p)) c = fig[row % fig.length];
+        }
+        const last = out[out.length - 1];
+        if (last && last.c === c) last.b = (k + 1) * STEP; else out.push({ c, a: k * STEP, b: (k + 1) * STEP });
+      }
+      out[out.length - 1].b = S.W;
+      return out;
+    });
+  });
+}
+
+// ---------- drawing ----------
+const cv = $('cv'), ctx = cv.getContext('2d');
+function view() {
+  const ex = S.explode ? 40 : 0, gx = S.gx + ex, gy = S.gy + ex;
+  const w = cv.clientWidth, h = cv.clientHeight;
+  const s = Math.max(.01, Math.min((w - 120) / (compW(gx) + 2 * S.fringe + 8), (h - 110) / (compH(gy) + 16)));
+  return { gx, gy, s, cx: w / 2 - 20, cy: h / 2 - 16 };
+}
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+
+function draw() {
+  const dpr = devicePixelRatio || 1, V = view(), cs = getComputedStyle(document.documentElement);
+  const INK = cs.getPropertyValue('--ink').trim(), PANEL = cs.getPropertyValue('--panel').trim(), MUTED = cs.getPropertyValue('--muted').trim();
+  const colors = pm(), col = c => (colors[c] || [0, 0, '#999999'])[2];
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(dpr * V.s, 0, 0, dpr * V.s, dpr * V.cx, dpr * V.cy);
+  const px = 1 / V.s, pitch = S.H / S.n, t = Math.min(S.t, pitch * 1.3);
+
+  for (let i = 0; i < count(); i++) {
+    const [x0, y0] = rectOf(i, V.gx, V.gy);
+    ctx.fillStyle = MUTED; ctx.font = `500 ${12 * px}px ${cs.getPropertyValue('--mono')}`;
+    ctx.fillText(`T${i + 1}`, x0, y0 - 3 * px - 1.5);
+    for (let j = 0; j < S.n; j++) {
+      const y = y0 + (j + .5) * pitch;
+      ctx.strokeStyle = STRAW; ctx.lineWidth = Math.max(.15, px);
+      for (const side of [-1, 1]) {
+        const ex = side < 0 ? x0 : x0 + S.W;
+        ctx.beginPath();
+        for (let q = 0; q < 9; q++) {
+          const f = q / 8 - .5, len = S.fringe * (.8 + .35 * rnd(i, j, 100 + q + (side > 0 ? 20 : 0)));
+          ctx.moveTo(ex, y + f * t * .8); ctx.lineTo(ex + side * len, y + f * t * 1.6);
+        }
+        ctx.stroke();
+      }
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,.22)'; ctx.shadowBlur = 4 * dpr; ctx.shadowOffsetY = 3 * dpr;
+      rr(x0, y - t / 2, S.W, t, t * .35); ctx.fillStyle = '#000'; ctx.fill();
+      ctx.restore();
+      ctx.save(); rr(x0, y - t / 2, S.W, t, t * .35); ctx.clip();
+      for (const g of segs[i][j]) { ctx.fillStyle = col(g.c); ctx.fillRect(x0 + g.a, y - t / 2, g.b - g.a + .03, t); }
+      if (V.s > 3) {                             // yarn wraps
+        ctx.strokeStyle = 'rgba(0,0,0,.13)'; ctx.lineWidth = .08; ctx.beginPath();
+        for (let x = x0; x < x0 + S.W + t; x += .45) { ctx.moveTo(x, y - t / 2); ctx.lineTo(x - t * .35, y + t / 2); }
+        ctx.stroke();
+      }
+      const gr = ctx.createLinearGradient(0, y - t / 2, 0, y + t / 2);
+      gr.addColorStop(0, 'rgba(255,255,255,.3)'); gr.addColorStop(.45, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(0,0,0,.32)');
+      ctx.fillStyle = gr; ctx.fillRect(x0, y - t / 2, S.W, t);
+      ctx.restore();
+    }
+    // the fixed diagonal net, drawn over the bastones
+    const cw = S.W / COLS, ch = S.H / ROWS;
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, S.W, S.H); ctx.clip();
+    ctx.strokeStyle = S.netColor; ctx.lineWidth = Math.max(S.netWidth, px); ctx.beginPath();
+    for (let c = -ROWS + .5; c < COLS; c++) { ctx.moveTo(x0 + c * cw, y0); ctx.lineTo(x0 + (c + ROWS) * cw, y0 + S.H); }
+    for (let c = .5; c < COLS + ROWS; c++) { ctx.moveTo(x0 + c * cw, y0); ctx.lineTo(x0 + (c - ROWS) * cw, y0 + S.H); }
+    ctx.stroke(); ctx.fillStyle = S.netColor;
+    for (let u = 0; u <= COLS * 2; u++) for (let v = 0; v <= ROWS * 2; v++) if ((u + v) % 2) {
+      ctx.beginPath(); ctx.arc(x0 + u / 2 * cw, y0 + v / 2 * ch, Math.max(S.netWidth * 1.6, 1.6 * px), 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  if (!S.explode && (S.outline || !S.closed) && S.shape.length) {
+    ctx.save(); ctx.strokeStyle = INK; ctx.lineWidth = 1.5 * px; ctx.setLineDash([6 * px, 4 * px]);
+    ctx.beginPath(); S.shape.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+    if (S.closed) ctx.closePath(); else if (cursor) ctx.lineTo(...cursor);
+    ctx.stroke(); ctx.setLineDash([]);
+    if (!free && S.shape.length <= 40) S.shape.forEach(([x, y], k) => {   // freehand shapes skip the handle clutter
+      const r = (k === 0 && !S.closed ? 6 : 4) * px;
+      ctx.fillStyle = PANEL; ctx.beginPath(); ctx.rect(x - r, y - r, 2 * r, 2 * r); ctx.fill(); ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  // + / − controls beside and below the grid
+  const cb = $('colBtns').style, rb = $('rowBtns').style;
+  cb.left = `${V.cx + (compW(V.gx) / 2 + S.fringe) * V.s + 14}px`; cb.top = `${V.cy - 35}px`;
+  rb.left = `${V.cx - 35}px`; rb.top = `${V.cy + compH(V.gy) / 2 * V.s + 14}px`;
+  $('addCol').disabled = S.cols >= MAXG; $('remCol').disabled = S.cols <= 1;
+  $('addRow').disabled = S.rows >= MAXG; $('remRow').disabled = S.rows <= 1;
+}
+
+// ---------- side panel ----------
+function strip(seq) {
+  const colors = pm();
+  return Array.from({ length: S.n }, (_, j) => `<i style="background:${(colors[seq[j % seq.length]] || [0, 0, '#999'])[2]}"></i>`).join('');
+}
+function renderPanel() {
+  const colors = pm(), bgAll = S.bg.join('');
+  $('sub').textContent = `${count()} telares hung ${S.cols} × ${S.rows} on a fixed 6 × 12 rhombus net. The figure only appears when they hang together.`;
+  S.pal.forEach(([k], i) => {
+    const el = $('role' + i), inBg = bgAll.includes(k), inFig = S.fig.includes(k);
+    el.textContent = inBg && inFig ? 'both' : inFig ? 'figure only' : inBg ? 'telares' : 'unused';
+    el.className = 'role' + (inBg && inFig ? ' both' : '');
+  });
+  S.bg.forEach((seq, i) => {
+    $('pc' + i).textContent = `${seq.length}/${S.n}`;
+    $('ps' + i).innerHTML = strip(seq);
+  });
+  const clash = [...new Set(S.fig)].filter(k => bgAll.includes(k));
+  $('conflict').hidden = !clash.length;
+  $('conflict').textContent = `${clash.join(', ')} is used in a telar pattern and in the figure, so the figure blends into that telar.`;
+
+  const st = $('status');
+  if (!S.closed) { st.className = 'pill wait'; st.textContent = `Drawing: ${S.shape.length} points`; }
+  else {
+    const on = hits.map((h, i) => h ? `T${i + 1}` : '').filter(Boolean);
+    st.className = 'pill ' + (on.length >= 2 ? 'ok' : 'bad');
+    st.textContent = on.length >= 2 ? `Closed, crosses ${on.join(', ')}` : on.length ? `Only on ${on[0]}. Move it across a junction.` : 'Not on any telar';
+  }
+  $('legend').textContent = S.explode ? 'Separated view. Uncheck "Separate" to edit the shape.'
+    : S.closed ? 'Drag a point to move it · drag inside to move the shape · double-click an edge to add a point, a point to remove it'
+    : free ? 'Press and drag to draw · release to close the shape · Esc cancels'
+    : 'Click to add points · click the first point to close · Esc cancels';
+  $('noiseVal').textContent = S.noise ? `${S.noise}% · ±${fmt(S.noise / 200 * S.W)} cm` : '0 · exact edge';
+  $('grainVal').textContent = `${fmt(S.grain)} cm`;
+  $('netWidthVal').textContent = `${fmt(S.netWidth * 10)} mm`;
+
+  $('cut').innerHTML = segs[S.tel].map((row, j) =>
+    `<div class="r"><span>${String(j + 1).padStart(2, '0')}</span><div class="bar">${
+      row.map(g => `<i style="flex:${g.b - g.a};background:${(colors[g.c] || [0, 0, '#999'])[2]}"></i>`).join('')
+    }</div><span class="t">${row.map(g => `${g.c} ${fmt(g.b - g.a)}`).join(' · ')}</span></div>`).join('');
+}
+
+function update(light) {
+  compute(); draw();
+  if (!light) { renderPanel(); save(); }
+}
+
+// ---------- structure: palette, patterns, telar grid ----------
+const clean = v => [...v.toUpperCase()].filter(ch => letters().includes(ch)).join('');
+function randomPattern() {
+  const L = S.pal.map(p => p[0]).filter(k => !S.fig.includes(k));
+  if (!L.length) return letters()[0];
+  const len = 3 + Math.floor(Math.random() * 4); let s = '';
+  while (s.length < len) { const c = L[Math.floor(Math.random() * L.length)]; if (c !== s.slice(-1) || L.length === 1) s += c; }
+  return s;
+}
+function buildPalette() {
+  $('pal').innerHTML = S.pal.map(([k, name, hex], i) =>
+    `<b>${k}</b><input type="color" id="ph${i}" value="${hex}" aria-label="Colour ${k}"><input type="text" id="pn${i}" aria-label="Name ${k}"><span class="role" id="role${i}"></span>` +
+    `<button class="x" id="px${i}" aria-label="Remove colour ${k}" title="Remove colour ${k}" ${S.pal.length <= 2 ? 'disabled' : ''}>&times;</button>`).join('');
+  S.pal.forEach(([k, name], i) => {
+    $('pn' + i).value = name;
+    $('ph' + i).oninput = e => { S.pal[i][2] = e.target.value; update(); };
+    $('pn' + i).oninput = e => { S.pal[i][1] = e.target.value; save(); };
+    $('px' + i).onclick = () => {
+      S.pal.splice(i, 1);
+      const first = letters()[0], strip = s => s.split(k).join('');
+      S.bg = S.bg.map(s => strip(s) || first); S.fig = strip(S.fig) || first;
+      structure();
+    };
+  });
+}
+function buildPatterns() {
+  $('patterns').innerHTML = S.bg.map((_, i) =>
+    `<div class="prow"><div class="plab"><span><b>T${i + 1}</b> · ${place(i)}</span><span class="val" id="pc${i}"></span></div>` +
+    `<input type="text" id="bg${i}" spellcheck="false" autocomplete="off" aria-label="Pattern T${i + 1}"><div class="strip" id="ps${i}"></div></div>`).join('');
+  S.bg.forEach((seq, i) => {
+    const el = $('bg' + i); el.value = seq;
+    el.oninput = () => { const v = clean(el.value); if (v) { S.bg[i] = v; update(); } };
+    el.onblur = () => el.value = S.bg[i];
+  });
+  $('tel').innerHTML = S.bg.map((_, i) => `<option value="${i}">T${i + 1} · ${place(i)}</option>`).join('');
+  S.tel = Math.min(S.tel, count() - 1); $('tel').value = S.tel;
+}
+function structure() { buildPalette(); buildPatterns(); syncInputs(); update(); }
+
+function resize(cols, rows) {                     // keep each telar's pattern where it hangs
+  const bg = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
+    bg.push(r < S.rows && c < S.cols ? S.bg[r * S.cols + c] : randomPattern());
+  S.cols = cols; S.rows = rows; S.bg = bg; structure();
+}
+$('addCol').onclick = () => resize(S.cols + 1, S.rows);
+$('remCol').onclick = () => resize(S.cols - 1, S.rows);
+$('addRow').onclick = () => resize(S.cols, S.rows + 1);
+$('remRow').onclick = () => resize(S.cols, S.rows - 1);
+$('addColor').onclick = () => {
+  const k = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').find(ch => !letters().includes(ch));
+  if (!k) return;
+  S.pal.push([k, 'New colour', NEWHEX[S.pal.length % NEWHEX.length]]);
+  structure(); $('pn' + (S.pal.length - 1)).select();
+};
+
+// ---------- inputs ----------
+const NUM = { W: 10, H: 10, n: 1, t: .5, fringe: 0, gx: 0, gy: 0 };
+function syncInputs() {
+  for (const k in NUM) $(k).value = S[k];
+  $('noise').value = S.noise; $('grain').value = S.grain;
+  $('netColor').value = S.netColor; $('netWidth').value = S.netWidth;
+  S.bg.forEach((v, i) => $('bg' + i).value = v); $('fig').value = S.fig;
+  $('outline').checked = S.outline; $('explode').checked = S.explode; $('tel').value = S.tel;
+}
+for (const k in NUM) $(k).oninput = e => {
+  const v = +e.target.value;
+  if (e.target.value !== '' && v >= NUM[k]) { S[k] = k === 'n' ? Math.round(v) : v; update(); }
+};
+$('noise').oninput = e => { S.noise = +e.target.value; update(); };
+$('grain').oninput = e => { S.grain = +e.target.value; update(); };
+$('netColor').oninput = e => { S.netColor = e.target.value; update(); };
+$('netWidth').oninput = e => { S.netWidth = +e.target.value; update(); };
+$('fig').oninput = e => { const v = clean(e.target.value); if (v) { S.fig = v; update(); } };
+$('fig').onblur = e => e.target.value = S.fig;
+$('outline').onchange = e => { S.outline = e.target.checked; update(); };
+$('explode').onchange = e => { S.explode = e.target.checked; update(); };
+$('tel').onchange = e => { S.tel = +e.target.value; update(); };
+$('reroll').onclick = () => { S.seed = (S.seed % 9973) + 1; update(); };
+$('shuffle').onclick = () => { S.bg = S.bg.map(randomPattern); syncInputs(); update(); };
+const startDrawing = f => { if (S.closed) prev = S.shape; free = f; S.shape = []; S.closed = false; S.explode = false; syncInputs(); update(); };
+$('drawNew').onclick = () => startDrawing(false);
+$('drawFree').onclick = () => startDrawing(true);
+$('preRhombus').onclick = () => { S.shape = [[0, -S.H / 2], [snap(S.W * .55), 0], [0, S.H / 2], [-snap(S.W * .55), 0]]; S.closed = true; update(); };
+$('preCircle').onclick = () => {
+  S.shape = Array.from({ length: 36 }, (_, i) => { const a = i / 36 * 2 * Math.PI; return [snap(Math.cos(a) * S.W * .5), snap(Math.sin(a) * S.W * .5)]; });
+  S.closed = true; update();
+};
+$('reset').onclick = () => { S = structuredClone(DEF); structure(); };
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !S.closed) { free = false; drag = null; S.shape = prev && prev.length >= 3 ? prev : structuredClone(DEF.shape); S.closed = true; cursor = null; update(); }
+});
+
+// ---------- export ----------
+function csvText() {
+  const colors = pm(), out = ['telar,position,baston,segment,color,name,hex,from_cm,to_cm,length_cm'];
+  segs.forEach((tel, i) => tel.forEach((row, j) => row.forEach((g, k) => {
+    const p = colors[g.c] || [g.c, '?', ''];
+    out.push([i + 1, `"${place(i)}"`, j + 1, k + 1, g.c, `"${p[1]}"`, p[2], fmt(g.a), fmt(g.b), fmt(g.b - g.a)].join(','));
+  })));
+  return out.join('\n');
+}
+$('copy').onclick = () => {
+  const text = csvText();
+  navigator.clipboard.writeText(text)
+    .then(() => { $('copied').textContent = `Copied ${text.split('\n').length - 1} segments.`; $('csvbox').hidden = true; })
+    .catch(() => { const ta = $('csvbox'); ta.hidden = false; ta.value = text; ta.select(); $('copied').textContent = 'Copy the selected text.'; });
+};
+
+function buildPdf() {
+  const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+  const colors = pm(), M = 15, PW = 210, BW = 180, date = new Date().toISOString().slice(0, 10);
+  const setF = hex => doc.setFillColor(hex), txt = (s, x, y, o) => doc.text(Array.isArray(s) ? s : String(s), x, y, o);
+  const totals = list => { const t = {}; list.forEach(row => row.forEach(g => t[g.c] = (t[g.c] || 0) + g.b - g.a)); return t; };
+  const legend = (t, y, unit) => {
+    Object.keys(t).sort().forEach((k, n) => {
+      const p = colors[k] || [k, '?', '#999999'], x = M + (n % 3) * 60, yy = y + Math.floor(n / 3) * 7;
+      setF(p[2]); doc.rect(x, yy - 3.5, 5, 5, 'F');
+      doc.setFontSize(9); doc.setTextColor(30); txt(`${k}  ${p[1]}`, x + 7, yy);
+      doc.setTextColor(110); txt(unit(t[k]), x + 7 + doc.getTextWidth(`${k}  ${p[1]}`) + 2, yy);
+    });
+    return y + Math.ceil(Object.keys(t).length / 3) * 7;
+  };
+  const map = (x, y, w, hl) => {                  // small key of the grid, with one telar highlighted
+    const cw = w / S.cols, chh = cw * S.H / S.W * .9;
+    for (let i = 0; i < count(); i++) {
+      const cx = x + (i % S.cols) * cw, cy = y + Math.floor(i / S.cols) * chh;
+      doc.setDrawColor(120); i === hl ? (setF('#26221C'), doc.rect(cx, cy, cw - 1, chh - 1, 'FD')) : doc.rect(cx, cy, cw - 1, chh - 1);
+      doc.setFontSize(6); doc.setTextColor(i === hl ? 255 : 90); txt(`T${i + 1}`, cx + (cw - 1) / 2, cy + (chh - 1) / 2 + 1, { align: 'center' });
+    }
+  };
+
+  // page 1: overview
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(20); doc.setTextColor(30); txt('Telar Generator by Ale', M, 22);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(110);
+  txt(`${count()} telares, ${S.cols} x ${S.rows}  -  net ${S.W} x ${S.H} cm  -  ${S.n} bastones per telar, ${S.t} cm thick  -  gaps ${S.gx} / ${S.gy} cm  -  noise ${S.noise}%  -  ${date}`, M, 28);
+  const img = document.createElement('canvas'); img.width = cv.width; img.height = cv.height;
+  const ic = img.getContext('2d'); ic.fillStyle = '#F1F0EB'; ic.fillRect(0, 0, img.width, img.height); ic.drawImage(cv, 0, 0);
+  const ih = Math.min(170, BW * img.height / img.width), iw = ih * img.width / img.height;
+  doc.addImage(img.toDataURL('image/jpeg', .9), 'JPEG', M + (BW - iw) / 2, 34, iw, ih);
+  let y = 34 + ih + 10;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30); txt('Wrapped length per colour, all telares', M, y);
+  doc.setFont('helvetica', 'normal');
+  y = legend(totals(segs.flat()), y + 8, v => `${fmt(v / 100)} m`);
+  doc.setFontSize(8.5); doc.setTextColor(110);
+  txt(doc.splitTextToSize('Wrapped length is measured along the bastón, not yarn length. Each following page is one telar: bastón 1 is the top one, colours listed left to right as seen from the front, lengths in cm.', BW), M, y + 4);
+
+  // one page (or more) per telar
+  segs.forEach((tel, i) => {
+    const head = cont => {
+      doc.addPage();
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(30); txt(`T${i + 1}${cont ? ' (cont.)' : ''}`, M, 20);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(110);
+      txt(`${place(i)}  -  pattern ${S.bg[i]}  -  net ${S.W} x ${S.H} cm`, M, 26);
+      map(PW - M - 34, 12, 34, i);
+      let yy = 34;
+      if (!cont) { yy = legend(totals(tel), yy + 2, v => `${fmt(v)} cm`) + 2; }
+      // ruler over the bars
+      const sc = (BW - 12) / S.W; doc.setDrawColor(160); doc.setFontSize(6); doc.setTextColor(130);
+      for (let c = 0; c <= S.W + .01; c += 10) { const x = M + 12 + Math.min(c, S.W) * sc; doc.line(x, yy, x, yy + 1.5); txt(fmt(Math.min(c, S.W)), x, yy - 1, { align: 'center' }); }
+      return yy + 4;
+    };
+    let yy = head(false);
+    const sc = (BW - 12) / S.W;
+    tel.forEach((row, j) => {
+      doc.setFontSize(7);
+      const line = doc.splitTextToSize(row.map(g => `${g.c} ${fmt(g.b - g.a)}`).join('   '), BW - 12);
+      const rh = 5 + line.length * 3 + 2.2;
+      if (yy + rh > 287) yy = head(true);
+      doc.setFontSize(8); doc.setTextColor(30); doc.setFont('helvetica', 'bold'); txt(String(j + 1).padStart(2, '0'), M, yy + 3.8);
+      doc.setFont('helvetica', 'normal');
+      row.forEach(g => {
+        const p = colors[g.c] || [g.c, '?', '#999999'], x = M + 12 + g.a * sc, w = (g.b - g.a) * sc;
+        setF(p[2]); doc.rect(x, yy, w, 5, 'F');
+        if (w >= 3.2) { doc.setFontSize(6.5); doc.setTextColor(ink(p[2])); txt(g.c, x + w / 2, yy + 3.6, { align: 'center' }); }
+      });
+      doc.setFontSize(7); doc.setTextColor(90); txt(line, M + 12, yy + 7.6);
+      yy += rh;
+    });
+  });
+  return doc.output('blob');
+}
+$('pdf').onclick = async () => {
+  const msg = $('copied');
+  if (!window.jspdf) { msg.textContent = 'The PDF library did not load. Reload the page and try again.'; return; }
+  if (!downloads) {
+    // ponytail: shared viewers without the downloads grant can't save from inside claude.ai; the standalone file can
+    if (window.top !== window) { msg.textContent = 'This view blocks downloads. Open the standalone Telar Generator file, or use Copy CSV.'; return; }
+    const a = document.createElement('a');
+    try { a.href = URL.createObjectURL(buildPdf()); } catch (e) { msg.textContent = `Export failed: ${e.message}`; return; } a.download = 'telares-instrucciones.pdf'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    msg.textContent = 'PDF saved.'; return;
+  }
+  try {
+    await downloads.save({ filename: 'telares-instrucciones.pdf', data: buildPdf() });
+    msg.textContent = 'PDF saved.';
+  } catch (e) {
+    msg.textContent = e && e.code === 'declined' ? 'Export cancelled.' : `Export failed: ${e && (e.message || e.code) || e}`;
+  }
+};
+window.claude?.use('downloads').then(d => { downloads = d; }).catch(() => {});
+
+// ---------- shape editing on the canvas ----------
+function toWorld(e) { const r = cv.getBoundingClientRect(), V = view(); return [(e.clientX - r.left - V.cx) / V.s, (e.clientY - r.top - V.cy) / V.s, V.s]; }
+const near = (P, x, y, tol) => P.findIndex(([px, py]) => Math.hypot(x - px, y - py) < tol);
+cv.onpointerdown = e => {
+  if (S.explode) return;
+  const [x, y, s] = toWorld(e), tol = 9 / s, P = S.shape;
+  if (!S.closed && free) { S.shape = [[snap(x), snap(y)]]; drag = { free: true }; cv.setPointerCapture(e.pointerId); draw(); return; }
+  if (!S.closed) {
+    if (P.length >= 3 && Math.hypot(x - P[0][0], y - P[0][1]) < tol) { S.closed = true; cursor = null; }
+    else P.push([snap(x), snap(y)]);
+    update(); return;
+  }
+  const k = near(P, x, y, tol);
+  if (k >= 0) drag = { k }; else if (sdist(x, y, P) > 0) drag = { move: [x, y] }; else return;
+  cv.setPointerCapture(e.pointerId);
+};
+cv.onpointermove = e => {
+  if (S.explode) { cv.style.cursor = 'default'; return; }
+  const [x, y, s] = toWorld(e);
+  if (!S.closed) {
+    cv.style.cursor = 'crosshair';
+    if (free) {                                  // one point every ~6 px of stroke, at least 1 cm apart
+      const L = S.shape[S.shape.length - 1];
+      if (drag && Math.hypot(x - L[0], y - L[1]) >= Math.max(1, 6 / s)) { S.shape.push([snap(x), snap(y)]); draw(); }
+    } else { cursor = [x, y]; draw(); }
+    return;
+  }
+  if (!drag) { cv.style.cursor = near(S.shape, x, y, 9 / s) >= 0 ? 'grab' : sdist(x, y, S.shape) > 0 ? 'move' : 'default'; return; }
+  if (drag.move) {
+    const dx = snap(x - drag.move[0]), dy = snap(y - drag.move[1]);
+    if (!dx && !dy) return;
+    S.shape = S.shape.map(([a, b]) => [a + dx, b + dy]); drag.move = [drag.move[0] + dx, drag.move[1] + dy];
+  } else S.shape[drag.k] = [snap(x), snap(y)];
+  update(true);
+};
+cv.onpointerup = () => {
+  if (drag && drag.free) {
+    free = false;
+    if (S.shape.length >= 3) S.closed = true;
+    else { S.shape = prev && prev.length >= 3 ? prev : structuredClone(DEF.shape); S.closed = true; }
+  }
+  if (drag) { drag = null; update(); }
+};
+cv.ondblclick = e => {
+  if (S.explode || !S.closed) return;
+  const [x, y, s] = toWorld(e), tol = 9 / s, P = S.shape, k = near(P, x, y, tol);
+  if (k >= 0) { if (P.length > 3) P.splice(k, 1); }
+  else for (let i = 0; i < P.length; i++) {
+    const a = P[i], b = P[(i + 1) % P.length], r = segDist(x, y, a[0], a[1], b[0], b[1]);
+    if (r.d < tol) { P.splice(i + 1, 0, [snap(r.px), snap(r.py)]); break; }
+  }
+  update();
+};
+
+new ResizeObserver(() => { const d = devicePixelRatio || 1; cv.width = cv.clientWidth * d; cv.height = cv.clientHeight * d; draw(); }).observe(cv);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+structure();
+</script>
+
+</body></html>
