@@ -37,6 +37,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 label.chk{display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer}
 .slider{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;font-size:13px}
 .slider input{grid-column:1/-1;width:100%;accent-color:var(--twine)}
+.num{display:inline-flex;align-items:center;gap:5px;font:12px var(--mono);color:var(--muted)}
+.num input[type=number]{width:68px;padding:2px 6px;text-align:right;font-size:12px}
 .val{font:12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
 .field{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);min-width:0}
@@ -107,8 +109,10 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
         <button id="preCircle">Circle</button>
       </div>
       <div id="radRow" hidden style="display:flex;flex-direction:column;gap:8px">
-        <div class="slider"><label for="rad" id="radLab">Size</label><span class="val" id="radVal"></span><input type="range" id="rad" min="2" step="0.5"></div>
+        <div class="slider"><label for="rad" id="radLab">Size</label><span class="num"><input type="number" id="radN" min="1" step="0.5" aria-label="Size in cm">cm</span><input type="range" id="rad" min="2" step="0.5"></div>
         <div class="grid2">
+          <label class="field" id="pwRow">Width (cm)<input type="number" id="pw" min="1" step="0.5"></label>
+          <label class="field" id="phRow">Height (cm)<input type="number" id="phh" min="1" step="0.5"></label>
           <label class="field">Centre X (cm)<input type="number" id="pcx" step="0.5"></label>
           <label class="field">Centre Y (cm)<input type="number" id="pcy" step="0.5"></label>
         </div>
@@ -120,8 +124,8 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
 
     <section>
       <h2>Noise</h2>
-      <div class="slider"><label for="noise">Edge noise</label><span class="val" id="noiseVal"></span><input type="range" id="noise" min="0" max="100" step="1"></div>
-      <div class="slider"><label for="grain">Grain (shortest wrap)</label><span class="val" id="grainVal"></span><input type="range" id="grain" min="1" max="15" step="0.5"></div>
+      <div class="slider"><label for="noise">Edge noise</label><span class="num"><input type="number" id="noiseN" min="0" max="100" step="1" aria-label="Edge noise in percent">%</span><input type="range" id="noise" min="0" max="100" step="1"></div>
+      <div class="slider"><label for="grain">Grain (shortest wrap)</label><span class="num"><input type="number" id="grainN" min="0.5" step="0.5" aria-label="Grain in cm">cm</span><input type="range" id="grain" min="1" max="15" step="0.5"></div>
       <div class="btns"><button id="reroll">New noise seed</button></div>
       <p class="hint">At 0 the figure edge is exact. Higher values scatter figure colour outside the shape and background colour inside it, in wraps no shorter than the grain. The grain applies everywhere, also at noise 0: a colour run shorter than it joins its longer neighbour.</p>
     </section>
@@ -148,7 +152,7 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
       <h2>Base grid</h2>
       <div class="grid2">
         <div class="field">Colour<button class="sw" id="netSw" style="width:100%;height:30px" aria-label="Grid colour"></button></div>
-        <div class="slider"><label for="netWidth">Cord width</label><span class="val" id="netWidthVal"></span><input type="range" id="netWidth" min="0.05" max="1.5" step="0.05"></div>
+        <div class="slider"><label for="netWidth">Cord width</label><span class="num"><input type="number" id="netWidthN" min="0.5" max="15" step="0.5" aria-label="Cord width in mm">mm</span><input type="range" id="netWidth" min="0.05" max="1.5" step="0.05"></div>
       </div>
     </section>
 
@@ -414,9 +418,8 @@ function renderPanel() {
     : S.closed ? 'Drag a point to move it · drag inside to move the shape · double-click an edge to add a point, a point to remove it'
     : free ? 'Press and drag to draw · release to close the shape · Esc cancels'
     : 'Click to add points · click the first point to close · Esc cancels';
-  $('noiseVal').textContent = S.noise ? `${S.noise}% · ±${fmt(S.noise / 200 * S.W)} cm` : '0 · exact edge';
-  $('grainVal').textContent = `${fmt(S.grain)} cm`;
-  $('netWidthVal').textContent = `${fmt(S.netWidth * 10)} mm`;
+  $('noise').value = S.noise; $('grain').value = S.grain; $('netWidth').value = S.netWidth;
+  setBox('noiseN', S.noise); setBox('grainN', S.grain); setBox('netWidthN', S.netWidth * 10);
   prmFields();
 
   $('cut').innerHTML = segs[S.tel].map((row, j) =>
@@ -525,8 +528,10 @@ function syncInputs() {
   $('netSw').style.background = S.netColor; $('netWidth').value = S.netWidth;
   $('radRow').hidden = !S.prm;
   if (S.prm) {
-    $('rad').max = Math.max(compW(S.gx), compH(S.gy)) / 2;
-    $('radLab').textContent = S.prm.kind === 'circle' ? 'Circle radius' : 'Rhombus size (scales both)';
+    const circle = S.prm.kind === 'circle';
+    $('rad').max = Math.max(compW(S.gx), compH(S.gy)) / (circle ? 2 : 1);
+    $('radLab').textContent = circle ? 'Circle radius' : 'Rhombus width (keeps proportion)';
+    $('pwRow').hidden = $('phRow').hidden = circle;
     prmFields();
   }
   S.bg.forEach((v, i) => $('bg' + i).value = v); $('fig').value = S.fig;
@@ -562,13 +567,29 @@ const prmHandles = () => { const p = S.prm;    // [x, y, role]: r = width/radius
 };
 function prmFields() {
   if (!S.prm) return;
-  $('radVal').textContent = S.prm.kind === 'circle' ? `r ${fmt(S.prm.r)} cm` : `${fmt(2 * S.prm.r)} × ${fmt(2 * ryOf(S.prm))} cm`; $('rad').value = S.prm.r;
+  const size = S.prm.kind === 'circle' ? S.prm.r : 2 * S.prm.r;   // slider + box: radius, or rhombus total width
+  $('rad').value = size; setBox('radN', size);
+  if (S.prm.kind !== 'circle') { setBox('pw', 2 * S.prm.r); setBox('phh', 2 * ryOf(S.prm)); }
   if (document.activeElement !== $('pcx')) $('pcx').value = fmt(S.prm.x);
   if (document.activeElement !== $('pcy')) $('pcy').value = fmt(S.prm.y);
 }
 $('preRhombus').onclick = () => { setParam({ kind: 'rhombus', x: 0, y: 0, r: snap(S.W * .55), ry: S.H / 2 }); syncInputs(); update(); };
 $('preCircle').onclick = () => { setParam({ kind: 'circle', x: 0, y: 0, r: snap(S.W * .5) }); syncInputs(); update(); };
-$('rad').oninput = e => { if (S.prm) { const p = S.prm, r = +e.target.value; setParam(p.kind === 'circle' ? { ...p, r } : { ...p, r, ry: ryOf(p) * r / p.r }); update(); } };
+const setSize = v => { const p = S.prm, r = Math.max(.5, p.kind === 'circle' ? v : v / 2); setParam(p.kind === 'circle' ? { ...p, r } : { ...p, r, ry: ryOf(p) * r / p.r }); };
+$('rad').oninput = e => { if (S.prm) { setSize(+e.target.value); update(); } };
+// every slider has a number box; typing moves the slider and the drawing
+const setBox = (id, v) => { if (document.activeElement !== $(id)) $(id).value = fmt(v); };
+const clampTo = (v, a, b) => Math.max(a, Math.min(b, v));
+[['noiseN', () => S.noise, v => S.noise = clampTo(Math.round(v), 0, 100)],
+ ['grainN', () => S.grain, v => S.grain = clampTo(v, .5, S.W)],
+ ['netWidthN', () => S.netWidth * 10, v => S.netWidth = clampTo(v, .5, 15) / 10],
+ ['radN', () => S.prm.kind === 'circle' ? S.prm.r : 2 * S.prm.r, v => setSize(v)],
+ ['pw', () => 2 * S.prm.r, v => setParam({ ...S.prm, r: Math.max(.5, v / 2), ry: ryOf(S.prm) })],
+ ['phh', () => 2 * ryOf(S.prm), v => setParam({ ...S.prm, ry: Math.max(.5, v / 2) })],
+].forEach(([id, get, set]) => {
+  $(id).oninput = e => { const v = +e.target.value; if (e.target.value === '' || isNaN(v) || (id.startsWith('p') || id === 'radN') && !S.prm) return; set(v); update(); };
+  $(id).onblur = e => { if (!id.startsWith('p') && id !== 'radN' || S.prm) e.target.value = fmt(get()); };
+});
 ['pcx', 'pcy'].forEach((id, a) => $(id).oninput = e => {
   if (!S.prm || e.target.value === '' || isNaN(+e.target.value)) return;
   setParam({ ...S.prm, [a ? 'y' : 'x']: +e.target.value }); update();
