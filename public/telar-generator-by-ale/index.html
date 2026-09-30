@@ -106,6 +106,7 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
         <button id="preRhombus">Rhombus</button>
         <button id="preCircle">Circle</button>
       </div>
+      <div class="slider" id="radRow" hidden><label for="rad">Circle radius</label><span class="val" id="radVal"></span><input type="range" id="rad" min="2" step="0.5"></div>
       <span id="status" class="pill wait"></span>
       <label class="chk"><input type="checkbox" id="outline"> Show outline</label>
       <label class="chk"><input type="checkbox" id="explode"> Separate the telares (figure disappears)</label>
@@ -342,7 +343,10 @@ function draw() {
     ctx.beginPath(); S.shape.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
     if (S.closed) ctx.closePath(); else if (cursor) ctx.lineTo(...cursor);
     ctx.stroke(); ctx.setLineDash([]);
-    if (!free && S.shape.length <= 40) S.shape.forEach(([x, y], k) => {   // freehand shapes skip the handle clutter
+    const handles = S.circ ? [[S.circ.x, S.circ.y], [S.circ.x + S.circ.r, S.circ.y]]   // circle: centre + radius handle
+      : !free && S.shape.length <= 40 ? S.shape : [];                                     // freehand shapes skip the handle clutter
+    if (S.circ) { ctx.beginPath(); ctx.moveTo(S.circ.x, S.circ.y); ctx.lineTo(S.circ.x + S.circ.r, S.circ.y); ctx.stroke(); }
+    handles.forEach(([x, y], k) => {
       const r = (k === 0 && !S.closed ? 6 : 4) * px;
       ctx.fillStyle = PANEL; ctx.beginPath(); ctx.rect(x - r, y - r, 2 * r, 2 * r); ctx.fill(); ctx.stroke();
     });
@@ -386,12 +390,14 @@ function renderPanel() {
     st.textContent = on.length >= 2 ? `Closed, crosses ${on.join(', ')}` : on.length ? `Only on ${on[0]}. Move it across a junction.` : 'Not on any telar';
   }
   $('legend').textContent = S.explode ? 'Separated view. Uncheck "Separate" to edit the shape.'
+    : S.circ ? 'Drag the right handle to change the radius · drag inside to move the circle'
     : S.closed ? 'Drag a point to move it · drag inside to move the shape · double-click an edge to add a point, a point to remove it'
     : free ? 'Press and drag to draw · release to close the shape · Esc cancels'
     : 'Click to add points · click the first point to close · Esc cancels';
   $('noiseVal').textContent = S.noise ? `${S.noise}% · ±${fmt(S.noise / 200 * S.W)} cm` : '0 · exact edge';
   $('grainVal').textContent = `${fmt(S.grain)} cm`;
   $('netWidthVal').textContent = `${fmt(S.netWidth * 10)} mm`;
+  if (S.circ) { $('radVal').textContent = `${fmt(S.circ.r)} cm`; $('rad').value = S.circ.r; }
 
   $('cut').innerHTML = segs[S.tel].map((row, j) =>
     `<div class="r"><span>${String(j + 1).padStart(2, '0')}</span><div class="bar">${
@@ -497,6 +503,8 @@ function syncInputs() {
   for (const k in NUM) $(k).value = S[k];
   $('noise').value = S.noise; $('grain').value = S.grain;
   $('netSw').style.background = S.netColor; $('netWidth').value = S.netWidth;
+  $('radRow').hidden = !S.circ;
+  if (S.circ) { $('rad').max = Math.max(compW(S.gx), compH(S.gy)) / 2; $('rad').value = S.circ.r; }
   S.bg.forEach((v, i) => $('bg' + i).value = v); $('fig').value = S.fig;
   $('outline').checked = S.outline; $('explode').checked = S.explode; $('tel').value = S.tel;
 }
@@ -515,14 +523,15 @@ $('explode').onchange = e => { S.explode = e.target.checked; update(); };
 $('tel').onchange = e => { S.tel = +e.target.value; update(); };
 $('reroll').onclick = () => { S.seed = (S.seed % 9973) + 1; update(); };
 $('shuffle').onclick = () => { S.bg = S.bg.map(randomPattern); syncInputs(); update(); };
-const startDrawing = f => { if (S.closed) prev = S.shape; free = f; S.shape = []; S.closed = false; S.explode = false; syncInputs(); update(); };
+const startDrawing = f => { if (S.closed) prev = S.shape; free = f; S.circ = null; S.shape = []; S.closed = false; S.explode = false; syncInputs(); update(); };
 $('drawNew').onclick = () => startDrawing(false);
 $('drawFree').onclick = () => startDrawing(true);
-$('preRhombus').onclick = () => { S.shape = [[0, -S.H / 2], [snap(S.W * .55), 0], [0, S.H / 2], [-snap(S.W * .55), 0]]; S.closed = true; update(); };
-$('preCircle').onclick = () => {
-  S.shape = Array.from({ length: 36 }, (_, i) => { const a = i / 36 * 2 * Math.PI; return [snap(Math.cos(a) * S.W * .5), snap(Math.sin(a) * S.W * .5)]; });
-  S.closed = true; update();
-};
+$('preRhombus').onclick = () => { S.circ = null; S.shape = [[0, -S.H / 2], [snap(S.W * .55), 0], [0, S.H / 2], [-snap(S.W * .55), 0]]; S.closed = true; syncInputs(); update(); };
+// a circle stays a circle: centre + radius, turned into a 72-sided polygon only for the colour maths
+const circlePoly = c => Array.from({ length: 72 }, (_, i) => { const a = i / 72 * 2 * Math.PI; return [c.x + Math.cos(a) * c.r, c.y + Math.sin(a) * c.r]; });
+const setCircle = c => { S.circ = c; S.shape = circlePoly(c); S.closed = true; };
+$('preCircle').onclick = () => { setCircle({ x: 0, y: 0, r: snap(S.W * .5) }); syncInputs(); update(); };
+$('rad').oninput = e => { if (S.circ) { setCircle({ ...S.circ, r: +e.target.value }); update(); } };
 $('reset').onclick = () => { S = structuredClone(DEF); structure(); };
 addEventListener('keydown', e => {
   if (e.key === 'Escape' && !S.closed) { free = false; drag = null; S.shape = prev && prev.length >= 3 ? prev : structuredClone(DEF.shape); S.closed = true; cursor = null; update(); }
@@ -784,8 +793,8 @@ cv.onpointerdown = e => {
     else P.push([snap(x), snap(y)]);
     update(); return;
   }
-  const k = near(P, x, y, tol);
-  if (k >= 0) drag = { k }; else if (sdist(x, y, P) > 0) drag = { move: [x, y] }; else return;
+  const k = near(S.circ ? [[S.circ.x + S.circ.r, S.circ.y]] : P, x, y, tol);
+  if (k >= 0) drag = S.circ ? { rad: true } : { k }; else if (sdist(x, y, P) > 0) drag = { move: [x, y] }; else return;
   cv.setPointerCapture(e.pointerId);
 };
 cv.onpointermove = e => {
@@ -799,12 +808,18 @@ cv.onpointermove = e => {
     } else { cursor = [x, y]; draw(); }
     return;
   }
-  if (!drag) { cv.style.cursor = near(S.shape, x, y, 9 / s) >= 0 ? 'grab' : sdist(x, y, S.shape) > 0 ? 'move' : 'default'; return; }
-  if (drag.move) {
+  if (!drag) {
+    const grab = near(S.circ ? [[S.circ.x + S.circ.r, S.circ.y]] : S.shape, x, y, 9 / s) >= 0;
+    cv.style.cursor = grab ? (S.circ ? 'ew-resize' : 'grab') : sdist(x, y, S.shape) > 0 ? 'move' : 'default'; return;
+  }
+  if (drag.rad) setCircle({ ...S.circ, r: Math.max(1, snap(Math.hypot(x - S.circ.x, y - S.circ.y))) });
+  else if (drag.move) {
     const dx = snap(x - drag.move[0]), dy = snap(y - drag.move[1]);
     if (!dx && !dy) return;
     S.shape = S.shape.map(([a, b]) => [a + dx, b + dy]); drag.move = [drag.move[0] + dx, drag.move[1] + dy];
+    if (S.circ) S.circ = { ...S.circ, x: S.circ.x + dx, y: S.circ.y + dy };
   } else S.shape[drag.k] = [snap(x), snap(y)];
+  if (S.circ) { $('radVal').textContent = `${fmt(S.circ.r)} cm`; $('rad').value = S.circ.r; }
   update(true);
 };
 cv.onpointerup = () => {
@@ -816,7 +831,7 @@ cv.onpointerup = () => {
   if (drag) { drag = null; update(); }
 };
 cv.ondblclick = e => {
-  if (S.explode || !S.closed) return;
+  if (S.explode || !S.closed || S.circ) return;
   const [x, y, s] = toWorld(e), tol = 9 / s, P = S.shape, k = near(P, x, y, tol);
   if (k >= 0) { if (P.length > 3) P.splice(k, 1); }
   else for (let i = 0; i < P.length; i++) {
