@@ -106,7 +106,13 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
         <button id="preRhombus">Rhombus</button>
         <button id="preCircle">Circle</button>
       </div>
-      <div class="slider" id="radRow" hidden><label for="rad">Circle radius</label><span class="val" id="radVal"></span><input type="range" id="rad" min="2" step="0.5"></div>
+      <div id="radRow" hidden style="display:flex;flex-direction:column;gap:8px">
+        <div class="slider"><label for="rad" id="radLab">Size</label><span class="val" id="radVal"></span><input type="range" id="rad" min="2" step="0.5"></div>
+        <div class="grid2">
+          <label class="field">Centre X (cm)<input type="number" id="pcx" step="0.5"></label>
+          <label class="field">Centre Y (cm)<input type="number" id="pcy" step="0.5"></label>
+        </div>
+      </div>
       <span id="status" class="pill wait"></span>
       <label class="chk"><input type="checkbox" id="outline"> Show outline</label>
       <label class="chk"><input type="checkbox" id="explode"> Separate the telares (figure disappears)</label>
@@ -201,7 +207,7 @@ const DEF = {
   pal: [['A','','#B98A1C'],['B','','#8C6A1E'],['C','','#D8736A'],
         ['D','','#7A1E3A'],['E','','#3B2820'],['F','','#E6CE78']],   // names filled by nameOf at start
   bg: ['ACAD','BCDC','DABA','CBAB'], fig: 'EF',
-  shape: [[0,-60],[33,0],[0,60],[-33,0]], closed: true, outline: true, explode: false, tel: 0,
+  shape: [[0,-60],[33,0],[0,60],[-33,0]], prm: { kind: 'rhombus', x: 0, y: 0, r: 33, ry: 60 }, closed: true, outline: true, explode: false, tel: 0,
 };
 const $ = id => document.getElementById(id);
 let S = load(), segs = [], hits = [], prev = null, drag = null, cursor = null, downloads = null, free = false;
@@ -209,7 +215,10 @@ let S = load(), segs = [], hits = [], prev = null, drag = null, cursor = null, d
 function load() {
   try {
     const v = JSON.parse(localStorage.getItem('cuatro-telares'));
-    if (v && v.pal) { const s = Object.assign(structuredClone(DEF), v); if (s.bg.length === s.cols * s.rows) return s; }
+    if (v && v.pal) {
+      if (!('prm' in v)) v.prm = v.circ ? { kind: 'circle', ...v.circ } : null;   // states saved before parametric shapes
+      delete v.circ;
+      const s = Object.assign(structuredClone(DEF), v); if (s.bg.length === s.cols * s.rows) return s; }
   } catch (e) {}
   return structuredClone(DEF);
 }
@@ -343,9 +352,9 @@ function draw() {
     ctx.beginPath(); S.shape.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
     if (S.closed) ctx.closePath(); else if (cursor) ctx.lineTo(...cursor);
     ctx.stroke(); ctx.setLineDash([]);
-    const handles = S.circ ? [[S.circ.x, S.circ.y], [S.circ.x + S.circ.r, S.circ.y]]   // circle: centre + radius handle
+    const handles = S.prm ? prmHandles().map(([hx, hy]) => [hx, hy])                                              // circle / rhombus: size + centre handles
       : !free && S.shape.length <= 40 ? S.shape : [];                                     // freehand shapes skip the handle clutter
-    if (S.circ) { ctx.beginPath(); ctx.moveTo(S.circ.x, S.circ.y); ctx.lineTo(S.circ.x + S.circ.r, S.circ.y); ctx.stroke(); }
+    if (S.prm) { ctx.beginPath(); prmHandles().forEach(([hx, hy, role]) => { if (role !== 'c') { ctx.moveTo(S.prm.x, S.prm.y); ctx.lineTo(hx, hy); } }); ctx.stroke(); }
     handles.forEach(([x, y], k) => {
       const r = (k === 0 && !S.closed ? 6 : 4) * px;
       ctx.fillStyle = PANEL; ctx.beginPath(); ctx.rect(x - r, y - r, 2 * r, 2 * r); ctx.fill(); ctx.stroke();
@@ -390,14 +399,14 @@ function renderPanel() {
     st.textContent = on.length >= 2 ? `Closed, crosses ${on.join(', ')}` : on.length ? `Only on ${on[0]}. Move it across a junction.` : 'Not on any telar';
   }
   $('legend').textContent = S.explode ? 'Separated view. Uncheck "Separate" to edit the shape.'
-    : S.circ ? 'Drag the right handle to change the radius · drag inside to move the circle'
+    : S.prm ? S.prm.kind === 'circle' ? 'Drag the right handle to change the radius · drag the centre or inside to move it' : 'Drag the right point to change the width, the top point to change the height · the slider scales both · drag the centre or inside to move it'
     : S.closed ? 'Drag a point to move it · drag inside to move the shape · double-click an edge to add a point, a point to remove it'
     : free ? 'Press and drag to draw · release to close the shape · Esc cancels'
     : 'Click to add points · click the first point to close · Esc cancels';
   $('noiseVal').textContent = S.noise ? `${S.noise}% · ±${fmt(S.noise / 200 * S.W)} cm` : '0 · exact edge';
   $('grainVal').textContent = `${fmt(S.grain)} cm`;
   $('netWidthVal').textContent = `${fmt(S.netWidth * 10)} mm`;
-  if (S.circ) { $('radVal').textContent = `${fmt(S.circ.r)} cm`; $('rad').value = S.circ.r; }
+  prmFields();
 
   $('cut').innerHTML = segs[S.tel].map((row, j) =>
     `<div class="r"><span>${String(j + 1).padStart(2, '0')}</span><div class="bar">${
@@ -503,8 +512,12 @@ function syncInputs() {
   for (const k in NUM) $(k).value = S[k];
   $('noise').value = S.noise; $('grain').value = S.grain;
   $('netSw').style.background = S.netColor; $('netWidth').value = S.netWidth;
-  $('radRow').hidden = !S.circ;
-  if (S.circ) { $('rad').max = Math.max(compW(S.gx), compH(S.gy)) / 2; $('rad').value = S.circ.r; }
+  $('radRow').hidden = !S.prm;
+  if (S.prm) {
+    $('rad').max = Math.max(compW(S.gx), compH(S.gy)) / 2;
+    $('radLab').textContent = S.prm.kind === 'circle' ? 'Circle radius' : 'Rhombus size (scales both)';
+    prmFields();
+  }
   S.bg.forEach((v, i) => $('bg' + i).value = v); $('fig').value = S.fig;
   $('outline').checked = S.outline; $('explode').checked = S.explode; $('tel').value = S.tel;
 }
@@ -523,15 +536,32 @@ $('explode').onchange = e => { S.explode = e.target.checked; update(); };
 $('tel').onchange = e => { S.tel = +e.target.value; update(); };
 $('reroll').onclick = () => { S.seed = (S.seed % 9973) + 1; update(); };
 $('shuffle').onclick = () => { S.bg = S.bg.map(randomPattern); syncInputs(); update(); };
-const startDrawing = f => { if (S.closed) prev = S.shape; free = f; S.circ = null; S.shape = []; S.closed = false; S.explode = false; syncInputs(); update(); };
+const startDrawing = f => { if (S.closed) prev = S.shape; free = f; S.prm = null; S.shape = []; S.closed = false; S.explode = false; syncInputs(); update(); };
 $('drawNew').onclick = () => startDrawing(false);
 $('drawFree').onclick = () => startDrawing(true);
-$('preRhombus').onclick = () => { S.circ = null; S.shape = [[0, -S.H / 2], [snap(S.W * .55), 0], [0, S.H / 2], [-snap(S.W * .55), 0]]; S.closed = true; syncInputs(); update(); };
-// a circle stays a circle: centre + radius, turned into a 72-sided polygon only for the colour maths
-const circlePoly = c => Array.from({ length: 72 }, (_, i) => { const a = i / 72 * 2 * Math.PI; return [c.x + Math.cos(a) * c.r, c.y + Math.sin(a) * c.r]; });
-const setCircle = c => { S.circ = c; S.shape = circlePoly(c); S.closed = true; };
-$('preCircle').onclick = () => { setCircle({ x: 0, y: 0, r: snap(S.W * .5) }); syncInputs(); update(); };
-$('rad').oninput = e => { if (S.circ) { setCircle({ ...S.circ, r: +e.target.value }); update(); } };
+// circle and rhombus stay parametric: centre + size (r = radius, or rhombus half-width with fixed height ratio k),
+// turned into a polygon only for the colour maths
+const shapeOf = p => p.kind === 'circle'
+  ? Array.from({ length: 72 }, (_, i) => { const a = i / 72 * 2 * Math.PI; return [p.x + Math.cos(a) * p.r, p.y + Math.sin(a) * p.r]; })
+  : (ry => [[p.x, p.y - ry], [p.x + p.r, p.y], [p.x, p.y + ry], [p.x - p.r, p.y]])(ryOf(p));
+const ryOf = p => p.ry ?? p.r * p.k;           // p.k: height ratio in states saved before separate width/height
+const setParam = p => { S.prm = p; S.shape = shapeOf(p); S.closed = true; };
+const prmHandles = () => { const p = S.prm;    // [x, y, role]: r = width/radius, ry = height, c = centre
+  return p.kind === 'circle' ? [[p.x + p.r, p.y, 'r'], [p.x, p.y, 'c']] : [[p.x + p.r, p.y, 'r'], [p.x, p.y - ryOf(p), 'ry'], [p.x, p.y, 'c']];
+};
+function prmFields() {
+  if (!S.prm) return;
+  $('radVal').textContent = S.prm.kind === 'circle' ? `r ${fmt(S.prm.r)} cm` : `${fmt(2 * S.prm.r)} × ${fmt(2 * ryOf(S.prm))} cm`; $('rad').value = S.prm.r;
+  if (document.activeElement !== $('pcx')) $('pcx').value = fmt(S.prm.x);
+  if (document.activeElement !== $('pcy')) $('pcy').value = fmt(S.prm.y);
+}
+$('preRhombus').onclick = () => { setParam({ kind: 'rhombus', x: 0, y: 0, r: snap(S.W * .55), ry: S.H / 2 }); syncInputs(); update(); };
+$('preCircle').onclick = () => { setParam({ kind: 'circle', x: 0, y: 0, r: snap(S.W * .5) }); syncInputs(); update(); };
+$('rad').oninput = e => { if (S.prm) { const p = S.prm, r = +e.target.value; setParam(p.kind === 'circle' ? { ...p, r } : { ...p, r, ry: ryOf(p) * r / p.r }); update(); } };
+['pcx', 'pcy'].forEach((id, a) => $(id).oninput = e => {
+  if (!S.prm || e.target.value === '' || isNaN(+e.target.value)) return;
+  setParam({ ...S.prm, [a ? 'y' : 'x']: +e.target.value }); update();
+});
 $('reset').onclick = () => { S = structuredClone(DEF); structure(); };
 addEventListener('keydown', e => {
   if (e.key === 'Escape' && !S.closed) { free = false; drag = null; S.shape = prev && prev.length >= 3 ? prev : structuredClone(DEF.shape); S.closed = true; cursor = null; update(); }
@@ -793,8 +823,11 @@ cv.onpointerdown = e => {
     else P.push([snap(x), snap(y)]);
     update(); return;
   }
-  const k = near(S.circ ? [[S.circ.x + S.circ.r, S.circ.y]] : P, x, y, tol);
-  if (k >= 0) drag = S.circ ? { rad: true } : { k }; else if (sdist(x, y, P) > 0) drag = { move: [x, y] }; else return;
+  const hs = S.prm ? prmHandles() : P, k = near(hs, x, y, tol);
+  if (S.prm && k >= 0 && hs[k][2] !== 'c') drag = { role: hs[k][2] };
+  else if (k >= 0 && !S.prm) drag = { k };
+  else if (k >= 0 || sdist(x, y, P) > 0) drag = { move: [x, y] };
+  else return;
   cv.setPointerCapture(e.pointerId);
 };
 cv.onpointermove = e => {
@@ -809,17 +842,20 @@ cv.onpointermove = e => {
     return;
   }
   if (!drag) {
-    const grab = near(S.circ ? [[S.circ.x + S.circ.r, S.circ.y]] : S.shape, x, y, 9 / s) >= 0;
-    cv.style.cursor = grab ? (S.circ ? 'ew-resize' : 'grab') : sdist(x, y, S.shape) > 0 ? 'move' : 'default'; return;
+    const hs = S.prm ? prmHandles() : S.shape, g = near(hs, x, y, 9 / s), role = g >= 0 && hs[g][2];
+    cv.style.cursor = role === 'r' ? 'ew-resize' : role === 'ry' ? 'ns-resize' : g >= 0 ? (S.prm ? 'move' : 'grab') : sdist(x, y, S.shape) > 0 ? 'move' : 'default'; return;
   }
-  if (drag.rad) setCircle({ ...S.circ, r: Math.max(1, snap(Math.hypot(x - S.circ.x, y - S.circ.y))) });
+  if (drag.role) {                               // resize symmetrically about the centre
+    const p = S.prm, dx = Math.abs(x - p.x), dy = Math.abs(y - p.y), v = d => Math.max(1, snap(d));
+    setParam(p.kind === 'circle' ? { ...p, r: v(Math.hypot(dx, dy)) } : drag.role === 'r' ? { ...p, r: v(dx), ry: ryOf(p) } : { ...p, ry: v(dy) });
+  }
   else if (drag.move) {
     const dx = snap(x - drag.move[0]), dy = snap(y - drag.move[1]);
     if (!dx && !dy) return;
     S.shape = S.shape.map(([a, b]) => [a + dx, b + dy]); drag.move = [drag.move[0] + dx, drag.move[1] + dy];
-    if (S.circ) S.circ = { ...S.circ, x: S.circ.x + dx, y: S.circ.y + dy };
+    if (S.prm) S.prm = { ...S.prm, x: S.prm.x + dx, y: S.prm.y + dy };
   } else S.shape[drag.k] = [snap(x), snap(y)];
-  if (S.circ) { $('radVal').textContent = `${fmt(S.circ.r)} cm`; $('rad').value = S.circ.r; }
+  prmFields();
   update(true);
 };
 cv.onpointerup = () => {
@@ -831,7 +867,7 @@ cv.onpointerup = () => {
   if (drag) { drag = null; update(); }
 };
 cv.ondblclick = e => {
-  if (S.explode || !S.closed || S.circ) return;
+  if (S.explode || !S.closed || S.prm) return;
   const [x, y, s] = toWorld(e), tol = 9 / s, P = S.shape, k = near(P, x, y, tol);
   if (k >= 0) { if (P.length > 3) P.splice(k, 1); }
   else for (let i = 0; i < P.length; i++) {
