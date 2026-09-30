@@ -19,7 +19,7 @@ body{background:var(--wall);color:var(--ink);font:14px/1.45 var(--body)}
 .app{display:grid;grid-template-columns:360px minmax(0,1fr);height:100%}
 aside{background:var(--panel);border-right:1px solid var(--line);overflow:auto;padding:20px 18px 28px;display:flex;flex-direction:column;gap:22px;min-width:0}
 main{position:relative;min-width:0;min-height:0}
-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
 h1{font:600 26px/1.05 var(--display);margin:0;letter-spacing:-.015em}
 .by{font:400 15px var(--body);color:var(--muted);letter-spacing:0;white-space:nowrap}
 .sub{color:var(--muted);font-size:12.5px;margin-top:5px}
@@ -43,7 +43,6 @@ label.chk{display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer}
 input[type=number],input[type=text],select{font:13px var(--mono);color:var(--ink);background:var(--wall);border:1px solid var(--line);border-radius:5px;padding:5px 7px;width:100%;min-width:0}
 .pal{display:grid;grid-template-columns:auto 34px minmax(0,1fr) auto 26px;gap:6px 8px;align-items:center}
 .pal b{font:500 13px var(--mono)}
-.pal input[type=color]{width:34px;height:26px;border:1px solid var(--line);border-radius:5px;padding:0;background:none;cursor:pointer}
 .pal .x{padding:0;width:26px;height:26px;line-height:1;color:var(--muted)}
 .role{font-size:11px;color:var(--muted);text-align:right}
 .role.both{color:var(--warn)}
@@ -63,6 +62,28 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
 .gridbtn{position:absolute;display:flex;gap:6px}
 .gridbtn button{width:32px;height:32px;padding:0;border-radius:50%;background:var(--panel);font-size:18px;line-height:1}
 #colBtns{flex-direction:column}
+.sw{width:34px;height:26px;padding:0;border-radius:5px;border:1px solid var(--line)}
+.sw:hover{border-color:var(--ink)}
+.viewbar{position:absolute;top:12px;left:16px;display:flex;gap:6px}
+.viewbar button{background:var(--panel)}
+/* colour picker: a deliberately dark instrument panel in both themes */
+.picker{--pk-bg:#141312;--pk-fg:#EEE9DF;--pk-mut:#8E877B;--pk-line:#2E2B27;--pk-field:#1E1C1A;
+  position:fixed;z-index:10;width:252px;background:var(--pk-bg);color:var(--pk-fg);border:1px solid var(--pk-line);border-radius:12px;
+  padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.picker canvas{width:224px;height:224px;align-self:center;cursor:crosshair;touch-action:none}
+.picker input[type=range]{width:100%;height:12px;appearance:none;-webkit-appearance:none;border-radius:6px;outline-offset:3px}
+.picker input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid #000}
+.picker input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #000}
+.pk-head{display:flex;gap:10px;align-items:center}
+.pk-sw{width:42px;height:42px;border-radius:8px;flex:none;border:1px solid var(--pk-line)}
+.pk-name{font:600 16px/1.15 var(--display)}
+.pk-sub{font:11px var(--mono);color:var(--pk-mut);margin-top:3px}
+.pk-codes{display:grid;grid-template-columns:34px repeat(3,minmax(0,1fr));gap:5px;align-items:center;font:11px var(--mono);color:var(--pk-mut)}
+.pk-codes input{font:12px var(--mono);color:var(--pk-fg);background:var(--pk-field);border:1px solid var(--pk-line);border-radius:5px;padding:4px 5px;width:100%;min-width:0}
+.pk-codes .hex{grid-column:2/-1}
+.picker .btns{justify-content:flex-end}
+.picker button{color:var(--pk-fg);border-color:var(--pk-line)}
+.picker button.primary{background:var(--pk-fg);color:var(--pk-bg);border-color:var(--pk-fg)}
 @media (max-width:800px){
   .app{grid-template-columns:1fr;grid-template-rows:72vh auto;height:auto}
   main{order:-1}
@@ -119,7 +140,7 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
     <section>
       <h2>Base grid</h2>
       <div class="grid2">
-        <label class="field">Colour<input type="color" id="netColor" style="width:100%;height:30px;border:1px solid var(--line);border-radius:5px;padding:0;background:none;cursor:pointer"></label>
+        <div class="field">Colour<button class="sw" id="netSw" style="width:100%;height:30px" aria-label="Grid colour"></button></div>
         <div class="slider"><label for="netWidth">Cord width</label><span class="val" id="netWidthVal"></span><input type="range" id="netWidth" min="0.05" max="1.5" step="0.05"></div>
       </div>
     </section>
@@ -151,10 +172,23 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
   </aside>
   <main>
     <canvas id="cv"></canvas>
+    <div class="viewbar"><button id="undo" title="Undo (Ctrl+Z)">&#8630; Undo</button><button id="redo" title="Redo (Ctrl+Shift+Z)">&#8631; Redo</button></div>
     <div class="gridbtn" id="colBtns"><button id="addCol" aria-label="Add a column of telares" title="Add a column">+</button><button id="remCol" aria-label="Remove the last column" title="Remove the last column">&minus;</button></div>
     <div class="gridbtn" id="rowBtns"><button id="addRow" aria-label="Add a row of telares" title="Add a row">+</button><button id="remRow" aria-label="Remove the last row" title="Remove the last row">&minus;</button></div>
     <div class="legend" id="legend"></div>
   </main>
+</div>
+
+<div class="picker" id="picker" hidden role="dialog" aria-label="Colour picker">
+  <div class="pk-head"><span class="pk-sw" id="pkSw"></span><div><div class="pk-name" id="pkName"></div><div class="pk-sub" id="pkSub"></div></div></div>
+  <canvas id="wheel" width="224" height="224" aria-label="Hue and saturation wheel"></canvas>
+  <input type="range" id="pkV" min="0" max="100" step="1" aria-label="Brightness">
+  <div class="pk-codes">
+    <span>HEX</span><input class="hex" id="pkHex" spellcheck="false">
+    <span>RGB</span><input id="pkR" type="number" min="0" max="255"><input id="pkG" type="number" min="0" max="255"><input id="pkB" type="number" min="0" max="255">
+    <span>HSL</span><input id="pkH" type="number" min="0" max="360"><input id="pkS" type="number" min="0" max="100"><input id="pkL" type="number" min="0" max="100">
+  </div>
+  <div class="btns"><button id="pkCancel">Cancel</button><button id="pkDone" class="primary">Done</button></div>
 </div>
 
 <script>
@@ -163,8 +197,8 @@ const STRAW = '#CFB585';
 const NEWHEX = ['#4F6D3A', '#2F4858', '#A3542B', '#6B4E8A', '#C9A227', '#1F1F1F', '#9BB7C4', '#E08E45'];
 const DEF = {
   W: 60, H: 120, n: 24, t: 3.2, fringe: 8, gx: 18, gy: 6, noise: 0, grain: 4, seed: 1, cols: 2, rows: 2, netColor: '#D4A536', netWidth: .25,
-  pal: [['A','Mostaza','#B98A1C'],['B','Ocre oliva','#8C6A1E'],['C','Coral','#D8736A'],
-        ['D','Burdeos','#7A1E3A'],['E','Chocolate','#3B2820'],['F','Oro claro','#E6CE78']],
+  pal: [['A','','#B98A1C'],['B','','#8C6A1E'],['C','','#D8736A'],
+        ['D','','#7A1E3A'],['E','','#3B2820'],['F','','#E6CE78']],   // names filled by nameOf at start
   bg: ['ACAD','BCDC','DABA','CBAB'], fig: 'EF',
   shape: [[0,-60],[33,0],[0,60],[-33,0]], closed: true, outline: true, explode: false, tel: 0,
 };
@@ -367,8 +401,35 @@ function renderPanel() {
 
 function update(light) {
   compute(); draw();
-  if (!light) { renderPanel(); save(); }
+  if (!light) { renderPanel(); save(); record(); }
 }
+
+// ---------- undo / redo: snapshots of the whole state, bursts (sliders, drags) merged ----------
+let hist = [], hi = -1, histT = 0;
+function commit() {
+  clearTimeout(histT); histT = 0;
+  const j = JSON.stringify(S);
+  if (j === hist[hi]) return;
+  hist = hist.slice(0, hi + 1); hist.push(j);
+  if (hist.length > 200) hist.shift();
+  hi = hist.length - 1; histButtons();
+}
+function record() { clearTimeout(histT); histT = setTimeout(commit, 350); }
+function histButtons() { $('undo').disabled = hi <= 0; $('redo').disabled = hi >= hist.length - 1; }
+function go(d) {
+  if (histT) commit();
+  if (hi + d < 0 || hi + d >= hist.length) return;
+  hi += d; S = JSON.parse(hist[hi]); free = false; drag = null; cursor = null;
+  closePicker(false); structure(); clearTimeout(histT); histT = 0; histButtons();
+}
+$('undo').onclick = () => go(-1);
+$('redo').onclick = () => go(1);
+addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey) || /^(text|number)$/.test(e.target.type)) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z') { e.preventDefault(); go(e.shiftKey ? 1 : -1); }
+  else if (k === 'y') { e.preventDefault(); go(1); }
+});
 
 // ---------- structure: palette, patterns, telar grid ----------
 const clean = v => [...v.toUpperCase()].filter(ch => letters().includes(ch)).join('');
@@ -381,12 +442,15 @@ function randomPattern() {
 }
 function buildPalette() {
   $('pal').innerHTML = S.pal.map(([k, name, hex], i) =>
-    `<b>${k}</b><input type="color" id="ph${i}" value="${hex}" aria-label="Colour ${k}"><input type="text" id="pn${i}" aria-label="Name ${k}"><span class="role" id="role${i}"></span>` +
+    `<b>${k}</b><button class="sw" id="ph${i}" style="background:${hex}" aria-label="Change colour ${k}"></button><input type="text" id="pn${i}" aria-label="Name ${k}"><span class="role" id="role${i}"></span>` +
     `<button class="x" id="px${i}" aria-label="Remove colour ${k}" title="Remove colour ${k}" ${S.pal.length <= 2 ? 'disabled' : ''}>&times;</button>`).join('');
   S.pal.forEach(([k, name], i) => {
     $('pn' + i).value = name;
-    $('ph' + i).oninput = e => { S.pal[i][2] = e.target.value; update(); };
-    $('pn' + i).oninput = e => { S.pal[i][1] = e.target.value; save(); };
+    $('ph' + i).onclick = e => openPicker(e.currentTarget, S.pal[i][2], hex => {
+      S.pal[i][2] = hex; S.pal[i][1] = nameOf(hex);
+      $('ph' + i).style.background = hex; $('pn' + i).value = S.pal[i][1]; update();
+    });
+    $('pn' + i).oninput = e => { S.pal[i][1] = e.target.value; update(); };
     $('px' + i).onclick = () => {
       S.pal.splice(i, 1);
       const first = letters()[0], strip = s => s.split(k).join('');
@@ -422,7 +486,8 @@ $('remRow').onclick = () => resize(S.cols, S.rows - 1);
 $('addColor').onclick = () => {
   const k = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').find(ch => !letters().includes(ch));
   if (!k) return;
-  S.pal.push([k, 'New colour', NEWHEX[S.pal.length % NEWHEX.length]]);
+  const hex = NEWHEX[S.pal.length % NEWHEX.length];
+  S.pal.push([k, nameOf(hex), hex]);
   structure(); $('pn' + (S.pal.length - 1)).select();
 };
 
@@ -431,7 +496,7 @@ const NUM = { W: 10, H: 10, n: 1, t: .5, fringe: 0, gx: 0, gy: 0 };
 function syncInputs() {
   for (const k in NUM) $(k).value = S[k];
   $('noise').value = S.noise; $('grain').value = S.grain;
-  $('netColor').value = S.netColor; $('netWidth').value = S.netWidth;
+  $('netSw').style.background = S.netColor; $('netWidth').value = S.netWidth;
   S.bg.forEach((v, i) => $('bg' + i).value = v); $('fig').value = S.fig;
   $('outline').checked = S.outline; $('explode').checked = S.explode; $('tel').value = S.tel;
 }
@@ -441,7 +506,7 @@ for (const k in NUM) $(k).oninput = e => {
 };
 $('noise').oninput = e => { S.noise = +e.target.value; update(); };
 $('grain').oninput = e => { S.grain = +e.target.value; update(); };
-$('netColor').oninput = e => { S.netColor = e.target.value; update(); };
+$('netSw').onclick = e => openPicker(e.currentTarget, S.netColor, hex => { S.netColor = hex; $('netSw').style.background = hex; update(); });
 $('netWidth').oninput = e => { S.netWidth = +e.target.value; update(); };
 $('fig').oninput = e => { const v = clean(e.target.value); if (v) { S.fig = v; update(); } };
 $('fig').onblur = e => e.target.value = S.fig;
@@ -481,73 +546,107 @@ $('copy').onclick = () => {
 
 function buildPdf() {
   const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
-  const colors = pm(), M = 15, PW = 210, BW = 180, date = new Date().toISOString().slice(0, 10);
-  const setF = hex => doc.setFillColor(hex), txt = (s, x, y, o) => doc.text(Array.isArray(s) ? s : String(s), x, y, o);
+  const colors = pm(), M = 16, PW = 210, PH = 297, BW = PW - 2 * M, BOTTOM = PH - 17;
+  const INK = '#26221C', MUT = '#8A8378', RULE = '#E2DED6', date = new Date().toISOString().slice(0, 10);
+  const txt = (s, x, y, o) => doc.text(Array.isArray(s) ? s : String(s), x, y, o);
+  const font = (size, style = 'normal', color = INK) => { doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(color); };
+  const pc = k => colors[k] || [k, '?', '#999999'];
   const totals = list => { const t = {}; list.forEach(row => row.forEach(g => t[g.c] = (t[g.c] || 0) + g.b - g.a)); return t; };
-  const legend = (t, y, unit) => {
-    Object.keys(t).sort().forEach((k, n) => {
-      const p = colors[k] || [k, '?', '#999999'], x = M + (n % 3) * 60, yy = y + Math.floor(n / 3) * 7;
-      setF(p[2]); doc.rect(x, yy - 3.5, 5, 5, 'F');
-      doc.setFontSize(9); doc.setTextColor(30); txt(`${k}  ${p[1]}`, x + 7, yy);
-      doc.setTextColor(110); txt(unit(t[k]), x + 7 + doc.getTextWidth(`${k}  ${p[1]}`) + 2, yy);
-    });
-    return y + Math.ceil(Object.keys(t).length / 3) * 7;
+  const footer = label => {
+    doc.setDrawColor(RULE); doc.setLineWidth(.2); doc.line(M, PH - 12, PW - M, PH - 12);
+    font(7, 'normal', MUT); txt(`Telar Generator by Ale  ·  ${date}`, M, PH - 8); txt(label, PW - M, PH - 8, { align: 'right' });
   };
-  const map = (x, y, w, hl) => {                  // small key of the grid, with one telar highlighted
-    const cw = w / S.cols, chh = cw * S.H / S.W * .9;
+  const legend = (t, y, unit) => {                // colour chips, three columns, never wider than the page
+    const keys = Object.keys(t).sort(), colW = BW / 3;
+    keys.forEach((k, n) => {
+      const p = pc(k), x = M + (n % 3) * colW, yy = y + Math.floor(n / 3) * 6;
+      doc.setFillColor(p[2]); doc.roundedRect(x, yy - 3.3, 4.4, 4.4, .7, .7, 'F');
+      font(8.5, 'bold'); txt(k, x + 6.2, yy);
+      font(8.5); const nm = doc.splitTextToSize(p[1], colW - 32)[0]; txt(nm, x + 10.5, yy);
+      font(8.5, 'normal', MUT); txt(unit(t[k]), x + 10.5 + doc.getTextWidth(nm) + 2, yy);
+    });
+    return y + Math.ceil(keys.length / 3) * 6;
+  };
+  const keyMap = hl => {                          // small grid key in the top-right corner, max 24 x 18 mm
+    const g = .8, cw = Math.min((24 - (S.cols - 1) * g) / S.cols, (18 - (S.rows - 1) * g) / S.rows * S.W / S.H), ch = cw * S.H / S.W;
+    const x0 = PW - M - (S.cols * cw + (S.cols - 1) * g), y0 = 13;
+    doc.setLineWidth(.2); doc.setDrawColor(MUT);
     for (let i = 0; i < count(); i++) {
-      const cx = x + (i % S.cols) * cw, cy = y + Math.floor(i / S.cols) * chh;
-      doc.setDrawColor(120); i === hl ? (setF('#26221C'), doc.rect(cx, cy, cw - 1, chh - 1, 'FD')) : doc.rect(cx, cy, cw - 1, chh - 1);
-      doc.setFontSize(6); doc.setTextColor(i === hl ? 255 : 90); txt(`T${i + 1}`, cx + (cw - 1) / 2, cy + (chh - 1) / 2 + 1, { align: 'center' });
+      const x = x0 + (i % S.cols) * (cw + g), y = y0 + Math.floor(i / S.cols) * (ch + g);
+      if (i === hl) { doc.setFillColor(INK); doc.rect(x, y, cw, ch, 'F'); } else doc.rect(x, y, cw, ch);
     }
   };
 
-  // page 1: overview
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(20); doc.setTextColor(30); txt('Telar Generator by Ale', M, 22);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(110);
-  txt(`${count()} telares, ${S.cols} x ${S.rows}  -  net ${S.W} x ${S.H} cm  -  ${S.n} bastones per telar, ${S.t} cm thick  -  gaps ${S.gx} / ${S.gy} cm  -  noise ${S.noise}%  -  ${date}`, M, 28);
+  // ---- page 1: overview ----
+  font(7.5, 'bold', MUT); txt('TELAR GENERATOR BY ALE', M, 16);
+  font(22, 'bold'); txt('Composition', M, 27);
+  font(9, 'normal', MUT);
+  txt(doc.splitTextToSize(`${count()} telares, ${S.cols} × ${S.rows}  ·  net ${S.W} × ${S.H} cm  ·  ${S.n} bastones per telar, ${S.t} cm thick  ·  gaps ${S.gx} / ${S.gy} cm  ·  edge noise ${S.noise}%`, BW), M, 33);
   const img = document.createElement('canvas'); img.width = cv.width; img.height = cv.height;
   const ic = img.getContext('2d'); ic.fillStyle = '#F1F0EB'; ic.fillRect(0, 0, img.width, img.height); ic.drawImage(cv, 0, 0);
-  const ih = Math.min(170, BW * img.height / img.width), iw = ih * img.width / img.height;
-  doc.addImage(img.toDataURL('image/jpeg', .9), 'JPEG', M + (BW - iw) / 2, 34, iw, ih);
-  let y = 34 + ih + 10;
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30); txt('Wrapped length per colour, all telares', M, y);
-  doc.setFont('helvetica', 'normal');
-  y = legend(totals(segs.flat()), y + 8, v => `${fmt(v / 100)} m`);
-  doc.setFontSize(8.5); doc.setTextColor(110);
-  txt(doc.splitTextToSize('Wrapped length is measured along the bastón, not yarn length. Each following page is one telar: bastón 1 is the top one, colours listed left to right as seen from the front, lengths in cm.', BW), M, y + 4);
+  const ih = Math.min(165, BW * img.height / img.width), iw = ih * img.width / img.height;
+  doc.addImage(img.toDataURL('image/jpeg', .9), 'JPEG', M + (BW - iw) / 2, 42, iw, ih);
+  let y = 42 + ih + 12;
+  font(11, 'bold'); txt('Wrapped length per colour', M, y);
+  y = legend(totals(segs.flat()), y + 8, v => `${fmt(v / 100)} m`) + 4;
+  font(8.5, 'normal', MUT);
+  txt(doc.splitTextToSize('Lengths are measured along the bastón, not yarn length. Each following page is one telar: bastón 1 is the top one, colours run left to right as seen from the front, lengths in cm. The grid key in the corner shows where that telar hangs.', BW), M, y);
+  footer('Overview');
 
-  // one page (or more) per telar
+  // ---- one telar per page; a second page only when the rows cannot fit, never with fewer than 4 rows ----
   segs.forEach((tel, i) => {
-    const head = cont => {
+    const barX = M + 10, barW = BW - 10, sc = barW / S.W;
+    const header = (part, parts) => {
       doc.addPage();
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(30); txt(`T${i + 1}${cont ? ' (cont.)' : ''}`, M, 20);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(110);
-      txt(`${place(i)}  -  pattern ${S.bg[i]}  -  net ${S.W} x ${S.H} cm`, M, 26);
-      map(PW - M - 34, 12, 34, i);
-      let yy = 34;
-      if (!cont) { yy = legend(totals(tel), yy + 2, v => `${fmt(v)} cm`) + 2; }
-      // ruler over the bars
-      const sc = (BW - 12) / S.W; doc.setDrawColor(160); doc.setFontSize(6); doc.setTextColor(130);
-      for (let c = 0; c <= S.W + .01; c += 10) { const x = M + 12 + Math.min(c, S.W) * sc; doc.line(x, yy, x, yy + 1.5); txt(fmt(Math.min(c, S.W)), x, yy - 1, { align: 'center' }); }
-      return yy + 4;
+      font(7.5, 'bold', MUT); txt('TELAR GENERATOR BY ALE', M, 16);
+      font(22, 'bold'); txt(`T${i + 1}`, M, 27);
+      font(9, 'normal', MUT); txt(`${place(i)}  ·  ${S.n} bastones  ·  wrap ${S.W} cm${parts > 1 ? `  ·  part ${part} of ${parts}` : ''}`, M, 33);
+      keyMap(i);
+      font(7.5, 'normal', MUT);
+      const pat = doc.splitTextToSize(`Pattern  ${S.bg[i]}`, BW);
+      txt(pat, M, 39);
+      let yy = legend(totals(tel), 39 + pat.length * 3.2 + 4.5, v => `${fmt(v)} cm`) + 3;
+      font(6, 'normal', MUT);
+      for (let c = 0; c <= S.W + .01; c += 10) { const x = barX + Math.min(c, S.W) * sc; txt(fmt(Math.min(c, S.W)), x, yy, { align: 'center' }); }
+      return yy + 3;
     };
-    let yy = head(false);
-    const sc = (BW - 12) / S.W;
-    tel.forEach((row, j) => {
-      doc.setFontSize(7);
-      const line = doc.splitTextToSize(row.map(g => `${g.c} ${fmt(g.b - g.a)}`).join('   '), BW - 12);
-      const rh = 5 + line.length * 3 + 2.2;
-      if (yy + rh > 287) yy = head(true);
-      doc.setFontSize(8); doc.setTextColor(30); doc.setFont('helvetica', 'bold'); txt(String(j + 1).padStart(2, '0'), M, yy + 3.8);
-      doc.setFont('helvetica', 'normal');
-      row.forEach(g => {
-        const p = colors[g.c] || [g.c, '?', '#999999'], x = M + 12 + g.a * sc, w = (g.b - g.a) * sc;
-        setF(p[2]); doc.rect(x, yy, w, 5, 'F');
-        if (w >= 3.2) { doc.setFontSize(6.5); doc.setTextColor(ink(p[2])); txt(g.c, x + w / 2, yy + 3.6, { align: 'center' }); }
+    const measure = P => tel.map(row => {        // label each segment inside the bar when it fits, list below only if needed
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(P.fs);
+      const labels = row.map(g => { const w = (g.b - g.a) * sc, full = `${g.c} ${fmt(g.b - g.a)}`;
+        return doc.getTextWidth(full) + 1.6 <= w ? full : w >= 2.6 ? g.c : ''; });
+      const need = labels.some((l, k) => l !== `${row[k].c} ${fmt(row[k].b - row[k].a)}`);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(P.fs - .5);
+      const line = need ? doc.splitTextToSize(row.map(g => `${g.c} ${fmt(g.b - g.a)}`).join('    '), barW) : [];
+      return { row, labels, line, h: P.bar + (line.length ? line.length * P.lh + .8 : 0) + P.gap };
+    });
+    // probe the page layout once to know how much room the rows get
+    const top = header(1, 1); doc.deletePage(doc.getNumberOfPages());
+    const avail = BOTTOM - top;
+    const PRESETS = [{ bar: 5, fs: 7, lh: 2.8, gap: 2.4 }, { bar: 3.8, fs: 6, lh: 2.4, gap: 1.4 }];
+    let P, rows, pages;
+    for (P of PRESETS) { rows = measure(P); if (rows.reduce((s, r) => s + r.h, 0) <= avail) break; }
+    pages = [[]]; let used = 0;
+    for (const r of rows) { if (used + r.h > avail && pages[pages.length - 1].length) { pages.push([]); used = 0; } pages[pages.length - 1].push(r); used += r.h; }
+    for (let k = pages.length - 1; k > 0; k--) while (pages[k].length < 4 && pages[k - 1].length > 4) pages[k].unshift(pages[k - 1].pop());
+    let j = 0;
+    pages.forEach((pg, pi) => {
+      let yy = header(pi + 1, pages.length);
+      const used = pg.reduce((s, r) => s + r.h, 0), extra = Math.min(3, (avail - used) / pg.length);
+      doc.setDrawColor(RULE); doc.setLineWidth(.15);  // 10 cm guides behind the bars
+      const end = yy + used + extra * pg.length - P.gap;
+      for (let c = 0; c <= S.W + .01; c += 10) { const x = barX + Math.min(c, S.W) * sc; doc.line(x, yy - 1.5, x, end); }
+      pg.forEach(r => {
+        j++;
+        font(P.fs + 1, 'bold'); txt(String(j).padStart(2, '0'), M, yy + P.bar * .72);
+        r.row.forEach((g, k) => {
+          const p = pc(g.c), x = barX + g.a * sc, w = (g.b - g.a) * sc;
+          doc.setFillColor(p[2]); doc.rect(x, yy, w + .05, P.bar, 'F');
+          if (r.labels[k]) { font(P.fs, 'bold', ink(p[2])); txt(r.labels[k], x + w / 2, yy + P.bar * .68, { align: 'center' }); }
+        });
+        if (r.line.length) { font(P.fs - .5, 'normal', MUT); txt(r.line, barX, yy + P.bar + P.lh); }
+        yy += r.h + extra;
       });
-      doc.setFontSize(7); doc.setTextColor(90); txt(line, M + 12, yy + 7.6);
-      yy += rh;
+      footer(`T${i + 1}${pages.length > 1 ? `  ·  part ${pi + 1} of ${pages.length}` : ''}`);
     });
   });
   return doc.output('blob');
@@ -571,6 +670,107 @@ $('pdf').onclick = async () => {
   }
 };
 window.claude?.use('downloads').then(d => { downloads = d; }).catch(() => {});
+
+// ---------- colour names: nearest entry by CIELAB distance ----------
+const NAMES = `FFFFFF White|F7F4F0 Snow|EDEAE0 Alabaster|DDD5C4 Bone|BFBFBF Silver|B2BEB5 Ash Gray|848482 Battleship Gray|696969 Dim Gray|555555 Davy's Gray|383838 Onyx|2A2A2A Jet|1B1B1B Eerie Black|000000 Black|483C32 Taupe|8C92AC Cool Gray|708090 Slate Gray|2A3439 Gunmetal|36454F Charcoal|3D2B1F Bistre|6F4E37 Coffee|7B3F00 Chocolate|635147 Umber|826644 Raw Umber|AF6E4D Brown Sugar|882D17 Sienna|E97451 Burnt Sienna|B7410E Rust|B87333 Copper|AF6F09 Caramel|C19A6B Camel|D2B48C Tan|C3B091 Khaki|F5F5DC Beige|CDB891 Ecru|F5DEB3 Wheat|DAA06D Buff|E5AA70 Fawn|A0785A Chamoisee|6B4423 Kobicha|664228 Van Dyke|59260B Seal Brown|5C4033 Walnut|4A2C21 Dark Chocolate|6B8E23 Olive Drab|808000 Olive|556B2F Dark Olive|8A9A5B Moss Green|B2AC88 Sage|967117 Drab|CBA135 Satin Sheen Gold|CFB53B Old Gold|DAA520 Goldenrod|B8860B Dark Goldenrod|E1AD01 Mustard|CC7722 Ochre|DA9100 Harvest Gold|E49B0F Gamboge|F4C430 Saffron|FBEC5D Maize|EEDC82 Flax|F3E5AB Vanilla|FFFDD0 Cream|F8DE7E Jasmine|FADA5E Naples Yellow|FFF44F Lemon|FFFF99 Canary|FFD800 School Bus Yellow|FFBF00 Amber|F28500 Tangerine|FF7F00 Orange|FF7518 Pumpkin|EC5800 Persimmon|CD5700 Tawny|FBCEB1 Apricot|FFE5B4 Peach|FDBCB4 Melon|FA8072 Salmon|FF7F50 Coral|F08080 Light Coral|FE6F5E Bittersweet|FF6347 Tomato|E34234 Vermilion|FF2400 Scarlet|FF0000 Red|B22222 Fire Brick|C41E3A Cardinal|DC143C Crimson|960018 Carmine|800020 Burgundy|4A0404 Oxblood|800000 Maroon|722F37 Wine|7F1734 Claret|66023C Tyrian Purple|E30B5C Raspberry|FF007F Rose|DE3163 Cerise|DE5D83 Blush|C08081 Old Rose|C9A9A6 Dusty Rose|65000B Rosewood|CC8899 Puce|FFC0CB Pink|F4C2C2 Baby Pink|FF91A4 Salmon Pink|FF69B4 Hot Pink|FF00FF Magenta|C154C1 Fuchsia|DA70D6 Orchid|E0B0FF Mauve|D8BFD8 Thistle|C8A2C8 Lilac|B57EDC Lavender|C9A0DC Wisteria|9966CC Amethyst|6A0DAD Purple|8F00FF Violet|8E4585 Plum|614051 Eggplant|702963 Byzantium|3D0734 Aubergine|4B0082 Indigo|7851A9 Royal Purple|CCCCFF Periwinkle|3F00FF Ultramarine|0000FF Blue|000080 Navy|191970 Midnight Blue|002147 Oxford Blue|003153 Prussian Blue|1F305E Delft Blue|0047AB Cobalt|0F52BA Sapphire|4169E1 Royal Blue|6495ED Cornflower|007FFF Azure|1560BD Denim|4682B4 Steel Blue|5D8AA8 Air Force Blue|B0E0E6 Powder Blue|89CFF0 Baby Blue|87CEEB Sky Blue|ADD8E6 Light Blue|F0F8FF Alice Blue|007BA7 Cerulean|00FFFF Cyan|40E0D0 Turquoise|008080 Teal|014D4E Deep Teal|006D6F Caribbean Current|0ABAB5 Tiffany Blue|7FFFD4 Aquamarine|ACE1AF Celadon|3EB489 Mint|F5FFFA Mint Cream|00A86B Jade|50C878 Emerald|2E8B57 Sea Green|355E3B Hunter Green|228B22 Forest Green|4CBB17 Kelly Green|008000 Green|BFFF00 Lime|7FFF00 Chartreuse|93C572 Pistachio|4F7942 Fern Green|1B4D3E Brunswick Green|013220 Dark Green|40826D Viridian|87A96B Asparagus|D0F0C0 Tea Green|01796F Pine Green|568203 Avocado|32CD32 Lime Green|9ACD32 Yellow Green|D1E231 Pear|9FA91F Citron`
+  .split('|').map(s => [lab(s.slice(0, 6)), s.slice(7)]);
+function rgbOf(hex) { const n = parseInt(hex.replace('#', ''), 16); return [n >> 16, n >> 8 & 255, n & 255]; }
+function lab(hex) {
+  const [x, y, z] = (() => {
+    const [r, g, b] = rgbOf(hex).map(v => { v /= 255; return v > .04045 ? ((v + .055) / 1.055) ** 2.4 : v / 12.92; });
+    return [(r * .4124 + g * .3576 + b * .1805) / .95047, r * .2126 + g * .7152 + b * .0722, (r * .0193 + g * .1192 + b * .9505) / 1.08883];
+  })().map(v => v > .008856 ? Math.cbrt(v) : 7.787 * v + 16 / 116);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+}
+function nameOf(hex) {
+  const c = lab(hex); let best = '', d = Infinity;
+  for (const [l, n] of NAMES) { const e = (l[0] - c[0]) ** 2 + (l[1] - c[1]) ** 2 + (l[2] - c[2]) ** 2; if (e < d) { d = e; best = n; } }
+  return best;
+}
+
+// ---------- colour picker: hue/saturation wheel + brightness, with HEX / RGB / HSL codes ----------
+const toHex = rgb => '#' + rgb.map(v => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+function hsv2rgb(h, s, v) {
+  const f = n => { const k = (n + h / 60) % 6; return v * (1 - s * Math.max(0, Math.min(k, 4 - k, 1))) * 255; };
+  return [f(5), f(3), f(1)];
+}
+function rgb2hsv([r, g, b]) {
+  r /= 255; g /= 255; b /= 255;
+  const M = Math.max(r, g, b), d = M - Math.min(r, g, b);
+  const h = !d ? 0 : M === r ? ((g - b) / d + 6) % 6 : M === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, M ? d / M : 0, M];
+}
+function rgb2hsl(rgb) { const [h, s, v] = rgb2hsv(rgb), l = v * (1 - s / 2); return [h, l && l < 1 ? (v - l) / Math.min(l, 1 - l) : 0, l]; }
+function hsl2rgb(h, s, l) { const v = l + s * Math.min(l, 1 - l); return hsv2rgb(h, v ? 2 * (1 - l / v) : 0, v); }
+
+const PK = { h: 0, s: 0, v: 1, orig: '', cb: null, cache: null, cacheV: -1 };
+const wheel = $('wheel'), wctx = wheel.getContext('2d');
+function wheelImage() {
+  if (PK.cacheV === PK.v) return PK.cache;
+  const d = devicePixelRatio || 1, N = Math.round(224 * d), R = N / 2, img = new ImageData(N, N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const dx = x + .5 - R, dy = y + .5 - R, r = Math.hypot(dx, dy) / R;
+    if (r > 1) continue;
+    const [cr, cg, cb] = hsv2rgb((Math.atan2(-dy, dx) * 180 / Math.PI + 360) % 360, r, PK.v), o = (y * N + x) * 4;
+    img.data[o] = cr; img.data[o + 1] = cg; img.data[o + 2] = cb; img.data[o + 3] = r > .994 ? (1 - r) / .006 * 255 : 255;
+  }
+  PK.cacheV = PK.v; PK.cache = img; return img;
+}
+function paintPicker(skip) {
+  const d = devicePixelRatio || 1, N = Math.round(224 * d), R = N / 2;
+  if (wheel.width !== N) { wheel.width = wheel.height = N; PK.cacheV = -1; }
+  wctx.putImageData(wheelImage(), 0, 0);
+  const a = PK.h * Math.PI / 180, mx = R + Math.cos(a) * PK.s * R, my = R - Math.sin(a) * PK.s * R;
+  wctx.lineWidth = 2 * d; wctx.strokeStyle = '#000'; wctx.beginPath(); wctx.arc(mx, my, 8 * d, 0, 7); wctx.stroke();
+  wctx.strokeStyle = '#fff'; wctx.beginPath(); wctx.arc(mx, my, 6.5 * d, 0, 7); wctx.stroke();
+  const rgb = hsv2rgb(PK.h, PK.s, PK.v), hex = toHex(rgb), hsl = rgb2hsl(rgb);
+  $('pkV').style.background = `linear-gradient(to right,#000,${toHex(hsv2rgb(PK.h, PK.s, 1))})`;
+  $('pkSw').style.background = hex;
+  $('pkName').textContent = nameOf(hex);
+  $('pkSub').textContent = PK.orig !== hex ? `was ${PK.orig}` : 'current';
+  const vals = { pkV: Math.round(PK.v * 100), pkHex: hex, pkR: Math.round(rgb[0]), pkG: Math.round(rgb[1]), pkB: Math.round(rgb[2]),
+    pkH: Math.round(hsl[0]), pkS: Math.round(hsl[1] * 100), pkL: Math.round(hsl[2] * 100) };
+  for (const k in vals) if (k !== skip) $(k).value = vals[k];
+  return hex;
+}
+function pickerChanged(skip) { const hex = paintPicker(skip); PK.cb && PK.cb(hex); }
+function setPicker(rgb) { [PK.h, PK.s, PK.v] = rgb2hsv(rgb); }
+function openPicker(anchor, hex, cb) {
+  closePicker(false);
+  PK.orig = hex.toUpperCase(); PK.cb = cb; setPicker(rgbOf(hex));
+  const el = $('picker'); el.hidden = false; paintPicker();
+  const r = anchor.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+  el.style.left = `${Math.max(8, Math.min(innerWidth - w - 8, r.right + 10))}px`;
+  el.style.top = `${Math.max(8, Math.min(innerHeight - h - 8, r.top - 20))}px`;
+}
+function closePicker(revert) {
+  if ($('picker').hidden) return;
+  if (revert && PK.cb) PK.cb(PK.orig);
+  PK.cb = null; $('picker').hidden = true;
+}
+function wheelPick(e) {
+  const r = wheel.getBoundingClientRect(), R = r.width / 2, dx = e.clientX - r.left - R, dy = e.clientY - r.top - R;
+  PK.h = (Math.atan2(-dy, dx) * 180 / Math.PI + 360) % 360; PK.s = Math.min(1, Math.hypot(dx, dy) / R);
+  pickerChanged();
+}
+wheel.onpointerdown = e => { wheel.setPointerCapture(e.pointerId); wheelPick(e); };
+wheel.onpointermove = e => { if (wheel.hasPointerCapture(e.pointerId)) wheelPick(e); };
+$('pkV').oninput = e => { PK.v = +e.target.value / 100; pickerChanged('pkV'); };
+$('pkHex').oninput = e => { const v = e.target.value.trim().replace('#', ''); if (/^[0-9a-f]{6}$/i.test(v)) { setPicker(rgbOf(v)); pickerChanged('pkHex'); } };
+['pkR', 'pkG', 'pkB'].forEach(id => $(id).oninput = e => {
+  const rgb = ['pkR', 'pkG', 'pkB'].map(k => Math.max(0, Math.min(255, +$(k).value || 0)));
+  setPicker(rgb); pickerChanged(id);
+});
+['pkH', 'pkS', 'pkL'].forEach(id => $(id).oninput = () => {
+  const h = (+$('pkH').value || 0) % 360, s = Math.max(0, Math.min(100, +$('pkS').value || 0)) / 100, l = Math.max(0, Math.min(100, +$('pkL').value || 0)) / 100;
+  setPicker(hsl2rgb(h, s, l)); PK.h = h; pickerChanged(id);
+});
+$('pkDone').onclick = () => closePicker(false);
+$('pkCancel').onclick = () => closePicker(true);
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('picker').hidden) closePicker(true); });
+addEventListener('pointerdown', e => {
+  if (!$('picker').hidden && !$('picker').contains(e.target) && !e.target.classList.contains('sw')) closePicker(false);
+});
 
 // ---------- shape editing on the canvas ----------
 function toWorld(e) { const r = cv.getBoundingClientRect(), V = view(); return [(e.clientX - r.left - V.cx) / V.s, (e.clientY - r.top - V.cy) / V.s, V.s]; }
@@ -628,7 +828,9 @@ cv.ondblclick = e => {
 
 new ResizeObserver(() => { const d = devicePixelRatio || 1; cv.width = cv.clientWidth * d; cv.height = cv.clientHeight * d; draw(); }).observe(cv);
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
-structure();
+DEF.pal.forEach(p => p[1] = nameOf(p[2]));
+S.pal.forEach(p => p[1] = p[1] || nameOf(p[2]));
+structure(); commit();
 </script>
 
 </body></html>
