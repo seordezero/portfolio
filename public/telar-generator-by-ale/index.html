@@ -51,6 +51,10 @@ input[type=number],input[type=text],select{font:13px var(--mono);color:var(--ink
 .prow{display:flex;flex-direction:column;gap:4px}
 .plab{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
 .plab b{color:var(--ink);font-weight:600}
+.gen{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 8px;align-items:center;font-size:12px;color:var(--muted)}
+.gen input[type=range]{width:100%;accent-color:var(--twine)}
+.pin{display:flex;gap:6px}
+.pin button{flex:none;width:32px;padding:0;font-size:15px}
 .strip{display:flex;height:7px;border-radius:2px;overflow:hidden}
 .strip i{flex:1}
 .warn{font-size:12.5px;color:var(--warn);margin:0}
@@ -138,13 +142,14 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
 
     <section>
       <h2>Patterns</h2>
-      <p class="hint">One letter per bastón, top to bottom. If a pattern is shorter than the bastones, it repeats.</p>
+      <p class="hint">One letter per bastón, top to bottom. Colours sets how many colours the telar uses; no two telares get the same set. Randomness 0 repeats them in order (ABCABC); higher values make it jitter (AABCBC). Typing a pattern keeps it until you move its sliders.</p>
       <div id="patterns" style="display:flex;flex-direction:column;gap:12px"></div>
       <div class="prow">
         <div class="plab"><b>Figure</b><span>runs continuous across all telares</span></div>
         <input type="text" id="fig" spellcheck="false" autocomplete="off">
       </div>
       <p class="warn" id="conflict" hidden></p>
+      <p class="warn" id="dupes" hidden></p>
       <div class="btns"><button id="shuffle">Shuffle telar patterns</button></div>
     </section>
 
@@ -210,7 +215,8 @@ const DEF = {
   W: 60, H: 120, n: 24, t: 3.2, fringe: 8, gx: 18, gy: 6, noise: 0, grain: 4, seed: 1, cols: 2, rows: 2, netColor: '#D4A536', netWidth: .25,
   pal: [['A','','#B98A1C'],['B','','#8C6A1E'],['C','','#D8736A'],
         ['D','','#7A1E3A'],['E','','#3B2820'],['F','','#E6CE78']],   // names filled by nameOf at start
-  bg: ['ACAD','BCDC','DABA','CBAB'], fig: 'EF',
+  bg: ['', '', '', ''], fig: 'EF',
+  gen: [1, 2, 3, 4].map(seed => ({ k: 3, r: 25, seed, manual: false })),   // per telar: colour count, randomness %, variation
   shape: [[0,-60],[33,0],[0,60],[-33,0]], prm: { kind: 'rhombus', x: 0, y: 0, r: 33, ry: 60 }, closed: true, outline: true, explode: false, tel: 0,
 };
 const $ = id => document.getElementById(id);
@@ -222,7 +228,8 @@ function load() {
     if (v && v.pal) {
       if (!('prm' in v)) v.prm = v.circ ? { kind: 'circle', ...v.circ } : null;   // states saved before parametric shapes
       delete v.circ;
-      const s = Object.assign(structuredClone(DEF), v); if (s.bg.length === s.cols * s.rows) return s; }
+      if (!v.gen && v.bg) v.gen = v.bg.map((_, i) => ({ k: 3, r: 25, seed: i + 1, manual: true }));   // older saves: keep typed patterns
+      const s = Object.assign(structuredClone(DEF), v); if (s.bg.length === s.cols * s.rows && s.gen.length === s.bg.length) return s; }
   } catch (e) {}
   return structuredClone(DEF);
 }
@@ -399,9 +406,14 @@ function renderPanel() {
     el.className = 'role' + (inBg && inFig ? ' both' : '');
   });
   S.bg.forEach((seq, i) => {
-    $('pc' + i).textContent = `${seq.length}/${S.n}`;
+    const g = S.gen[i];
+    $('pc' + i).textContent = g.manual ? `typed · ${seq.length}/${S.n}` : `${seq.length}/${S.n}`;
+    $('gk' + i).value = g.k; $('gr' + i).value = g.r; setBox('gkN' + i, g.k); setBox('grN' + i, g.r);
+    if (document.activeElement !== $('bg' + i)) $('bg' + i).value = seq;
     $('ps' + i).innerHTML = strip(seq);
   });
+  $('dupes').hidden = !dupes.length;
+  $('dupes').textContent = dupes.map(([a, b]) => `T${a + 1} has the same colours as T${b + 1}.`).join(' ') + ' Change a colour count or add colours to the palette.';
   const clash = [...new Set(S.fig)].filter(k => bgAll.includes(k));
   $('conflict').hidden = !clash.length;
   $('conflict').textContent = `${clash.join(', ')} is used in a telar pattern and in the figure, so the figure blends into that telar.`;
@@ -429,7 +441,7 @@ function renderPanel() {
 }
 
 function update(light) {
-  compute(); draw();
+  generatePatterns(); compute(); draw();
   if (!light) { renderPanel(); save(); record(); }
 }
 
@@ -462,12 +474,35 @@ addEventListener('keydown', e => {
 
 // ---------- structure: palette, patterns, telar grid ----------
 const clean = v => [...v.toUpperCase()].filter(ch => letters().includes(ch)).join('');
-function randomPattern() {
-  const L = S.pal.map(p => p[0]).filter(k => !S.fig.includes(k));
-  if (!L.length) return letters()[0];
-  const len = 3 + Math.floor(Math.random() * 4); let s = '';
-  while (s.length < len) { const c = L[Math.floor(Math.random() * L.length)]; if (c !== s.slice(-1) || L.length === 1) s += c; }
-  return s;
+function mulberry(a) { return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const newGen = () => ({ k: 3, r: 25, seed: 1 + Math.floor(Math.random() * 1e6), manual: false });
+let dupes = [];
+// One letter per bastón. Each telar picks its k colours from the non-figure colours; no two telares share the same set.
+// Randomness 0 = plain cycle ABCABC; towards 100 the walk repeats (AAA) or skips ahead (ACB) more and more: jitter, not noise.
+function generatePatterns() {
+  const L = S.pal.map(p => p[0]).filter(k => !S.fig.includes(k)), used = new Map();
+  dupes = [];
+  S.gen.forEach((g, i) => { if (g.manual) used.set([...new Set(S.bg[i])].sort().join(''), i); });
+  S.gen.forEach((g, i) => {
+    if (g.manual) return;
+    if (!L.length) { S.bg[i] = letters()[0]; return; }
+    const rnd = mulberry(g.seed * 7919 + 13), k = Math.max(1, Math.min(g.k, L.length));
+    let cols, key;
+    for (let t = 0; t < 60; t++) {
+      const pool = [...L];
+      for (let a = pool.length - 1; a > 0; a--) { const b = Math.floor(rnd() * (a + 1)); [pool[a], pool[b]] = [pool[b], pool[a]]; }
+      cols = pool.slice(0, k); key = [...cols].sort().join('');
+      if (!used.has(key)) break;
+    }
+    if (used.has(key)) dupes.push([i, used.get(key)]); else used.set(key, i);
+    const r = g.r / 100; let idx = 0, s = '';
+    for (let j = 0; j < S.n; j++) {
+      s += cols[idx];
+      const u = rnd();
+      idx = (idx + (u < r * .4 ? 0 : u < r * .8 ? 1 + Math.floor(rnd() * k) : 1)) % k;
+    }
+    S.bg[i] = s;
+  });
 }
 function buildPalette() {
   $('pal').innerHTML = S.pal.map(([k, name, hex], i) =>
@@ -491,11 +526,25 @@ function buildPalette() {
 function buildPatterns() {
   $('patterns').innerHTML = S.bg.map((_, i) =>
     `<div class="prow"><div class="plab"><span><b>T${i + 1}</b> · ${place(i)}</span><span class="val" id="pc${i}"></span></div>` +
-    `<input type="text" id="bg${i}" spellcheck="false" autocomplete="off" aria-label="Pattern T${i + 1}"><div class="strip" id="ps${i}"></div></div>`).join('');
+    `<div class="gen"><label for="gk${i}">Colours</label><input type="range" id="gk${i}" min="1" max="5" step="1">` +
+    `<span class="num"><input type="number" id="gkN${i}" min="1" max="5" step="1" aria-label="Colours T${i + 1}"></span>` +
+    `<label for="gr${i}">Randomness</label><input type="range" id="gr${i}" min="0" max="100" step="1">` +
+    `<span class="num"><input type="number" id="grN${i}" min="0" max="100" step="1" aria-label="Randomness T${i + 1}">%</span></div>` +
+    `<div class="pin"><input type="text" id="bg${i}" spellcheck="false" autocomplete="off" aria-label="Pattern T${i + 1}">` +
+    `<button id="gs${i}" title="New variation" aria-label="New variation for T${i + 1}">&#8635;</button></div>` +
+    `<div class="strip" id="ps${i}"></div></div>`).join('');
+  const setGen = (i, patch) => { Object.assign(S.gen[i], patch, { manual: false }); update(); };
   S.bg.forEach((seq, i) => {
     const el = $('bg' + i); el.value = seq;
-    el.oninput = () => { const v = clean(el.value); if (v) { S.bg[i] = v; update(); } };
+    el.oninput = () => { const v = clean(el.value); if (v) { S.bg[i] = v; S.gen[i].manual = true; update(); } };
     el.onblur = () => el.value = S.bg[i];
+    $('gk' + i).oninput = e => setGen(i, { k: +e.target.value });
+    $('gr' + i).oninput = e => setGen(i, { r: +e.target.value });
+    $('gkN' + i).oninput = e => { if (e.target.value !== '') setGen(i, { k: Math.round(clampTo(+e.target.value, 1, 5)) }); };
+    $('grN' + i).oninput = e => { if (e.target.value !== '') setGen(i, { r: Math.round(clampTo(+e.target.value, 0, 100)) }); };
+    $('gkN' + i).onblur = e => e.target.value = S.gen[i].k;
+    $('grN' + i).onblur = e => e.target.value = S.gen[i].r;
+    $('gs' + i).onclick = () => setGen(i, { seed: S.gen[i].seed + 1 });
   });
   $('tel').innerHTML = S.bg.map((_, i) => `<option value="${i}">T${i + 1} · ${place(i)}</option>`).join('');
   S.tel = Math.min(S.tel, count() - 1); $('tel').value = S.tel;
@@ -503,10 +552,12 @@ function buildPatterns() {
 function structure() { buildPalette(); buildPatterns(); syncInputs(); update(); }
 
 function resize(cols, rows) {                     // keep each telar's pattern where it hangs
-  const bg = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
-    bg.push(r < S.rows && c < S.cols ? S.bg[r * S.cols + c] : randomPattern());
-  S.cols = cols; S.rows = rows; S.bg = bg; structure();
+  const bg = [], gen = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const old = r < S.rows && c < S.cols ? r * S.cols + c : -1;
+    bg.push(old >= 0 ? S.bg[old] : ''); gen.push(old >= 0 ? S.gen[old] : newGen());
+  }
+  S.cols = cols; S.rows = rows; S.bg = bg; S.gen = gen; structure();
 }
 $('addCol').onclick = () => resize(S.cols + 1, S.rows);
 $('remCol').onclick = () => resize(S.cols - 1, S.rows);
@@ -551,7 +602,7 @@ $('outline').onchange = e => { S.outline = e.target.checked; update(); };
 $('explode').onchange = e => { S.explode = e.target.checked; update(); };
 $('tel').onchange = e => { S.tel = +e.target.value; update(); };
 $('reroll').onclick = () => { S.seed = (S.seed % 9973) + 1; update(); };
-$('shuffle').onclick = () => { S.bg = S.bg.map(randomPattern); syncInputs(); update(); };
+$('shuffle').onclick = () => { S.gen.forEach(g => { g.seed = 1 + Math.floor(Math.random() * 1e6); g.manual = false; }); update(); };
 const startDrawing = f => { if (S.closed) prev = S.shape; free = f; S.prm = null; S.shape = []; S.closed = false; S.explode = false; syncInputs(); update(); };
 $('drawNew').onclick = () => startDrawing(false);
 $('drawFree').onclick = () => startDrawing(true);
