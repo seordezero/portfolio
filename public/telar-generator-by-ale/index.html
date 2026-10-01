@@ -79,6 +79,7 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
 .sw{width:34px;height:26px;padding:0;border-radius:5px;border:1px solid var(--line)}
 .sw:hover{border-color:var(--ink)}
 .pal .sw{cursor:grab;touch-action:none}
+.tnav{position:absolute;top:50%;left:16px;transform:translateY(-50%);width:44px;height:44px;padding:0;border-radius:50%;background:var(--panel);font-size:26px;line-height:1}
 .viewbar{position:absolute;top:12px;left:16px;display:flex;gap:6px}
 .viewbar button{background:var(--panel)}
 /* colour picker: a deliberately dark instrument panel in both themes */
@@ -218,6 +219,8 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
     <div class="viewbar"><button id="undo" title="Undo (Ctrl+Z)">&#8630; Undo</button><button id="redo" title="Redo (Ctrl+Shift+Z)">&#8631; Redo</button></div>
     <div class="gridbtn" id="colBtns"><button id="addCol" aria-label="Add a column of telares" title="Add a column">+</button><button id="remCol" aria-label="Remove the last column" title="Remove the last column">&minus;</button></div>
     <div class="gridbtn" id="rowBtns"><button id="addRow" aria-label="Add a row of telares" title="Add a row">+</button><button id="remRow" aria-label="Remove the last row" title="Remove the last row">&minus;</button></div>
+    <button class="tnav" id="tPrev" hidden aria-label="Previous telar" title="Previous telar (←)">&#8249;</button>
+    <button class="tnav" id="tNext" hidden aria-label="Next telar" title="Next telar (→)" style="left:auto;right:16px">&#8250;</button>
     <div class="legend" id="legend"></div>
   </main>
 </div>
@@ -479,7 +482,7 @@ function renderPanel() {
     st.className = 'pill ' + (on.length >= 2 ? 'ok' : 'bad');
     st.textContent = on.length >= 2 ? `Closed, crosses ${on.join(', ')}` : on.length ? `Only on ${on[0]}. Move it across a junction.` : 'Not on any telar';
   }
-  $('legend').textContent = focus >= 0 ? `T${focus + 1} · ${place(focus)} · click anywhere or press Esc to go back to all telares`
+  $('legend').textContent = focus >= 0 ? `T${focus + 1} · ${place(focus)} · ← → or the arrows to see the others · click anywhere or press Esc to go back to all telares`
     : S.explode ? 'Separated view. Uncheck "Separate" to edit the shape.'
     : S.prm ? S.prm.kind === 'circle' ? 'Drag the right handle to change the radius · drag the centre or inside to move it' : 'Drag the right point to change the width, the top point to change the height · the slider scales both · drag the centre or inside to move it'
     : S.closed ? 'Drag a point to move it · drag inside to move the shape · double-click an edge to add a point, a point to remove it'
@@ -1026,7 +1029,14 @@ function telarAt(x, y) {                          // telar under a point, fringe
   }
   return -1;
 }
-function setFocus(i) { focus = i; cursor = null; draw(); renderPanel(); }
+function setFocus(i) { focus = i; cursor = null; $('tPrev').hidden = $('tNext').hidden = i < 0 || count() < 2; draw(); renderPanel(); }
+const stepFocus = d => setFocus((focus + d + count()) % count());   // wraps around: last → first
+$('tPrev').onclick = () => stepFocus(-1);
+$('tNext').onclick = () => stepFocus(1);
+addEventListener('keydown', e => {
+  if (focus < 0 || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || !$('picker').hidden || !$('explore').hidden) return;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); stepFocus(e.key === 'ArrowLeft' ? -1 : 1); }
+});
 cv.onpointerdown = e => {
   if (focus >= 0) { setFocus(-1); return; }
   const [x, y, s] = toWorld(e), tol = 9 / s, P = S.shape;
