@@ -62,12 +62,20 @@ input[type=number],input[type=text],select{font:13px var(--mono);color:var(--ink
 .cut .r{display:grid;grid-template-columns:20px 80px minmax(0,1fr);gap:8px;align-items:center}
 .bar{display:flex;height:9px;border-radius:2px;overflow:hidden}
 .bar i{display:block}
-.cut .t{color:var(--muted)}
+.cut .t{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);color:var(--ink);border:1px solid var(--line);border-radius:5px}
 .legend{position:absolute;left:16px;right:16px;bottom:10px;font-size:12px;color:var(--muted);pointer-events:none}
 .gridbtn{position:absolute;display:flex;gap:6px}
 .gridbtn button{width:32px;height:32px;padding:0;border-radius:50%;background:var(--panel);font-size:18px;line-height:1}
 #colBtns{flex-direction:column}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;width:min(560px,100%);max-height:80vh;display:flex;flex-direction:column;gap:12px;padding:18px;min-height:0}
+.dlist{overflow:auto;display:flex;flex-direction:column;gap:6px;min-height:0}
+.ditem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:8px}
+.ditem b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ditem .meta{font:11.5px var(--mono);color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sws{display:flex;gap:3px}
+.sws i{width:13px;height:13px;border-radius:3px;display:block}
 .sw{width:34px;height:26px;padding:0;border-radius:5px;border:1px solid var(--line)}
 .sw:hover{border-color:var(--ink)}
 .viewbar{position:absolute;top:12px;left:16px;display:flex;gap:6px}
@@ -185,14 +193,37 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
       <div class="cut" id="cut"></div>
       <div class="btns"><button id="reset">Reset everything</button></div>
     </section>
+
+    <section>
+      <h2>Save design</h2>
+      <p class="hint">Saved designs are public: everyone using the tool can open them from Explore designs.</p>
+      <form id="saveForm" class="pin">
+        <input type="text" id="saveName" maxlength="60" placeholder="Name your design" autocomplete="off" aria-label="Design name">
+        <button id="saveBtn" class="primary" type="submit" style="width:auto;padding:6px 12px">Save</button>
+      </form>
+      <span class="val" id="saveMsg"></span>
+    </section>
   </aside>
   <main>
     <canvas id="cv"></canvas>
+    <div class="viewbar" style="left:auto;right:16px"><button id="exploreBtn">Explore designs</button></div>
     <div class="viewbar"><button id="undo" title="Undo (Ctrl+Z)">&#8630; Undo</button><button id="redo" title="Redo (Ctrl+Shift+Z)">&#8631; Redo</button></div>
     <div class="gridbtn" id="colBtns"><button id="addCol" aria-label="Add a column of telares" title="Add a column">+</button><button id="remCol" aria-label="Remove the last column" title="Remove the last column">&minus;</button></div>
     <div class="gridbtn" id="rowBtns"><button id="addRow" aria-label="Add a row of telares" title="Add a row">+</button><button id="remRow" aria-label="Remove the last row" title="Remove the last row">&minus;</button></div>
     <div class="legend" id="legend"></div>
   </main>
+</div>
+
+<div class="modal" id="explore" hidden role="dialog" aria-modal="true" aria-labelledby="exploreTitle">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <h2 id="exploreTitle" style="font:600 20px var(--display);text-transform:none;letter-spacing:0;color:var(--ink)">Saved designs</h2>
+      <button id="exploreClose" aria-label="Close">Close</button>
+    </div>
+    <input type="text" id="exploreFind" placeholder="Search by name" autocomplete="off" aria-label="Search designs">
+    <p class="hint" id="exploreMsg"></p>
+    <div class="dlist" id="dlist"></div>
+  </div>
 </div>
 
 <div class="picker" id="picker" hidden role="dialog" aria-label="Colour picker">
@@ -437,7 +468,7 @@ function renderPanel() {
   $('cut').innerHTML = segs[S.tel].map((row, j) =>
     `<div class="r"><span>${String(j + 1).padStart(2, '0')}</span><div class="bar">${
       row.map(g => `<i style="flex:${g.b - g.a};background:${(colors[g.c] || [0, 0, '#999'])[2]}"></i>`).join('')
-    }</div><span class="t">${row.map(g => `${g.c} ${fmt(g.b - g.a)}`).join(' · ')}</span></div>`).join('');
+    }</div><span class="t" title="${row.map(g => `${g.c} ${fmt(g.b - g.a)}`).join(' · ')}">${row.map(g => `${g.c} ${fmt(g.b - g.a)}`).join(' · ')}</span></div>`).join('');
 }
 
 function update(light) {
@@ -976,6 +1007,88 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
 DEF.pal.forEach(p => p[1] = nameOf(p[2]));
 S.pal.forEach(p => p[1] = p[1] || nameOf(p[2]));
 structure(); commit();
+
+// ---------- public saved designs (Supabase table telar_designs: anyone can read and add, nobody can edit or delete) ----------
+const SB = { url: '', key: '' };   // project URL + publishable anon key; empty = saving switched off
+const sb = (path, opts = {}) => fetch(SB.url + '/rest/v1/' + path, { ...opts,
+  headers: { apikey: SB.key, Authorization: 'Bearer ' + SB.key, 'Content-Type': 'application/json', ...(opts.headers || {}) } })
+  .then(r => { if (!r.ok) throw new Error('server answered ' + r.status); return r.status === 204 || r.status === 201 ? null : r.json(); });
+const OFF = 'Public designs are not switched on yet.';
+if (!SB.url) { $('exploreBtn').hidden = true; $('saveForm').closest('section').hidden = true; }   // ponytail: hidden until the Supabase table exists
+const HEX = /^#[0-9a-f]{6}$/i;
+// a design from the table is someone else's data: rebuild it field by field before it touches the page
+function cleanDesign(d) {
+  const s = structuredClone(DEF), num = (v, a, b, f) => Number.isFinite(+v) ? Math.max(a, Math.min(b, +v)) : f;
+  for (const [k, a, b] of [['W', 10, 1000], ['H', 10, 1000], ['t', .5, 50], ['fringe', 0, 100], ['gx', 0, 500], ['gy', 0, 500], ['noise', 0, 100], ['netWidth', .05, 1.5], ['seed', 1, 1e7]]) s[k] = num(d[k], a, b, s[k]);
+  s.n = Math.round(num(d.n, 1, 200, s.n)); s.cols = Math.round(num(d.cols, 1, MAXG, 2)); s.rows = Math.round(num(d.rows, 1, MAXG, 2));
+  s.grain = num(d.grain, .5, s.W, s.grain);
+  if (HEX.test(d.netColor)) s.netColor = d.netColor;
+  const pal = Array.isArray(d.pal) ? d.pal.filter(p => Array.isArray(p) && /^[A-Z]$/.test(p[0]) && HEX.test(p[2])).slice(0, 26) : [];
+  if (pal.length >= 2 && new Set(pal.map(p => p[0])).size === pal.length) s.pal = pal.map(([k, n, x]) => [k, String(n || '').slice(0, 40), x]);
+  const L = s.pal.map(p => p[0]).join(''), only = v => [...String(v || '')].filter(c => L.includes(c)).join('').slice(0, 500);
+  s.fig = only(d.fig) || L[L.length - 1];
+  const N = s.cols * s.rows;
+  s.bg = Array.from({ length: N }, (_, i) => only(Array.isArray(d.bg) && d.bg[i]) || L[0]);
+  s.gen = Array.from({ length: N }, (_, i) => { const g = (Array.isArray(d.gen) && d.gen[i]) || {};
+    return { k: Math.round(num(g.k, 1, 5, 3)), r: Math.round(num(g.r, 0, 100, 25)), seed: Math.round(num(g.seed, 1, 1e7, i + 1)), manual: g.manual === true }; });
+  const P = d.prm && typeof d.prm === 'object' && ['circle', 'rhombus'].includes(d.prm.kind) ? d.prm : null;
+  if (P) { const p = { kind: P.kind, x: num(P.x, -2000, 2000, 0), y: num(P.y, -2000, 2000, 0), r: num(P.r, .5, 2000, 30) };
+    if (p.kind === 'rhombus') p.ry = num(P.ry ?? P.r * P.k, .5, 2000, 30); s.prm = p; s.shape = shapeOf(p); }
+  else { s.prm = null; const pts = Array.isArray(d.shape) ? d.shape.filter(q => Array.isArray(q) && Number.isFinite(+q[0]) && Number.isFinite(+q[1])).slice(0, 3000).map(q => [+q[0], +q[1]]) : [];
+    if (pts.length >= 3) s.shape = pts; }
+  s.closed = true; s.outline = d.outline !== false; s.explode = false; s.tel = 0;
+  return s;
+}
+$('saveForm').onsubmit = async e => {
+  e.preventDefault();
+  const name = $('saveName').value.trim().slice(0, 60), msg = $('saveMsg');
+  if (!name) { msg.textContent = 'Write a name first.'; $('saveName').focus(); return; }
+  if (!SB.url) { msg.textContent = OFF; return; }
+  $('saveBtn').disabled = true; msg.textContent = 'Saving…';
+  try {
+    const { tel, explode, ...state } = S;
+    await sb('telar_designs', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ name, state }) });
+    msg.textContent = `Saved “${name}”. Everyone can open it from Explore designs.`; $('saveName').value = '';
+  } catch (err) { msg.textContent = `Could not save: ${err.message}. Check your connection and try again.`; }
+  $('saveBtn').disabled = false;
+};
+let designs = [];
+function renderDesigns() {
+  const q = $('exploreFind').value.trim().toLowerCase(), list = $('dlist');
+  list.replaceChildren();
+  const shown = designs.filter(d => d.name.toLowerCase().includes(q));
+  if (designs.length && !shown.length) $('exploreMsg').textContent = 'No design matches that name.';
+  shown.forEach(d => {
+    const st = d.state || {}, item = document.createElement('div'); item.className = 'ditem';
+    const left = document.createElement('div'), name = document.createElement('b'), meta = document.createElement('div'), sws = document.createElement('span');
+    name.textContent = d.name; meta.className = 'meta'; sws.className = 'sws';
+    (Array.isArray(st.pal) ? st.pal : []).filter(p => Array.isArray(p) && HEX.test(p[2])).slice(0, 12).forEach(p => { const i = document.createElement('i'); i.style.background = p[2]; sws.append(i); });
+    const info = document.createElement('span');
+    info.textContent = `${new Date(d.created_at).toLocaleDateString()} · ${+st.cols || '?'} × ${+st.rows || '?'} telares`;
+    meta.append(sws, info); left.append(name, meta);
+    const b = document.createElement('button'); b.textContent = 'Load';
+    b.onclick = () => {
+      try { closePicker(false); S = cleanDesign(st); free = false; drag = null; cursor = null; structure(); commit(); $('explore').hidden = true; }
+      catch (err) { $('exploreMsg').textContent = `This design could not be opened: ${err.message}`; }
+    };
+    item.append(left, b); list.append(item);
+  });
+}
+$('exploreBtn').onclick = async () => {
+  $('explore').hidden = false; $('exploreFind').focus();
+  const msg = $('exploreMsg');
+  if (!SB.url) { msg.textContent = OFF; return; }
+  msg.textContent = 'Loading designs…';
+  try {
+    designs = await sb('telar_designs?select=id,name,state,created_at&order=created_at.desc&limit=500');
+    msg.textContent = designs.length ? `${designs.length} saved design${designs.length === 1 ? '' : 's'}. Loading one replaces your current design (Undo brings it back).` : 'No designs saved yet. Save yours from the end of the toolbar.';
+    renderDesigns();
+  } catch (err) { msg.textContent = `Could not load designs: ${err.message}. If you opened the tool inside claude.ai, use sebastianortizdezevallos.com/telar-generator-by-ale instead.`; }
+};
+$('exploreFind').oninput = renderDesigns;
+$('exploreClose').onclick = () => $('explore').hidden = true;
+$('explore').onclick = e => { if (e.target === $('explore')) $('explore').hidden = true; };
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('explore').hidden) $('explore').hidden = true; });
 </script>
 
 </body></html>
