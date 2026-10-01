@@ -1009,7 +1009,7 @@ S.pal.forEach(p => p[1] = p[1] || nameOf(p[2]));
 structure(); commit();
 
 // ---------- public saved designs (Supabase table telar_designs: anyone can read and add, nobody can edit or delete) ----------
-const SB = { url: '', key: '' };   // project URL + publishable anon key; empty = saving switched off
+const SB = { url: 'https://drksvrejzdkydyevpvps.supabase.co', key: 'sb_publishable_cijsEyzfsDKlLNsqV9XF7w_oZuYiwD2' };   // publishable key: public by design, the table's RLS rules protect it
 const sb = (path, opts = {}) => fetch(SB.url + '/rest/v1/' + path, { ...opts,
   headers: { apikey: SB.key, Authorization: 'Bearer ' + SB.key, 'Content-Type': 'application/json', ...(opts.headers || {}) } })
   .then(r => { if (!r.ok) throw new Error('server answered ' + r.status); return r.status === 204 || r.status === 201 ? null : r.json(); });
