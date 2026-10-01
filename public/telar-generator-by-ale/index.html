@@ -126,8 +126,9 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
         <button id="preRhombus">Rhombus</button>
         <button id="preCircle">Circle</button>
         <button id="delShape">Delete shape</button>
+        <button id="clearShapes">Clear all</button>
       </div>
-      <p class="hint">Every new shape is added to the figure, so you can make islands. Click a shape to select it; Delete removes the selected one.</p>
+      <p class="hint">Every new shape is added to the figure, so you can make islands. Click a shape to select it; Delete removes the selected one, Clear all removes every shape (Undo brings them back).</p>
       <div id="radRow" hidden style="display:flex;flex-direction:column;gap:8px">
         <div class="slider"><label for="rad" id="radLab">Size</label><span class="num"><input type="number" id="radN" min="1" step="0.5" aria-label="Size in cm">cm</span><input type="range" id="rad" min="2" step="0.5"></div>
         <div class="grid2">
@@ -494,6 +495,7 @@ function renderPanel() {
   $('conflict').textContent = `${clash.join(', ')} is used in a telar pattern and in the figure, so the figure blends into that telar.`;
 
   $('delShape').disabled = !hasActive();
+  $('clearShapes').disabled = !hasActive() && !S.others.length && S.closed;
   const st = $('status');
   if (!S.closed) { st.className = 'pill wait'; st.textContent = `Drawing: ${S.shape.length} points`; }
   else {
@@ -755,6 +757,9 @@ $('reroll').onclick = () => { S.seed = (S.seed % 9973) + 1; update(); };
 $('shuffle').onclick = () => { S.gen.forEach(g => { g.seed = 1 + Math.floor(Math.random() * 1e6); g.manual = false; }); update(); };
 function deleteShape() { if (!hasActive()) return; popShape(); syncInputs(); update(); }
 $('delShape').onclick = deleteShape;
+$('clearShapes').onclick = () => {                 // Undo brings them back
+  free = false; drag = null; cursor = null; S.others = []; S.shape = []; S.prm = null; S.closed = true; syncInputs(); update();
+};
 const startDrawing = f => { if (S.closed) stashActive(); free = f; S.prm = null; S.shape = []; S.closed = false; S.explode = false; syncInputs(); update(); };
 $('drawNew').onclick = () => startDrawing(false);
 $('drawFree').onclick = () => startDrawing(true);
