@@ -61,6 +61,7 @@ input[type=number],input[type=text],select{font:13px var(--mono);color:var(--ink
 .chip:disabled{opacity:.3;cursor:not-allowed;text-decoration:line-through}
 .pin{display:flex;gap:6px}
 .pin button{flex:none;width:32px;padding:0;font-size:15px}
+.pin .figbtn{width:auto;padding:0 8px;font-size:12px}
 .strip{display:flex;height:7px;border-radius:2px;overflow:hidden}
 .strip i{flex:1}
 .warn{font-size:12.5px;color:var(--warn);margin:0}
@@ -165,7 +166,7 @@ input,select,textarea,button{box-sizing:border-box}
 
     <section>
       <h2>Patterns</h2>
-      <p class="hint">One letter per bastón, top to bottom. First pick each telar's and the figure's colours with the letter chips, then set the jitter. Figure letters are greyed out in the telares and never appear there; two telares with the same letters get a warning. ↻ reshuffles the order. Jitter 0 repeats the colours in order (ABCABC); higher values make it stutter (AABCBC). Typing a pattern keeps it until you move its sliders.</p>
+      <p class="hint">One letter per bastón, top to bottom. First pick each telar's and the figure's colours with the letter chips, then set the jitter. "↻ fig" gives a telar its own shuffle of the figure colours; "Same figure in all" makes the figure run continuous again. Figure letters are greyed out in the telares and never appear there; two telares with the same letters get a warning. ↻ reshuffles the order. Jitter 0 repeats the colours in order (ABCABC); higher values make it stutter (AABCBC). Typing a pattern keeps it until you move its sliders.</p>
       <div id="patterns" style="display:flex;flex-direction:column;gap:12px"></div>
       <div class="prow">
         <div class="plab"><span><b>Figure</b> · runs continuous across all telares</span><span class="val" id="fpc"></span></div>
@@ -178,7 +179,7 @@ input,select,textarea,button{box-sizing:border-box}
       </div>
       <p class="warn" id="conflict" hidden></p>
       <p class="warn" id="dupes" hidden></p>
-      <div class="btns"><button id="shuffle">Shuffle telar patterns</button></div>
+      <div class="btns"><button id="shuffle">Shuffle telar patterns</button><button id="shuffleFig">Shuffle figure in every telar</button><button id="sameFig">Same figure in all</button></div>
     </section>
 
     <section>
@@ -265,7 +266,7 @@ const COLS = 6, ROWS = 12, STEP = 0.5, MAXG = 6;  // net is fixed; STEP = sampli
 const STRAW = '#CFB585';
 const NEWHEX = ['#4F6D3A', '#2F4858', '#A3542B', '#6B4E8A', '#C9A227', '#1F1F1F', '#9BB7C4', '#E08E45'];
 const DEF = {
-  W: 60, H: 120, n: 24, t: 3.2, fringe: 8, gx: 18, gy: 6, noise: 0, poro: 0, grain: 4, seed: 1, fseed: [0, 0, 0, 0], cols: 2, rows: 2, netColor: '#D4A536', netWidth: .25,
+  W: 60, H: 120, n: 24, t: 3.2, fringe: 8, gx: 18, gy: 6, noise: 0, poro: 0, grain: 4, seed: 1, fseed: [0, 0, 0, 0], figVar: [0, 0, 0, 0], cols: 2, rows: 2, netColor: '#D4A536', netWidth: .25,
   pal: [['A','','#B98A1C'],['B','','#8C6A1E'],['C','','#D8736A'],
         ['D','','#7A1E3A'],['E','','#3B2820'],['F','','#E6CE78']],   // names filled by nameOf at start
   bg: ['', '', '', ''], fig: 'EF',
@@ -344,7 +345,7 @@ function compute() {
           if (d > 0) hits[i]++;
           const p = spread ? Math.min(1, Math.max(0, .5 + d / spread)) : (d > 0 ? 1 : 0);
           const chunk = Math.floor(sx / S.grain), ti = i + 101 * (S.fseed[i] || 0), holed = S.poro && rnd(ti, j + 7919, chunk) < S.poro / 100;   // porosity: wraps inside the figure left as telar colour
-          if ((p >= 1 || (p > 0 && rnd(ti, j, chunk) < p)) && !holed) c = fig[row % fig.length];
+          if ((p >= 1 || (p > 0 && rnd(ti, j, chunk) < p)) && !holed) c = figT[i][j % figT[i].length] || fig[row % fig.length];
         }
         const last = out[out.length - 1];
         if (last && last.c === c) last.b = (k + 1) * STEP; else out.push({ c, a: k * STEP, b: (k + 1) * STEP });
@@ -480,7 +481,7 @@ function renderPanel() {
   });
   S.bg.forEach((seq, i) => {
     const g = S.gen[i];
-    $('pc' + i).textContent = g.manual ? `typed · ${seq.length}/${S.n}` : `${seq.length}/${S.n}`;
+    $('pc' + i).textContent = (S.figVar[i] ? 'own figure · ' : '') + (g.manual ? `typed · ${seq.length}/${S.n}` : `${seq.length}/${S.n}`);
     $('gr' + i).value = g.r; setBox('grN' + i, g.r);
     renderChips('chips' + i, g.manual ? inOrder(seq, letters()) : g.cols, k => S.fig.includes(k));
     if (document.activeElement !== $('bg' + i)) $('bg' + i).value = seq;
@@ -604,7 +605,15 @@ function generatePatterns() {
     }
     if (used.has(key)) dupes.push([i, used.get(key)]); else used.set(key, i);
   });
+  const fc = inOrder(S.fig, all) || all.slice(-1);
+  figT = S.bg.map((_, i) => {
+    const v = S.figVar[i] || 0, r0 = Math.floor(i / S.cols) * S.n;
+    if (!v) return Array.from({ length: S.n }, (_, j) => S.fig[(r0 + j) % S.fig.length]).join('');
+    const rnd = mulberry((S.figGen.seed * 31 + v) * 6151 + i * 977);
+    return jitterWalk(shuffled(fc, rnd), S.figGen.r / 100, S.n, rnd);
+  });
 }
+let figT = [];
 function buildPalette() {
   $('pal').innerHTML = S.pal.map(([k, name, hex], i) =>
     `<b>${k}</b><button class="sw" id="ph${i}" style="background:${hex}" aria-label="Colour ${k}: click to change, drag or Alt+arrow to move" title="Click to change · hold and drag to move"></button><input type="text" id="pn${i}" aria-label="Name ${k}"><span class="role" id="role${i}"></span>` +
@@ -685,7 +694,8 @@ function buildPatterns() {
     `<label for="gr${i}">Jitter</label><input type="range" id="gr${i}" min="0" max="100" step="1">` +
     `<span class="num"><input type="number" id="grN${i}" min="0" max="100" step="1" aria-label="Jitter T${i + 1}">%</span></div>` +
     `<div class="pin"><input type="text" id="bg${i}" spellcheck="false" autocomplete="off" aria-label="Pattern T${i + 1}">` +
-    `<button id="gs${i}" title="New variation" aria-label="New variation for T${i + 1}">&#8635;</button></div>` +
+    `<button id="gs${i}" title="New variation of this telar's pattern" aria-label="New variation for T${i + 1}">&#8635;</button>` +
+    `<button id="gf${i}" class="figbtn" title="Shuffle the figure inside this telar" aria-label="Shuffle the figure inside T${i + 1}">&#8635; fig</button></div>` +
     `<div class="strip" id="ps${i}"></div></div>`).join('');
   const setGen = (i, patch) => { Object.assign(S.gen[i], patch, { manual: false }); update(); };
   setGenAt = setGen;
@@ -697,6 +707,7 @@ function buildPatterns() {
     $('grN' + i).oninput = e => { if (e.target.value !== '') setGen(i, { r: Math.round(clampTo(+e.target.value, 0, 100)) }); };
     $('grN' + i).onblur = e => e.target.value = S.gen[i].r;
     $('gs' + i).onclick = () => setGen(i, { seed: S.gen[i].seed + 1 });
+    $('gf' + i).onclick = () => { S.figVar[i] = (S.figVar[i] || 0) + 1; update(); };
   });
   $('tel').innerHTML = S.bg.map((_, i) => `<option value="${i}">T${i + 1} · ${place(i)}</option>`).join('');
   S.tel = Math.min(S.tel, count() - 1); $('tel').value = S.tel;
@@ -704,13 +715,13 @@ function buildPatterns() {
 function structure() { buildPalette(); buildPatterns(); buildSeedButtons(); syncInputs(); update(); }
 
 function resize(cols, rows) {                     // keep each telar's pattern where it hangs
-  const bg = [], gen = [], fseed = [];
+  const bg = [], gen = [], fseed = [], figVar = [];
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
     const old = r < S.rows && c < S.cols ? r * S.cols + c : -1;
-    fseed.push(old >= 0 ? S.fseed[old] || 0 : 0);
+    fseed.push(old >= 0 ? S.fseed[old] || 0 : 0); figVar.push(old >= 0 ? S.figVar[old] || 0 : 0);
     bg.push(old >= 0 ? S.bg[old] : ''); gen.push(old >= 0 ? S.gen[old] : newGen());
   }
-  S.cols = cols; S.rows = rows; S.bg = bg; S.gen = gen; S.fseed = fseed; structure();
+  S.cols = cols; S.rows = rows; S.bg = bg; S.gen = gen; S.fseed = fseed; S.figVar = figVar; structure();
 }
 $('addCol').onclick = () => resize(S.cols + 1, S.rows);
 $('remCol').onclick = () => resize(S.cols - 1, S.rows);
@@ -771,6 +782,8 @@ function buildSeedButtons() {                      // one ↻ per telar: reshuff
   $('fseedBtns').innerHTML = S.bg.map((_, i) => `<button id="fsd${i}" title="New noise seed for T${i + 1}">&#8635; T${i + 1}</button>`).join('');
   S.bg.forEach((_, i) => $('fsd' + i).onclick = () => { S.fseed[i] = (S.fseed[i] || 0) + 1; update(); });
 }
+$('shuffleFig').onclick = () => { S.figVar = S.bg.map(() => 1 + Math.floor(Math.random() * 1e6)); update(); };
+$('sameFig').onclick = () => { S.figVar = S.bg.map(() => 0); update(); };
 $('shuffle').onclick = () => { S.gen.forEach(g => { g.seed = 1 + Math.floor(Math.random() * 1e6); g.manual = false; }); update(); };
 function deleteShape() { if (!hasActive()) return; popShape(); syncInputs(); update(); }
 $('delShape').onclick = deleteShape;
@@ -1207,6 +1220,7 @@ function cleanDesign(d) {
   s.bg = Array.from({ length: N }, (_, i) => only(Array.isArray(d.bg) && d.bg[i]) || L[0]);
   const fg = d.figGen && typeof d.figGen === 'object' ? d.figGen : {};
   s.figGen = { ...(typeof fg.cols === 'string' ? { cols: only(fg.cols) } : {}), r: Math.round(num(fg.r, 0, 100, 0)), seed: Math.round(num(fg.seed, 1, 1e7, 1)), manual: fg.manual === true || !d.figGen };
+  s.figVar = Array.from({ length: N }, (_, i) => Math.round(num(Array.isArray(d.figVar) ? d.figVar[i] : 0, 0, 1e7, 0)));
   s.fseed = Array.from({ length: N }, (_, i) => Math.round(num(Array.isArray(d.fseed) ? d.fseed[i] : 0, 0, 1e6, 0)));
   s.gen = Array.from({ length: N }, (_, i) => { const g = (Array.isArray(d.gen) && d.gen[i]) || {};
     return { ...(typeof g.cols === 'string' ? { cols: only(g.cols) } : {}), r: Math.round(num(g.r, 0, 100, 25)), seed: Math.round(num(g.seed, 1, 1e7, i + 1)), manual: g.manual === true }; });
