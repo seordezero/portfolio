@@ -121,7 +121,9 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
         <button id="drawFree" class="primary">Draw freehand</button>
         <button id="preRhombus">Rhombus</button>
         <button id="preCircle">Circle</button>
+        <button id="delShape">Delete shape</button>
       </div>
+      <p class="hint">Every new shape is added to the figure, so you can make islands. Click a shape to select it; Delete removes the selected one.</p>
       <div id="radRow" hidden style="display:flex;flex-direction:column;gap:8px">
         <div class="slider"><label for="rad" id="radLab">Size</label><span class="num"><input type="number" id="radN" min="1" step="0.5" aria-label="Size in cm">cm</span><input type="range" id="rad" min="2" step="0.5"></div>
         <div class="grid2">
@@ -260,7 +262,7 @@ const DEF = {
   bg: ['', '', '', ''], fig: 'EF',
   gen: [1, 2, 3, 4].map(seed => ({ k: 3, r: 25, seed, manual: false })),   // per telar: colour count, jitter %, variation
   figGen: { k: 2, r: 0, seed: 1, manual: false },                            // figure: last k palette colours, one letter per bastón row
-  shape: [[0,-60],[33,0],[0,60],[-33,0]], prm: { kind: 'rhombus', x: 0, y: 0, r: 33, ry: 60 }, closed: true, outline: true, explode: false, tel: 0,
+  shape: [[0,-60],[33,0],[0,60],[-33,0]], prm: { kind: 'rhombus', x: 0, y: 0, r: 33, ry: 60 }, others: [], closed: true, outline: true, explode: false, tel: 0,
 };
 const $ = id => document.getElementById(id);
 let S = load(), segs = [], hits = [], prev = null, drag = null, cursor = null, downloads = null, free = false, focus = -1;   // focus: telar shown alone, -1 = whole grid
@@ -311,8 +313,12 @@ function sdist(x, y, P) {                        // signed distance to polygon, 
   return inside ? m : -m;
 }
 
+const hasActive = () => S.closed && S.shape.length >= 3;
+function stashActive() { if (hasActive()) S.others.push({ shape: S.shape, prm: S.prm }); S.shape = []; S.prm = null; }
+function popShape() { const o = S.others.pop(); S.shape = o ? o.shape : []; S.prm = o ? o.prm : null; S.closed = true; }
+function takeShape(i) { const [o] = S.others.splice(i, 1); stashActive(); S.shape = o.shape; S.prm = o.prm; S.closed = true; }
 function compute() {
-  const P = S.closed && S.shape.length >= 3 ? S.shape : null;
+  const polys = [...S.others.map(o => o.shape), ...(hasActive() ? [S.shape] : [])].filter(p => p.length >= 3);
   const spread = S.noise / 100 * S.W;            // 100% = transition band as wide as a telar
   const fig = S.fig || letters()[0], pitch = S.H / S.n, N = Math.max(1, Math.round(S.W / STEP));
   hits = Array(count()).fill(0);
@@ -323,8 +329,9 @@ function compute() {
       for (let k = 0; k < N; k++) {
         const sx = (k + .5) * STEP;
         let c = seq[j % seq.length];
-        if (P) {
-          const d = sdist(x0 + sx, wy, P);
+        if (polys.length) {
+          let d = -Infinity;                         // union of islands: inside any one counts
+          for (const P of polys) d = Math.max(d, sdist(x0 + sx, wy, P));
           if (d > 0) hits[i]++;
           const p = spread ? Math.min(1, Math.max(0, .5 + d / spread)) : (d > 0 ? 1 : 0);
           if (p >= 1 || (p > 0 && rnd(i, j, Math.floor(sx / S.grain)) < p)) c = fig[row % fig.length];
@@ -419,6 +426,11 @@ function draw() {
     ctx.restore();
   }
 
+  if (focus < 0 && !S.explode && S.outline && S.others.length) {
+    ctx.save(); ctx.strokeStyle = INK; ctx.globalAlpha = .5; ctx.lineWidth = 1.2 * px; ctx.setLineDash([5 * px, 4 * px]);
+    S.others.forEach(o => { ctx.beginPath(); o.shape.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.stroke(); });
+    ctx.restore();
+  }
   if (focus < 0 && !S.explode && (S.outline || !S.closed) && S.shape.length) {
     ctx.save(); ctx.strokeStyle = INK; ctx.lineWidth = 1.5 * px; ctx.setLineDash([6 * px, 4 * px]);
     ctx.beginPath(); S.shape.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
@@ -475,12 +487,14 @@ function renderPanel() {
   $('conflict').hidden = !clash.length;
   $('conflict').textContent = `${clash.join(', ')} is used in a telar pattern and in the figure, so the figure blends into that telar.`;
 
+  $('delShape').disabled = !hasActive();
   const st = $('status');
   if (!S.closed) { st.className = 'pill wait'; st.textContent = `Drawing: ${S.shape.length} points`; }
   else {
-    const on = hits.map((h, i) => h ? `T${i + 1}` : '').filter(Boolean);
+    const on = hits.map((h, i) => h ? `T${i + 1}` : '').filter(Boolean), n = S.others.length + (hasActive() ? 1 : 0);
+    const what = n > 1 ? `${n} shapes` : 'Closed';
     st.className = 'pill ' + (on.length >= 2 ? 'ok' : 'bad');
-    st.textContent = on.length >= 2 ? `Closed, crosses ${on.join(', ')}` : on.length ? `Only on ${on[0]}. Move it across a junction.` : 'Not on any telar';
+    st.textContent = !n ? 'No figure. Draw or add a shape.' : on.length >= 2 ? `${what}, crosses ${on.join(', ')}` : on.length ? `Only on ${on[0]}. Move it across a junction.` : 'Not on any telar';
   }
   $('legend').textContent = focus >= 0 ? `T${focus + 1} · ${place(focus)} · ← → or the arrows to see the others · click anywhere or press Esc to go back to all telares`
     : S.explode ? 'Separated view. Uncheck "Separate" to edit the shape.'
@@ -715,7 +729,9 @@ $('explode').onchange = e => { S.explode = e.target.checked; update(); };
 $('tel').onchange = e => { S.tel = +e.target.value; update(); };
 $('reroll').onclick = () => { S.seed = (S.seed % 9973) + 1; update(); };
 $('shuffle').onclick = () => { S.gen.forEach(g => { g.seed = 1 + Math.floor(Math.random() * 1e6); g.manual = false; }); update(); };
-const startDrawing = f => { if (S.closed) prev = S.shape; free = f; S.prm = null; S.shape = []; S.closed = false; S.explode = false; syncInputs(); update(); };
+function deleteShape() { if (!hasActive()) return; popShape(); syncInputs(); update(); }
+$('delShape').onclick = deleteShape;
+const startDrawing = f => { if (S.closed) stashActive(); free = f; S.prm = null; S.shape = []; S.closed = false; S.explode = false; syncInputs(); update(); };
 $('drawNew').onclick = () => startDrawing(false);
 $('drawFree').onclick = () => startDrawing(true);
 // circle and rhombus stay parametric: centre + size (r = radius, or rhombus half-width with fixed height ratio k),
@@ -736,8 +752,8 @@ function prmFields() {
   if (document.activeElement !== $('pcx')) $('pcx').value = fmt(S.prm.x);
   if (document.activeElement !== $('pcy')) $('pcy').value = fmt(S.prm.y);
 }
-$('preRhombus').onclick = () => { setParam({ kind: 'rhombus', x: 0, y: 0, r: snap(S.W * .55), ry: S.H / 2 }); syncInputs(); update(); };
-$('preCircle').onclick = () => { setParam({ kind: 'circle', x: 0, y: 0, r: snap(S.W * .5) }); syncInputs(); update(); };
+$('preRhombus').onclick = () => { stashActive(); setParam({ kind: 'rhombus', x: 0, y: 0, r: snap(S.W * .55), ry: S.H / 2 }); syncInputs(); update(); };
+$('preCircle').onclick = () => { stashActive(); setParam({ kind: 'circle', x: 0, y: 0, r: snap(S.W * .5) }); syncInputs(); update(); };
 const setSize = v => { const p = S.prm, r = Math.max(.5, p.kind === 'circle' ? v : v / 2); setParam(p.kind === 'circle' ? { ...p, r } : { ...p, r, ry: ryOf(p) * r / p.r }); };
 $('rad').oninput = e => { if (S.prm) { setSize(+e.target.value); update(); } };
 // every slider has a number box; typing moves the slider and the drawing
@@ -760,7 +776,9 @@ const clampTo = (v, a, b) => Math.max(a, Math.min(b, v));
 $('reset').onclick = () => { S = structuredClone(DEF); structure(); };
 addEventListener('keydown', e => {
   if (e.key === 'Escape' && focus >= 0 && $('picker').hidden && $('explore').hidden) { setFocus(-1); return; }
-  if (e.key === 'Escape' && !S.closed) { free = false; drag = null; S.shape = prev && prev.length >= 3 ? prev : structuredClone(DEF.shape); S.closed = true; cursor = null; update(); }
+  if (e.key === 'Escape' && !S.closed) { free = false; drag = null; popShape(); cursor = null; syncInputs(); update(); }
+  if ((e.key === 'Delete' || e.key === 'Backspace') && S.closed && hasActive() && focus < 0
+      && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && $('picker').hidden && $('explore').hidden) { e.preventDefault(); deleteShape(); }
 });
 
 // ---------- export ----------
@@ -1051,6 +1069,10 @@ cv.onpointerdown = e => {
   if (S.prm && k >= 0 && hs[k][2] !== 'c') drag = { role: hs[k][2] };
   else if (k >= 0 && !S.prm) drag = { k };
   else if (k >= 0 || sdist(x, y, P) > 0) drag = { move: [x, y], start: [x, y], moved: false };
+  else if (S.others.some(o => sdist(x, y, o.shape) > 0)) {
+    takeShape(S.others.findLastIndex(o => sdist(x, y, o.shape) > 0)); syncInputs(); update();
+    drag = { move: [x, y], start: [x, y], moved: false, picked: true };
+  }
   else {                                          // near an edge = start of a double-click to add a point, not a telar click
     const onEdge = !S.prm && P.some((a, i) => { const b = P[(i + 1) % P.length]; return segDist(x, y, a[0], a[1], b[0], b[1]).d < tol; });
     const t = onEdge ? -1 : telarAt(x, y); if (t >= 0) setFocus(t); return;
@@ -1071,7 +1093,7 @@ cv.onpointermove = e => {
   }
   if (!drag) {
     const hs = S.prm ? prmHandles() : S.shape, g = near(hs, x, y, 9 / s), role = g >= 0 && hs[g][2];
-    cv.style.cursor = role === 'r' ? 'ew-resize' : role === 'ry' ? 'ns-resize' : g >= 0 ? (S.prm ? 'move' : 'grab') : sdist(x, y, S.shape) > 0 ? 'move' : telarAt(x, y) >= 0 ? 'zoom-in' : 'default'; return;
+    cv.style.cursor = role === 'r' ? 'ew-resize' : role === 'ry' ? 'ns-resize' : g >= 0 ? (S.prm ? 'move' : 'grab') : sdist(x, y, S.shape) > 0 ? 'move' : S.others.some(o => sdist(x, y, o.shape) > 0) ? 'pointer' : telarAt(x, y) >= 0 ? 'zoom-in' : 'default'; return;
   }
   if (drag.role) {                               // resize symmetrically about the centre
     const p = S.prm, dx = Math.abs(x - p.x), dy = Math.abs(y - p.y), v = d => Math.max(1, snap(d));
@@ -1090,8 +1112,9 @@ cv.onpointerup = () => {
   if (drag && drag.free) {
     free = false;
     if (S.shape.length >= 3) S.closed = true;
-    else { S.shape = prev && prev.length >= 3 ? prev : structuredClone(DEF.shape); S.closed = true; }
+    else popShape();
   }
+  if (drag && drag.picked && !drag.moved) { drag = null; return; }
   if (drag && drag.move && !drag.moved) {        // a click inside the figure without dragging also opens the telar
     const t = telarAt(...drag.start); drag = null; if (t >= 0) setFocus(t); return;
   }
@@ -1139,11 +1162,16 @@ function cleanDesign(d) {
   s.figGen = { k: Math.round(num(fg.k, 1, 5, 2)), r: Math.round(num(fg.r, 0, 100, 0)), seed: Math.round(num(fg.seed, 1, 1e7, 1)), manual: fg.manual === true || !d.figGen };
   s.gen = Array.from({ length: N }, (_, i) => { const g = (Array.isArray(d.gen) && d.gen[i]) || {};
     return { k: Math.round(num(g.k, 1, 5, 3)), r: Math.round(num(g.r, 0, 100, 25)), seed: Math.round(num(g.seed, 1, 1e7, i + 1)), manual: g.manual === true }; });
-  const P = d.prm && typeof d.prm === 'object' && ['circle', 'rhombus'].includes(d.prm.kind) ? d.prm : null;
-  if (P) { const p = { kind: P.kind, x: num(P.x, -2000, 2000, 0), y: num(P.y, -2000, 2000, 0), r: num(P.r, .5, 2000, 30) };
-    if (p.kind === 'rhombus') p.ry = num(P.ry ?? P.r * P.k, .5, 2000, 30); s.prm = p; s.shape = shapeOf(p); }
-  else { s.prm = null; const pts = Array.isArray(d.shape) ? d.shape.filter(q => Array.isArray(q) && Number.isFinite(+q[0]) && Number.isFinite(+q[1])).slice(0, 3000).map(q => [+q[0], +q[1]]) : [];
-    if (pts.length >= 3) s.shape = pts; }
+  const cleanShape = o => {
+    const P = o.prm && typeof o.prm === 'object' && ['circle', 'rhombus'].includes(o.prm.kind) ? o.prm : null;
+    if (P) { const p = { kind: P.kind, x: num(P.x, -2000, 2000, 0), y: num(P.y, -2000, 2000, 0), r: num(P.r, .5, 2000, 30) };
+      if (p.kind === 'rhombus') p.ry = num(P.ry ?? P.r * P.k, .5, 2000, 30); return { prm: p, shape: shapeOf(p) }; }
+    const pts = Array.isArray(o.shape) ? o.shape.filter(q => Array.isArray(q) && Number.isFinite(+q[0]) && Number.isFinite(+q[1])).slice(0, 3000).map(q => [+q[0], +q[1]]) : [];
+    return pts.length >= 3 ? { prm: null, shape: pts } : null;
+  };
+  const act = cleanShape(d) || { prm: null, shape: [] };
+  s.prm = act.prm; s.shape = act.shape;
+  s.others = (Array.isArray(d.others) ? d.others : []).slice(0, 40).map(o => o && typeof o === 'object' ? cleanShape(o) : null).filter(Boolean);
   s.closed = true; s.outline = d.outline !== false; s.explode = false; s.tel = 0;
   return s;
 }
