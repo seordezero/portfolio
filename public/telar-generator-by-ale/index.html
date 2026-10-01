@@ -150,11 +150,17 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
 
     <section>
       <h2>Patterns</h2>
-      <p class="hint">One letter per bastón, top to bottom. Colours sets how many colours the telar uses; no two telares get the same set. Randomness 0 repeats them in order (ABCABC); higher values make it jitter (AABCBC). Typing a pattern keeps it until you move its sliders.</p>
+      <p class="hint">One letter per bastón, top to bottom. Colours sets how many colours each telar or the figure uses. The figure takes the last colours of the palette and those never appear in a telar; no two telares get the same set. Jitter 0 repeats the colours in order (ABCABC); higher values make it stutter (AABCBC). Typing a pattern keeps it until you move its sliders.</p>
       <div id="patterns" style="display:flex;flex-direction:column;gap:12px"></div>
       <div class="prow">
-        <div class="plab"><b>Figure</b><span>runs continuous across all telares</span></div>
-        <input type="text" id="fig" spellcheck="false" autocomplete="off">
+        <div class="plab"><span><b>Figure</b> · runs continuous across all telares</span><span class="val" id="fpc"></span></div>
+        <div class="gen"><label for="fk">Colours</label><input type="range" id="fk" min="1" max="5" step="1">
+          <span class="num"><input type="number" id="fkN" min="1" max="5" step="1" aria-label="Figure colours"></span>
+          <label for="fr">Jitter</label><input type="range" id="fr" min="0" max="100" step="1">
+          <span class="num"><input type="number" id="frN" min="0" max="100" step="1" aria-label="Figure jitter">%</span></div>
+        <div class="pin"><input type="text" id="fig" spellcheck="false" autocomplete="off" aria-label="Figure pattern">
+          <button id="fs" title="New variation" aria-label="New variation for the figure">&#8635;</button></div>
+        <div class="strip" id="fps"></div>
       </div>
       <p class="warn" id="conflict" hidden></p>
       <p class="warn" id="dupes" hidden></p>
@@ -247,7 +253,8 @@ const DEF = {
   pal: [['A','','#B98A1C'],['B','','#8C6A1E'],['C','','#D8736A'],
         ['D','','#7A1E3A'],['E','','#3B2820'],['F','','#E6CE78']],   // names filled by nameOf at start
   bg: ['', '', '', ''], fig: 'EF',
-  gen: [1, 2, 3, 4].map(seed => ({ k: 3, r: 25, seed, manual: false })),   // per telar: colour count, randomness %, variation
+  gen: [1, 2, 3, 4].map(seed => ({ k: 3, r: 25, seed, manual: false })),   // per telar: colour count, jitter %, variation
+  figGen: { k: 2, r: 0, seed: 1, manual: false },                            // figure: last k palette colours, one letter per bastón row
   shape: [[0,-60],[33,0],[0,60],[-33,0]], prm: { kind: 'rhombus', x: 0, y: 0, r: 33, ry: 60 }, closed: true, outline: true, explode: false, tel: 0,
 };
 const $ = id => document.getElementById(id);
@@ -259,6 +266,7 @@ function load() {
     if (v && v.pal) {
       if (!('prm' in v)) v.prm = v.circ ? { kind: 'circle', ...v.circ } : null;   // states saved before parametric shapes
       delete v.circ;
+      if (!v.figGen && v.fig) v.figGen = { k: Math.min(5, new Set(v.fig).size), r: 0, seed: 1, manual: true };
       if (!v.gen && v.bg) v.gen = v.bg.map((_, i) => ({ k: 3, r: 25, seed: i + 1, manual: true }));   // older saves: keep typed patterns
       const s = Object.assign(structuredClone(DEF), v); if (s.bg.length === s.cols * s.rows && s.gen.length === s.bg.length) return s; }
   } catch (e) {}
@@ -450,6 +458,12 @@ function renderPanel() {
     if (document.activeElement !== $('bg' + i)) $('bg' + i).value = seq;
     $('ps' + i).innerHTML = strip(seq);
   });
+  const fg = S.figGen;
+  $('fpc').textContent = (fg.manual ? 'typed · ' : '') + `${S.fig.length}/${S.rows * S.n}`;
+  $('fk').max = $('fkN').max = Math.max(1, Math.min(5, S.pal.length - 1));
+  $('fk').value = fg.k; $('fr').value = fg.r; setBox('fkN', fg.k); setBox('frN', fg.r);
+  if (document.activeElement !== $('fig')) $('fig').value = S.fig;
+  $('fps').innerHTML = [...S.fig].map(c => `<i style="background:${(colors[c] || [0, 0, '#999'])[2]}"></i>`).join('');
   $('dupes').hidden = !dupes.length;
   $('dupes').textContent = dupes.map(([a, b]) => `T${a + 1} has the same colours as T${b + 1}.`).join(' ') + ' Change a colour count or add colours to the palette.';
   const clash = [...new Set(S.fig)].filter(k => bgAll.includes(k));
@@ -518,10 +532,28 @@ const newGen = () => ({ k: 3, r: 25, seed: 1 + Math.floor(Math.random() * 1e6), 
 let dupes = [];
 // One letter per bastón. Each telar picks its k colours from the non-figure colours; no two telares share the same set.
 // Randomness 0 = plain cycle ABCABC; towards 100 the walk repeats (AAA) or skips ahead (ACB) more and more: jitter, not noise.
+function jitterWalk(cols, r, len, rnd) {
+  const k = cols.length; let idx = 0, s = '';
+  for (let j = 0; j < len; j++) {
+    s += cols[idx];
+    const u = rnd();
+    idx = (idx + (u < r * .4 ? 0 : u < r * .8 ? 1 + Math.floor(rnd() * k) : 1)) % k;
+  }
+  return s;
+}
 function generatePatterns() {
-  const L = S.pal.map(p => p[0]).filter(k => !S.fig.includes(k)), used = new Map();
+  const all = letters(), fg = S.figGen;
+  if (!fg.manual) {                                 // figure: the last k colours of the palette, always leaving one for the telares
+    const k = Math.max(1, Math.min(fg.k, all.length - 1));
+    S.fig = jitterWalk([...all.slice(-k)], fg.r / 100, S.rows * S.n, mulberry(fg.seed * 104729 + 7));
+  }
+  const L = [...all].filter(k => !S.fig.includes(k)), used = new Map();
   dupes = [];
-  S.gen.forEach((g, i) => { if (g.manual) used.set([...new Set(S.bg[i])].sort().join(''), i); });
+  S.gen.forEach((g, i) => {                        // figure colours never appear in a telar, typed patterns included
+    if (!g.manual) return;
+    S.bg[i] = [...S.bg[i]].filter(c => L.includes(c)).join('') || L[0] || all[0];
+    used.set([...new Set(S.bg[i])].sort().join(''), i);
+  });
   S.gen.forEach((g, i) => {
     if (g.manual) return;
     if (!L.length) { S.bg[i] = letters()[0]; return; }
@@ -534,13 +566,7 @@ function generatePatterns() {
       if (!used.has(key)) break;
     }
     if (used.has(key)) dupes.push([i, used.get(key)]); else used.set(key, i);
-    const r = g.r / 100; let idx = 0, s = '';
-    for (let j = 0; j < S.n; j++) {
-      s += cols[idx];
-      const u = rnd();
-      idx = (idx + (u < r * .4 ? 0 : u < r * .8 ? 1 + Math.floor(rnd() * k) : 1)) % k;
-    }
-    S.bg[i] = s;
+    S.bg[i] = jitterWalk(cols, g.r / 100, S.n, rnd);
   });
 }
 function buildPalette() {
@@ -567,8 +593,8 @@ function buildPatterns() {
     `<div class="prow"><div class="plab"><span><b>T${i + 1}</b> · ${place(i)}</span><span class="val" id="pc${i}"></span></div>` +
     `<div class="gen"><label for="gk${i}">Colours</label><input type="range" id="gk${i}" min="1" max="5" step="1">` +
     `<span class="num"><input type="number" id="gkN${i}" min="1" max="5" step="1" aria-label="Colours T${i + 1}"></span>` +
-    `<label for="gr${i}">Randomness</label><input type="range" id="gr${i}" min="0" max="100" step="1">` +
-    `<span class="num"><input type="number" id="grN${i}" min="0" max="100" step="1" aria-label="Randomness T${i + 1}">%</span></div>` +
+    `<label for="gr${i}">Jitter</label><input type="range" id="gr${i}" min="0" max="100" step="1">` +
+    `<span class="num"><input type="number" id="grN${i}" min="0" max="100" step="1" aria-label="Jitter T${i + 1}">%</span></div>` +
     `<div class="pin"><input type="text" id="bg${i}" spellcheck="false" autocomplete="off" aria-label="Pattern T${i + 1}">` +
     `<button id="gs${i}" title="New variation" aria-label="New variation for T${i + 1}">&#8635;</button></div>` +
     `<div class="strip" id="ps${i}"></div></div>`).join('');
@@ -635,7 +661,15 @@ $('noise').oninput = e => { S.noise = +e.target.value; update(); };
 $('grain').oninput = e => { S.grain = +e.target.value; update(); };
 $('netSw').onclick = e => openPicker(e.currentTarget, S.netColor, hex => { S.netColor = hex; $('netSw').style.background = hex; update(); });
 $('netWidth').oninput = e => { S.netWidth = +e.target.value; update(); };
-$('fig').oninput = e => { const v = clean(e.target.value); if (v) { S.fig = v; update(); } };
+$('fig').oninput = e => { const v = clean(e.target.value); if (v) { S.fig = v; S.figGen.manual = true; update(); } };
+const setFig = patch => { Object.assign(S.figGen, patch, { manual: false }); update(); };
+$('fk').oninput = e => setFig({ k: +e.target.value });
+$('fr').oninput = e => setFig({ r: +e.target.value });
+$('fkN').oninput = e => { if (e.target.value !== '') setFig({ k: Math.round(clampTo(+e.target.value, 1, 5)) }); };
+$('frN').oninput = e => { if (e.target.value !== '') setFig({ r: Math.round(clampTo(+e.target.value, 0, 100)) }); };
+$('fkN').onblur = e => e.target.value = S.figGen.k;
+$('frN').onblur = e => e.target.value = S.figGen.r;
+$('fs').onclick = () => setFig({ seed: S.figGen.seed + 1 });
 $('fig').onblur = e => e.target.value = S.fig;
 $('outline').onchange = e => { S.outline = e.target.checked; update(); };
 $('explode').onchange = e => { S.explode = e.target.checked; update(); };
@@ -1055,6 +1089,8 @@ function cleanDesign(d) {
   s.fig = only(d.fig) || L[L.length - 1];
   const N = s.cols * s.rows;
   s.bg = Array.from({ length: N }, (_, i) => only(Array.isArray(d.bg) && d.bg[i]) || L[0]);
+  const fg = d.figGen && typeof d.figGen === 'object' ? d.figGen : {};
+  s.figGen = { k: Math.round(num(fg.k, 1, 5, 2)), r: Math.round(num(fg.r, 0, 100, 0)), seed: Math.round(num(fg.seed, 1, 1e7, 1)), manual: fg.manual === true || !d.figGen };
   s.gen = Array.from({ length: N }, (_, i) => { const g = (Array.isArray(d.gen) && d.gen[i]) || {};
     return { k: Math.round(num(g.k, 1, 5, 3)), r: Math.round(num(g.r, 0, 100, 25)), seed: Math.round(num(g.seed, 1, 1e7, i + 1)), manual: g.manual === true }; });
   const P = d.prm && typeof d.prm === 'object' && ['circle', 'rhombus'].includes(d.prm.kind) ? d.prm : null;
