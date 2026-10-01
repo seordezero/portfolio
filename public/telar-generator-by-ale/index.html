@@ -53,6 +53,10 @@ input[type=number],input[type=text],select{font:13px var(--mono);color:var(--ink
 .plab b{color:var(--ink);font-weight:600}
 .gen{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 8px;align-items:center;font-size:12px;color:var(--muted)}
 .gen input[type=range]{width:100%;accent-color:var(--twine)}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{width:24px;height:22px;padding:0;border-radius:5px;font:600 11px var(--mono);background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.chip.on{background:var(--c);color:var(--t);border:1px solid var(--c)}
+.chip:disabled{opacity:.3;cursor:not-allowed;text-decoration:line-through}
 .pin{display:flex;gap:6px}
 .pin button{flex:none;width:32px;padding:0;font-size:15px}
 .strip{display:flex;height:7px;border-radius:2px;overflow:hidden}
@@ -155,12 +159,11 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
 
     <section>
       <h2>Patterns</h2>
-      <p class="hint">One letter per bastón, top to bottom. Colours sets how many colours each telar or the figure uses. The figure takes the last colours of the palette and those never appear in a telar; no two telares get the same set. Jitter 0 repeats the colours in order (ABCABC); higher values make it stutter (AABCBC). Typing a pattern keeps it until you move its sliders.</p>
+      <p class="hint">One letter per bastón, top to bottom. First pick each telar's and the figure's colours with the letter chips, then set the jitter. Figure letters are greyed out in the telares and never appear there; two telares with the same letters get a warning. ↻ reshuffles the order. Jitter 0 repeats the colours in order (ABCABC); higher values make it stutter (AABCBC). Typing a pattern keeps it until you move its sliders.</p>
       <div id="patterns" style="display:flex;flex-direction:column;gap:12px"></div>
       <div class="prow">
         <div class="plab"><span><b>Figure</b> · runs continuous across all telares</span><span class="val" id="fpc"></span></div>
-        <div class="gen"><label for="fk">Colours</label><input type="range" id="fk" min="1" max="5" step="1">
-          <span class="num"><input type="number" id="fkN" min="1" max="5" step="1" aria-label="Figure colours"></span>
+        <div class="gen"><span>Colours</span><div class="chips" id="fchips"></div><span></span>
           <label for="fr">Jitter</label><input type="range" id="fr" min="0" max="100" step="1">
           <span class="num"><input type="number" id="frN" min="0" max="100" step="1" aria-label="Figure jitter">%</span></div>
         <div class="pin"><input type="text" id="fig" spellcheck="false" autocomplete="off" aria-label="Figure pattern">
@@ -260,8 +263,8 @@ const DEF = {
   pal: [['A','','#B98A1C'],['B','','#8C6A1E'],['C','','#D8736A'],
         ['D','','#7A1E3A'],['E','','#3B2820'],['F','','#E6CE78']],   // names filled by nameOf at start
   bg: ['', '', '', ''], fig: 'EF',
-  gen: [1, 2, 3, 4].map(seed => ({ k: 3, r: 25, seed, manual: false })),   // per telar: colour count, jitter %, variation
-  figGen: { k: 2, r: 0, seed: 1, manual: false },                            // figure: last k palette colours, one letter per bastón row
+  gen: ['ABC', 'ABD', 'ACD', 'BCD'].map((cols, i) => ({ cols, r: 25, seed: i + 1, manual: false })),   // per telar: its colour letters, jitter %, variation
+  figGen: { cols: 'EF', r: 0, seed: 1, manual: false },                                                 // figure: its colour letters, one letter per bastón row
   shape: [[0,-60],[33,0],[0,60],[-33,0]], prm: { kind: 'rhombus', x: 0, y: 0, r: 33, ry: 60 }, others: [], closed: true, outline: true, explode: false, tel: 0,
 };
 const $ = id => document.getElementById(id);
@@ -273,8 +276,8 @@ function load() {
     if (v && v.pal) {
       if (!('prm' in v)) v.prm = v.circ ? { kind: 'circle', ...v.circ } : null;   // states saved before parametric shapes
       delete v.circ;
-      if (!v.figGen && v.fig) v.figGen = { k: Math.min(5, new Set(v.fig).size), r: 0, seed: 1, manual: true };
-      if (!v.gen && v.bg) v.gen = v.bg.map((_, i) => ({ k: 3, r: 25, seed: i + 1, manual: true }));   // older saves: keep typed patterns
+      if (!v.figGen && v.fig) v.figGen = { r: 0, seed: 1, manual: true };
+      if (!v.gen && v.bg) v.gen = v.bg.map((_, i) => ({ r: 25, seed: i + 1, manual: true }));   // older saves: keep typed patterns
       const s = Object.assign(structuredClone(DEF), v); if (s.bg.length === s.cols * s.rows && s.gen.length === s.bg.length) return s; }
   } catch (e) {}
   return structuredClone(DEF);
@@ -471,18 +474,19 @@ function renderPanel() {
   S.bg.forEach((seq, i) => {
     const g = S.gen[i];
     $('pc' + i).textContent = g.manual ? `typed · ${seq.length}/${S.n}` : `${seq.length}/${S.n}`;
-    $('gk' + i).value = g.k; $('gr' + i).value = g.r; setBox('gkN' + i, g.k); setBox('grN' + i, g.r);
+    $('gr' + i).value = g.r; setBox('grN' + i, g.r);
+    renderChips('chips' + i, g.manual ? inOrder(seq, letters()) : g.cols, k => S.fig.includes(k));
     if (document.activeElement !== $('bg' + i)) $('bg' + i).value = seq;
     $('ps' + i).innerHTML = strip(seq);
   });
   const fg = S.figGen;
   $('fpc').textContent = (fg.manual ? 'typed · ' : '') + `${S.fig.length}/${S.rows * S.n}`;
-  $('fk').max = $('fkN').max = Math.max(1, Math.min(5, S.pal.length - 1));
-  $('fk').value = fg.k; $('fr').value = fg.r; setBox('fkN', fg.k); setBox('frN', fg.r);
+  $('fr').value = fg.r; setBox('frN', fg.r);
+  renderChips('fchips', fg.manual ? inOrder(S.fig, letters()) : fg.cols, () => false);
   if (document.activeElement !== $('fig')) $('fig').value = S.fig;
   $('fps').innerHTML = [...S.fig].map(c => `<i style="background:${(colors[c] || [0, 0, '#999'])[2]}"></i>`).join('');
   $('dupes').hidden = !dupes.length;
-  $('dupes').textContent = dupes.map(([a, b]) => `T${a + 1} has the same colours as T${b + 1}.`).join(' ') + ' Change a colour count or add colours to the palette.';
+  $('dupes').textContent = dupes.map(([a, b]) => `T${a + 1} has the same colours as T${b + 1}.`).join(' ') + ' Change the colour letters of one of them.';
   const clash = [...new Set(S.fig)].filter(k => bgAll.includes(k));
   $('conflict').hidden = !clash.length;
   $('conflict').textContent = `${clash.join(', ')} is used in a telar pattern and in the figure, so the figure blends into that telar.`;
@@ -547,7 +551,10 @@ addEventListener('keydown', e => {
 // ---------- structure: palette, patterns, telar grid ----------
 const clean = v => [...v.toUpperCase()].filter(ch => letters().includes(ch)).join('');
 function mulberry(a) { return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-const newGen = () => ({ k: 3, r: 25, seed: 1 + Math.floor(Math.random() * 1e6), manual: false });
+const newGen = () => {                             // a new telar starts with up to 3 random free colours
+  const L = [...letters()].filter(k => !S.fig.includes(k));
+  return { cols: inOrder(shuffled(L, Math.random).slice(0, 3).join(''), letters()), r: 25, seed: 1 + Math.floor(Math.random() * 1e6), manual: false };
+};
 let dupes = [];
 // One letter per bastón. Each telar picks its k colours from the non-figure colours; no two telares share the same set.
 // Randomness 0 = plain cycle ABCABC; towards 100 the walk repeats (AAA) or skips ahead (ACB) more and more: jitter, not noise.
@@ -560,32 +567,33 @@ function jitterWalk(cols, r, len, rnd) {
   }
   return s;
 }
+const inOrder = (s, allowed) => [...allowed].filter(c => s.includes(c)).join('');   // letters of s, in palette order, deduplicated
+function shuffled(cols, rnd) { const a = [...cols]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+// Each telar and the figure have their own colour letters (chips); ↻ reshuffles their order, jitter makes the walk stutter.
+// Figure letters never appear in a telar; two telares with the same letters get a warning.
 function generatePatterns() {
   const all = letters(), fg = S.figGen;
-  if (!fg.manual) {                                 // figure: the last k colours of the palette, always leaving one for the telares
-    const k = Math.max(1, Math.min(fg.k, all.length - 1));
-    S.fig = jitterWalk([...all.slice(-k)], fg.r / 100, S.rows * S.n, mulberry(fg.seed * 104729 + 7));
-  }
+  if (typeof fg.cols !== 'string') fg.cols = inOrder(S.fig, all) || all.slice(-1);   // older saves
+  fg.cols = inOrder(fg.cols, all) || all.slice(-1);
+  if (fg.cols.length >= all.length) fg.cols = fg.cols.slice(1);                      // always leave a colour for the telares
+  if (!fg.manual) { const rnd = mulberry(fg.seed * 104729 + 7); S.fig = jitterWalk(shuffled(fg.cols, rnd), fg.r / 100, S.rows * S.n, rnd); }
   const L = [...all].filter(k => !S.fig.includes(k)), used = new Map();
   dupes = [];
-  S.gen.forEach((g, i) => {                        // figure colours never appear in a telar, typed patterns included
-    if (!g.manual) return;
-    S.bg[i] = [...S.bg[i]].filter(c => L.includes(c)).join('') || L[0] || all[0];
-    used.set([...new Set(S.bg[i])].sort().join(''), i);
-  });
   S.gen.forEach((g, i) => {
-    if (g.manual) return;
-    if (!L.length) { S.bg[i] = letters()[0]; return; }
-    const rnd = mulberry(g.seed * 7919 + 13), k = Math.max(1, Math.min(g.k, L.length));
-    let cols, key;
-    for (let t = 0; t < 60; t++) {
-      const pool = [...L];
-      for (let a = pool.length - 1; a > 0; a--) { const b = Math.floor(rnd() * (a + 1)); [pool[a], pool[b]] = [pool[b], pool[a]]; }
-      cols = pool.slice(0, k); key = [...cols].sort().join('');
-      if (!used.has(key)) break;
+    if (typeof g.cols !== 'string') g.cols = inOrder(S.bg[i] || '', all) || L[0] || all[0];   // older saves
+    g.cols = inOrder(g.cols, all);
+    let key;
+    if (g.manual) {                                 // typed patterns lose figure letters too
+      S.bg[i] = [...S.bg[i]].filter(c => L.includes(c)).join('') || L[0] || all[0];
+      key = inOrder(S.bg[i], all);
+    } else {
+      const cols = [...g.cols].filter(c => L.includes(c));
+      if (!cols.length) cols.push(L[0] || all[0]);
+      const rnd = mulberry(g.seed * 7919 + 13);
+      S.bg[i] = jitterWalk(shuffled(cols, rnd), g.r / 100, S.n, rnd);
+      key = cols.join('');
     }
     if (used.has(key)) dupes.push([i, used.get(key)]); else used.set(key, i);
-    S.bg[i] = jitterWalk(cols, g.r / 100, S.n, rnd);
   });
 }
 function buildPalette() {
@@ -605,6 +613,7 @@ function buildPalette() {
       S.pal.splice(i, 1);
       const first = letters()[0], strip = s => s.split(k).join('');
       S.bg = S.bg.map(s => strip(s) || first); S.fig = strip(S.fig) || first;
+      S.gen.forEach(g => g.cols = strip(g.cols || '')); S.figGen.cols = strip(S.figGen.cols || '');
       structure();
     };
   });
@@ -619,6 +628,7 @@ function movePal(from, to, keepFocus) {
   const remap = s => [...s].map(c => map[c] || c).join('');
   S.gen.forEach((g, i) => { if (g.manual) S.bg[i] = remap(S.bg[i]); });
   if (S.figGen.manual) S.fig = remap(S.fig);
+  S.gen.forEach(g => g.cols = remap(g.cols || '')); S.figGen.cols = remap(S.figGen.cols || '');
   structure();
   if (keepFocus) $('ph' + to).focus();
 }
@@ -641,26 +651,39 @@ function palDragStart(e, i) {
   };
   addEventListener('pointermove', move); addEventListener('pointerup', up);
 }
+function renderChips(id, on, blocked) {
+  const colors = pm();
+  $(id).innerHTML = S.pal.map(([k, , hex]) => { const b = blocked(k), sel = !b && on.includes(k);
+    return `<button class="chip${sel ? ' on' : ''}" data-k="${k}" aria-pressed="${sel}" ${b ? 'disabled title="Used by the figure"' : ''} style="--c:${hex};--t:${ink(hex)}">${k}</button>`; }).join('');
+}
+function toggleLetter(cols, k) {                   // add or remove a letter, never leaving none
+  const next = cols.includes(k) ? cols.split(k).join('') : cols + k;
+  return next ? inOrder(next, letters()) : cols;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b || b.disabled) return;
+  const k = b.dataset.k, box = b.parentElement.id;
+  if (box === 'fchips') { const cols = toggleLetter(S.figGen.manual ? inOrder(S.fig, letters()) : S.figGen.cols, k); if (cols.length < letters().length) setFig({ cols }); }
+  else { const i = +box.slice(5), g = S.gen[i]; setGenAt(i, { cols: toggleLetter(g.manual ? inOrder(S.bg[i], letters()) : g.cols, k) }); }
+});
+let setGenAt = () => {};
 function buildPatterns() {
   $('patterns').innerHTML = S.bg.map((_, i) =>
     `<div class="prow"><div class="plab"><span><b>T${i + 1}</b> · ${place(i)}</span><span class="val" id="pc${i}"></span></div>` +
-    `<div class="gen"><label for="gk${i}">Colours</label><input type="range" id="gk${i}" min="1" max="5" step="1">` +
-    `<span class="num"><input type="number" id="gkN${i}" min="1" max="5" step="1" aria-label="Colours T${i + 1}"></span>` +
+    `<div class="gen"><span>Colours</span><div class="chips" id="chips${i}"></div><span></span>` +
     `<label for="gr${i}">Jitter</label><input type="range" id="gr${i}" min="0" max="100" step="1">` +
     `<span class="num"><input type="number" id="grN${i}" min="0" max="100" step="1" aria-label="Jitter T${i + 1}">%</span></div>` +
     `<div class="pin"><input type="text" id="bg${i}" spellcheck="false" autocomplete="off" aria-label="Pattern T${i + 1}">` +
     `<button id="gs${i}" title="New variation" aria-label="New variation for T${i + 1}">&#8635;</button></div>` +
     `<div class="strip" id="ps${i}"></div></div>`).join('');
   const setGen = (i, patch) => { Object.assign(S.gen[i], patch, { manual: false }); update(); };
+  setGenAt = setGen;
   S.bg.forEach((seq, i) => {
     const el = $('bg' + i); el.value = seq;
     el.oninput = () => { const v = clean(el.value); if (v) { S.bg[i] = v; S.gen[i].manual = true; update(); } };
     el.onblur = () => el.value = S.bg[i];
-    $('gk' + i).oninput = e => setGen(i, { k: +e.target.value });
     $('gr' + i).oninput = e => setGen(i, { r: +e.target.value });
-    $('gkN' + i).oninput = e => { if (e.target.value !== '') setGen(i, { k: Math.round(clampTo(+e.target.value, 1, 5)) }); };
     $('grN' + i).oninput = e => { if (e.target.value !== '') setGen(i, { r: Math.round(clampTo(+e.target.value, 0, 100)) }); };
-    $('gkN' + i).onblur = e => e.target.value = S.gen[i].k;
     $('grN' + i).onblur = e => e.target.value = S.gen[i].r;
     $('gs' + i).onclick = () => setGen(i, { seed: S.gen[i].seed + 1 });
   });
@@ -716,11 +739,8 @@ $('netSw').onclick = e => openPicker(e.currentTarget, S.netColor, hex => { S.net
 $('netWidth').oninput = e => { S.netWidth = +e.target.value; update(); };
 $('fig').oninput = e => { const v = clean(e.target.value); if (v) { S.fig = v; S.figGen.manual = true; update(); } };
 const setFig = patch => { Object.assign(S.figGen, patch, { manual: false }); update(); };
-$('fk').oninput = e => setFig({ k: +e.target.value });
 $('fr').oninput = e => setFig({ r: +e.target.value });
-$('fkN').oninput = e => { if (e.target.value !== '') setFig({ k: Math.round(clampTo(+e.target.value, 1, 5)) }); };
 $('frN').oninput = e => { if (e.target.value !== '') setFig({ r: Math.round(clampTo(+e.target.value, 0, 100)) }); };
-$('fkN').onblur = e => e.target.value = S.figGen.k;
 $('frN').onblur = e => e.target.value = S.figGen.r;
 $('fs').onclick = () => setFig({ seed: S.figGen.seed + 1 });
 $('fig').onblur = e => e.target.value = S.fig;
@@ -1159,9 +1179,9 @@ function cleanDesign(d) {
   const N = s.cols * s.rows;
   s.bg = Array.from({ length: N }, (_, i) => only(Array.isArray(d.bg) && d.bg[i]) || L[0]);
   const fg = d.figGen && typeof d.figGen === 'object' ? d.figGen : {};
-  s.figGen = { k: Math.round(num(fg.k, 1, 5, 2)), r: Math.round(num(fg.r, 0, 100, 0)), seed: Math.round(num(fg.seed, 1, 1e7, 1)), manual: fg.manual === true || !d.figGen };
+  s.figGen = { ...(typeof fg.cols === 'string' ? { cols: only(fg.cols) } : {}), r: Math.round(num(fg.r, 0, 100, 0)), seed: Math.round(num(fg.seed, 1, 1e7, 1)), manual: fg.manual === true || !d.figGen };
   s.gen = Array.from({ length: N }, (_, i) => { const g = (Array.isArray(d.gen) && d.gen[i]) || {};
-    return { k: Math.round(num(g.k, 1, 5, 3)), r: Math.round(num(g.r, 0, 100, 25)), seed: Math.round(num(g.seed, 1, 1e7, i + 1)), manual: g.manual === true }; });
+    return { ...(typeof g.cols === 'string' ? { cols: only(g.cols) } : {}), r: Math.round(num(g.r, 0, 100, 25)), seed: Math.round(num(g.seed, 1, 1e7, i + 1)), manual: g.manual === true }; });
   const cleanShape = o => {
     const P = o.prm && typeof o.prm === 'object' && ['circle', 'rhombus'].includes(o.prm.kind) ? o.prm : null;
     if (P) { const p = { kind: P.kind, x: num(P.x, -2000, 2000, 0), y: num(P.y, -2000, 2000, 0), r: num(P.r, .5, 2000, 30) };
