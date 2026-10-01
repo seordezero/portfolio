@@ -78,6 +78,7 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
 .sws i{width:13px;height:13px;border-radius:3px;display:block}
 .sw{width:34px;height:26px;padding:0;border-radius:5px;border:1px solid var(--line)}
 .sw:hover{border-color:var(--ink)}
+.pal .sw{cursor:grab;touch-action:none}
 .viewbar{position:absolute;top:12px;left:16px;display:flex;gap:6px}
 .viewbar button{background:var(--panel)}
 /* colour picker: a deliberately dark instrument panel in both themes */
@@ -144,6 +145,7 @@ textarea{font:11px var(--mono);width:100%;height:120px;background:var(--wall);co
 
     <section>
       <h2>Palette</h2>
+      <p class="hint">Click a colour to change it. Hold and drag it to move it: letters stay in place, so a moved colour takes its new letter. The figure uses the last colours.</p>
       <div class="pal" id="pal"></div>
       <div class="btns"><button id="addColor">+ Add colour</button></div>
     </section>
@@ -571,11 +573,13 @@ function generatePatterns() {
 }
 function buildPalette() {
   $('pal').innerHTML = S.pal.map(([k, name, hex], i) =>
-    `<b>${k}</b><button class="sw" id="ph${i}" style="background:${hex}" aria-label="Change colour ${k}"></button><input type="text" id="pn${i}" aria-label="Name ${k}"><span class="role" id="role${i}"></span>` +
+    `<b>${k}</b><button class="sw" id="ph${i}" style="background:${hex}" aria-label="Colour ${k}: click to change, drag or Alt+arrow to move" title="Click to change · hold and drag to move"></button><input type="text" id="pn${i}" aria-label="Name ${k}"><span class="role" id="role${i}"></span>` +
     `<button class="x" id="px${i}" aria-label="Remove colour ${k}" title="Remove colour ${k}" ${S.pal.length <= 2 ? 'disabled' : ''}>&times;</button>`).join('');
   S.pal.forEach(([k, name], i) => {
     $('pn' + i).value = name;
-    $('ph' + i).onclick = e => openPicker(e.currentTarget, S.pal[i][2], hex => {
+    $('ph' + i).onpointerdown = e => palDragStart(e, i);
+    $('ph' + i).onkeydown = e => { if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); movePal(i, i + (e.key === 'ArrowUp' ? -1 : 1), true); } };
+    $('ph' + i).onclick = e => palDragged ? (palDragged = false) : openPicker(e.currentTarget, S.pal[i][2], hex => {
       S.pal[i][2] = hex; S.pal[i][1] = nameOf(hex);
       $('ph' + i).style.background = hex; $('pn' + i).value = S.pal[i][1]; update();
     });
@@ -587,6 +591,38 @@ function buildPalette() {
       structure();
     };
   });
+}
+// Reorder the palette: letters belong to positions (A is always first), so a moved colour takes the letter of its new place.
+// Typed patterns follow their colours; generated ones regenerate (the figure always takes the last colours).
+function movePal(from, to, keepFocus) {
+  if (to < 0 || to >= S.pal.length || to === from) return;
+  const old = S.pal.map(p => p[0]);
+  const [item] = S.pal.splice(from, 1); S.pal.splice(to, 0, item);
+  const map = {}; S.pal.forEach((p, i) => { map[p[0]] = old[i]; p[0] = old[i]; });
+  const remap = s => [...s].map(c => map[c] || c).join('');
+  S.gen.forEach((g, i) => { if (g.manual) S.bg[i] = remap(S.bg[i]); });
+  if (S.figGen.manual) S.fig = remap(S.fig);
+  structure();
+  if (keepFocus) $('ph' + to).focus();
+}
+let palDrag = null, palDragged = false;
+function palDragStart(e, i) {
+  if (e.button !== 0) return;
+  palDrag = { i, y: e.clientY, on: false, to: i };
+  const move = ev => {
+    if (!palDrag.on && Math.abs(ev.clientY - palDrag.y) < 5) return;
+    palDrag.on = true; document.body.style.cursor = 'grabbing';
+    const rows = S.pal.map((_, n) => $('ph' + n).getBoundingClientRect());
+    palDrag.to = rows.reduce((best, r, n) => Math.abs(ev.clientY - (r.top + r.height / 2)) < Math.abs(ev.clientY - (rows[best].top + rows[best].height / 2)) ? n : best, 0);
+    S.pal.forEach((_, n) => { const el = $('ph' + n); el.style.opacity = n === i ? .45 : 1; el.style.outline = n === palDrag.to && n !== i ? '2px solid var(--ink)' : ''; });
+  };
+  const up = () => {
+    removeEventListener('pointermove', move); removeEventListener('pointerup', up);
+    document.body.style.cursor = '';
+    if (palDrag.on) { palDragged = true; movePal(i, palDrag.to); setTimeout(() => palDragged = false, 0); }
+    palDrag = null;
+  };
+  addEventListener('pointermove', move); addEventListener('pointerup', up);
 }
 function buildPatterns() {
   $('patterns').innerHTML = S.bg.map((_, i) =>
