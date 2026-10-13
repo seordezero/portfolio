@@ -1,7 +1,8 @@
 // Goya 58: publishes the plain web copy behind a password.
 // usage: node scripts/goya58_lock.mjs "<plain folder>" public/goya58 "<password>"
 //
-// The plain copy (index.html, data.json, model.bin, img/) lives outside this public repo.
+// The plain copy (index.html, visor/index.html, data.json, model.bin, img/, renders/, proceso/)
+// lives outside this public repo.
 // index.html becomes a password page that decrypts the real page in the browser
 // (AES-GCM, key from PBKDF2-SHA256, same scheme as lock-page.js). data.json and
 // model.bin are published only as <file>.enc (12-byte IV + ciphertext, same key); the
@@ -38,11 +39,15 @@ for (const dir of ['renders', 'proceso']) {
     fs.writeFileSync(path.join(out, dir, f + '.enc'), await enc(fs.readFileSync(path.join(src, dir, f))));
 }
 
-const page = await enc(fs.readFileSync(path.join(src, 'index.html')));
+// two pages, same key: index.html (title and process) and visor/index.html (the 3D viewer).
+// Opening one leaves the key in sessionStorage, so the other opens without asking again.
+for (const [rel, title] of [['index.html', 'Goya 58'], ['visor/index.html', 'Goya 58 · Visor']]) {
+const page = await enc(fs.readFileSync(path.join(src, rel)));
 const iv = page.subarray(0, 12), ct = page.subarray(12);
-fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html><html lang="es"><head><meta charset="utf-8">
+fs.mkdirSync(path.dirname(path.join(out, rel)), { recursive: true });
+fs.writeFileSync(path.join(out, rel), `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow">
-<title>Goya 58 · Visor</title>
+<title>${title}</title>
 <style>
 :root{--bg:#121212;--fg:#ecebe7;--mut:#8e8b85;--line:#3a3a38}
 html,body{height:100%;margin:0}
@@ -80,8 +85,10 @@ async function derive(pw){
   const k=await crypto.subtle.deriveKey({name:"PBKDF2",salt:u8(SALT),iterations:ITER,hash:"SHA-256"},base,{name:"AES-GCM",length:256},true,["decrypt"]);
   return new Uint8Array(await crypto.subtle.exportKey("raw",k));
 }
-// a remembered key only counts for this build (the salt changes on every publish)
-(async()=>{try{const s=localStorage.getItem(K),st=localStorage.getItem(K+"-stamp");if(s&&st===STAMP){await open(u8(s));return;}}catch(e){}
+// a key from this session (the other page) or a remembered one; it only works for this build,
+// since the salt changes on every publish
+(async()=>{try{const s=sessionStorage.getItem(K);if(s){await open(u8(s));return;}}catch(e){}
+  try{const s=localStorage.getItem(K),st=localStorage.getItem(K+"-stamp");if(s&&st===STAMP){await open(u8(s));return;}}catch(e){}
   try{localStorage.removeItem(K)}catch(_){}})();
 document.getElementById("f").onsubmit=async e=>{
   e.preventDefault();const msg=document.getElementById("msg");msg.textContent="Abriendo…";
@@ -93,4 +100,5 @@ document.getElementById("f").onsubmit=async e=>{
 };
 </script></body></html>
 `);
+}
 console.log('locked ->', out);
