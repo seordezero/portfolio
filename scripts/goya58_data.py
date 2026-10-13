@@ -60,9 +60,9 @@ OPTIONS = {
     "2.3": [{"id": "doric", "label": "Doric", "name": "Aparador Doric 3P3C blanco", "tienda": "TEULAT",
              "url": "https://www.mobler.es/teulat/aparador-doric-3p3c/",
              "precio": 804, "dims": ["1.48", "0.48", "0.70"], "img": "2.3-doric"},
-            {"id": "doric-c", "label": "Doric · otra pared", "name": "Aparador Doric 3P3C blanco, en la otra pared (espejo vertical)",
-             "tienda": "TEULAT", "url": "https://www.mobler.es/teulat/aparador-doric-3p3c/",
-             "precio": 804, "dims": ["1.48", "0.48", "0.70"], "img": "2.3-doric"}],
+            {"id": "punto", "label": "Punto · otra pared", "name": "Auxiliar Punto 2P4C blanco, en la otra pared (espejo vertical)",
+             "tienda": "TEULAT", "url": "https://www.mobler.es/teulat/auxiliar-punto-2p4c/",
+             "precio": 600, "dims": ["0.93", "0.45", "1.30"], "img": "2.3-punto"}],
 }
 for it in items:
     it["options"] = OPTIONS.get(it["code"], [])
