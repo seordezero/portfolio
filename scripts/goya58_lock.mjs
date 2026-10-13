@@ -6,7 +6,7 @@
 // (AES-GCM, key from PBKDF2-SHA256, same scheme as lock-page.js). data.json and
 // model.bin are published only as <file>.enc (12-byte IV + ciphertext, same key); the
 // page reads the key the password page leaves in sessionStorage/localStorage.
-// Product photos in img/ are copied as they are.
+// Product photos in img/ are copied as they are; renders/ and proceso/ go encrypted.
 import fs from 'node:fs';
 import path from 'node:path';
 import { webcrypto as c } from 'node:crypto';
@@ -30,12 +30,19 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 for (const f of ['data.json', 'model.bin']) fs.writeFileSync(path.join(out, f + '.enc'), await enc(fs.readFileSync(path.join(src, f))));
 fs.cpSync(path.join(src, 'img'), path.join(out, 'img'), { recursive: true });
+// room renders and process images: client material, published only encrypted
+for (const dir of ['renders', 'proceso']) {
+  if (!fs.existsSync(path.join(src, dir))) continue;
+  fs.mkdirSync(path.join(out, dir), { recursive: true });
+  for (const f of fs.readdirSync(path.join(src, dir)))
+    fs.writeFileSync(path.join(out, dir, f + '.enc'), await enc(fs.readFileSync(path.join(src, dir, f))));
+}
 
 const page = await enc(fs.readFileSync(path.join(src, 'index.html')));
 const iv = page.subarray(0, 12), ct = page.subarray(12);
 fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow">
-<title>Goya 58</title>
+<title>Goya 58 · Visor</title>
 <style>
 :root{--bg:#121212;--fg:#ecebe7;--mut:#8e8b85;--line:#3a3a38}
 html,body{height:100%;margin:0}
