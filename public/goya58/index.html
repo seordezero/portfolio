@@ -171,7 +171,7 @@ function addDoor(mesh, it){
   d.parts.push(mesh);
 }
 const doorAnims = [];
-window.goya58 = {doors, toggleDoor: n => toggleDoor(n)};   // consola: goya58.toggleDoor('Puerta 01')
+window.goya58 = {doors, furniture, toggleDoor: n => toggleDoor(n)};   // consola: goya58.toggleDoor('Puerta 01')
 function toggleDoor(name){
   const d = doors[name]; if (!d) return;
   const opening = d.state === 'closed', t0 = performance.now();
@@ -314,14 +314,16 @@ function paint(hlCode){
     m.emissive.set(hlCode && f.code === hlCode ? '#5a2a14' : '#000000');
   }
 }
-// show the mesh of the option chosen for each code (meshes tagged opt:"<id>" in model.bin)
+// options in model.bin: opt "<id>" belongs to its own code; opt "<code>=<id>" follows another
+// code's choice (e.g. the vertical mirror that comes with one sideboard option)
+function optKey(f){ const [c, id] = f.opt.includes('=') ? f.opt.split('=') : [f.code, f.opt]; return {c, id}; }
+function chosenId(code){ const it = DATA.items.find(i => i.code === code); return it ? current(it).id : 'actual'; }
 function applyOptionsToModel(){
+  const active = f => { const k = optKey(f); return chosenId(k.c) === k.id; };
   for (const f of furniture) {
-    if (!f.code) continue;
-    const it = DATA.items.find(i => i.code === f.code);
-    const sel = it ? current(it).id : 'actual';
-    const hasVariant = furniture.some(g => g.code === f.code && g.opt === sel);
-    f.mesh.visible = hasVariant ? (f.opt || 'actual') === sel : !f.opt;
+    if (f.opt) { f.mesh.visible = active(f); continue; }
+    // a base piece hides when any active variant replaces its code
+    f.mesh.visible = !furniture.some(g => g.opt && g.code === f.code && active(g));
   }
 }
 

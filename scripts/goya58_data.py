@@ -59,6 +59,9 @@ OPTIONS = {
              "precio": 749.95, "dims": ["1.40", "1.40", "0.76"], "img": "2.1-namara"}],
     "2.3": [{"id": "doric", "label": "Doric", "name": "Aparador Doric 3P3C blanco", "tienda": "TEULAT",
              "url": "https://www.mobler.es/teulat/aparador-doric-3p3c/",
+             "precio": 804, "dims": ["1.48", "0.48", "0.70"], "img": "2.3-doric"},
+            {"id": "doric-c", "label": "Doric · otra pared", "name": "Aparador Doric 3P3C blanco, en la otra pared (espejo vertical)",
+             "tienda": "TEULAT", "url": "https://www.mobler.es/teulat/aparador-doric-3p3c/",
              "precio": 804, "dims": ["1.48", "0.48", "0.70"], "img": "2.3-doric"}],
 }
 for it in items:

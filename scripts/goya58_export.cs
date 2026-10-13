@@ -7,9 +7,10 @@
 // Uint16/Uint32. La cabecera lleva rooms (cajas por ambiente), views (vistas guardadas
 // de Rhino por ambiente) e items (kind, room, code, name, color, opt, offsets).
 //
-// Muebles: capas 02_MOBILIARIO::<AMBIENTE>::<Bloque>. Un mueble alternativo lleva el texto
-// de usuario OPTION=<id> y vive en su capa oculta; se exporta igual y la web lo muestra
-// cuando se elige esa opción en data.json.
+// Muebles: capas 02_MOBILIARIO::<AMBIENTE>::<Bloque>, se exportan todas aunque estén ocultas.
+// Un mueble alternativo lleva el texto de usuario OPTION=<id> (opción de su propio código) u
+// OPTION=<código>=<id> (lo controla la opción de otro código, p. ej. el espejo vertical que
+// acompaña a un aparador); la web lo muestra cuando se elige esa opción en data.json.
 var mp = MeshingParameters.FastRenderMesh;
 Func<GeometryBase, Mesh> toMesh = g => {
   Mesh r = null;
@@ -56,14 +57,18 @@ var objs = doc.Objects.GetObjectList(new ObjectEnumeratorSettings { NormalObject
 var ceilings = doc.Objects.GetObjectList(new ObjectEnumeratorSettings { NormalObjects = true, LockedObjects = true, HiddenObjects = true })
   .Where(o => { var fp = doc.Layers[o.Attributes.LayerIndex].FullPath; return fp.StartsWith("01_ARQ::TECHOS") || (o.IsHidden && fp.StartsWith("01_ARQ::MUROS")); }).ToList();
 var ceilMesh = new Mesh(); foreach (var o in ceilings) { var pm = toMesh(o.Geometry); if (pm != null) ceilMesh.Append(pm); }
-objs.RemoveAll(o => ceilings.Contains(o));
+// los enumeradores devuelven objetos nuevos cada vez: comparar por Id, no por referencia
+var ceilIds = new HashSet<Guid>(ceilings.Select(o => o.Id));
+objs.RemoveAll(o => ceilIds.Contains(o.Id));
+// muebles: todos, estén o no visibles en Rhino; la web decide qué opción se ve
+objs.RemoveAll(o => doc.Layers[o.Attributes.LayerIndex].FullPath.StartsWith("02_MOBILIARIO"));
 foreach (var l in doc.Layers.Where(l => !l.IsDeleted && l.FullPath.StartsWith("02_MOBILIARIO")))
-  objs.AddRange(doc.Objects.FindByLayer(l).Where(o => o.Attributes.GetUserString("OPTION") != null && !objs.Contains(o)));
+  objs.AddRange(doc.Objects.FindByLayer(l));
 var archAcc = new Dictionary<string, Mesh>();
 var doorParts = new Dictionary<string, (Mesh m, InstanceObject io, ObjectAttributes a)>();
 foreach (var o in objs) {
   var lay = doc.Layers[o.Attributes.LayerIndex]; string opt = o.Attributes.GetUserString("OPTION");
-  if (!lay.IsVisible && opt == null) continue;
+  if (!lay.IsVisible && !lay.FullPath.StartsWith("02_MOBILIARIO")) continue;
   var path = lay.FullPath;
   if (path.StartsWith("02_MOBILIARIO") && o is InstanceObject io) {
     var m = new Mesh(); foreach (var p in explodeWorld(io)) m.Append(p.m);
