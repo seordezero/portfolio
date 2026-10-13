@@ -22,12 +22,12 @@ rows = [
 ["","3.12","MUEBLE TOCADISCOS","Mueble para vinilos 51 cm Ronda","NUEVO","1","0.51","0.48","0.81","LA REDOUTE INTERIEURS","https://www.laredoute.es/ppdp/prod-350269828.aspx","152.15"],
 ["","3.13","ESTOR VENTANA","Estor plegable translúcido Namib lino 216x246","NUEVO","1","2.16","0.07","2.46","KAATEN","https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd","335.41"],
 ["","3.14","ESTOR TERRAZA","Estor plegable translúcido Namib lino 216x246","NUEVO","1","2.16","0.07","2.46","KAATEN","https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd","335.41"],
+["","3.15","SILLAS","Sandsberg","EXISTENTE","2","0.48","0.43","0.78","IKEA","https://www.ikea.com/es/es/p/sandsberg-silla-marron-rojizo-60605426/",""],
 ["ESTUDIO","4.1","SILLÓN","Sillón Togo negro","NUEVO","2","","","","SINGULAR MARKET","https://www.singularmarket.com/sillones-y-butacas-de-diseno/1701-sillon-togo-negro.html","450.00"],
 ["","4.4","ALFOMBRA ESTUDIO","Alfombra Empuries verde 160x230","NUEVO","1","1.60","2.30","0.00","KAVE","","199.00"],
 ["","4.5","PLAFÓN","Plafón de porcelana Dani","NUEVO","1","0.10","0.10","0.12","ZANGRA","https://zangra.com/es_ES/products/aplique-plafon-porcelana-marron-dani-g9-ip54-pantalla-luz-vidrio","50.00"],
 ["","4.7","SILLA ESCRITORIO","Think","EXISTENTE","1","0.74","0.58","0.98","STEELCASE","https://es.steelcase.com/products/think?variant=41727594463430",""],
 ["","4.8","ESCRITORIO","Escritorio existente","EXISTENTE","1","1.40","0.77","0.90","","https://www.ikea.com/es/es/p/nackanas-mesa-acacia-40511056/",""],
-["","4.9","SILLAS","Sandsberg","EXISTENTE","4","0.48","0.43","0.78","IKEA","https://www.ikea.com/es/es/p/sandsberg-silla-marron-rojizo-60605426/",""],
 ["","4.10","MESA DE CENTRO","Mesa de centro redonda Fleksa","NUEVO","1","0.72","0.72","0.36","KAVE","https://kavehome.com/es/es/p/mesa-de-centro-redonda-fleksa-de-metal-mostaza-o-72-cm","199.00"],
 ["","4.11","ESTOR","Estor plegable translúcido Namib lino 218x246","NUEVO","1","2.18","0.07","2.46","KAATEN","https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",""],
 ["DORMITORIO","5.1","APLIQUE PARED","Aplique LED circular luz indirecta","NUEVO","2","0.25","0.00","0.25","ILUMINIA","https://www.ilumnia.es/productos-led/1134-3399-aplique-pared-led-12w-circular-luz-indirecta-aluminio.html","49.90"],
@@ -36,6 +36,7 @@ rows = [
 ["","5.4","ESTOR DORMITORIO","Estor plegable translúcido Namib lino 158x246","NUEVO","1","1.58","0.07","2.46","KAATEN","https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",""],
 ["","5.5","ESTOR DORMITORIO 2","Estor plegable translúcido Namib lino 208x246","NUEVO","1","2.08","0.07","2.46","KAATEN","https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",""],
 ["TERRAZA","6.1","MESA EXTERIOR","Mesa de exterior cuadrada 70x70 Zoilo","NUEVO","1","0.70","0.70","0.73","THE MASIE","https://www.themasie.com/es/comprar-mesas-de-exterior/241712-mesa-de-exterior-cuadrada-70x70-cm-de-metal-zoilo.html","119.95"],
+["","6.2","SILLAS","Sandsberg","EXISTENTE","2","0.48","0.43","0.78","IKEA","https://www.ikea.com/es/es/p/sandsberg-silla-marron-rojizo-60605426/",""],
 ]
 
 room_map = {"VESTÍBULO": "ENTRADA", "COMEDOR": "COMEDOR", "SALON": "SALÓN",

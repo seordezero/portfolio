@@ -122,6 +122,12 @@ Func<Point3d, double[]> p3 = p => new[] { p.X - ctr.X, p.Z, -(p.Y - ctr.Y) };
 Func<BoundingBox, double[]> bb3 = b => new[] { b.Min.X - ctr.X, b.Min.Z, -(b.Max.Y - ctr.Y), b.Max.X - ctr.X, b.Max.Z, -(b.Min.Y - ctr.Y) };
 var rooms = new Dictionary<string, object>();
 foreach (var kv in roomIds) { var b = doc.Objects.FindId(new Guid(kv.Value)).Geometry.GetBoundingBox(true); b.Max = new Point3d(b.Max.X, b.Max.Y, 2.6); rooms[kv.Key] = bb3(b); }
+// ambientes fuera del proyecto: la web pinta en gris solo su interior
+var offRooms = new List<double[]>();
+int lpint = doc.Layers.FindByFullPath("01_ARQ::ACABADOS::PINTURA", -1);
+var worked = new HashSet<string>(roomIds.Values);
+foreach (var o in doc.Objects.FindByLayer(doc.Layers[lpint])) { var b = o.Geometry.GetBoundingBox(true); if (b.Max.Z - b.Min.Z < 1 || worked.Contains(o.Id.ToString())) continue; b.Max = new Point3d(b.Max.X, b.Max.Y, 2.9); offRooms.Add(bb3(b)); }
+foreach (var o in doc.Objects.FindByLayer(doc.Layers[doc.Layers.FindByFullPath("01_ARQ::SUELOS::PISO CERAMICO", -1)])) { var b = o.Geometry.GetBoundingBox(true); b.Max = new Point3d(b.Max.X, b.Max.Y, 2.9); offRooms.Add(bb3(b)); }
 var tb = BoundingBox.Empty; foreach (var it in items) if ((string)it.meta["kind"] == "mueble" && (string)it.meta["room"] == "TERRAZA") tb.Union(it.mesh.GetBoundingBox(true));
 tb.Inflate(0.6, 0.5, 0); tb.Max = new Point3d(tb.Max.X, tb.Max.Y, 1.2); rooms["TERRAZA"] = bb3(tb);
 // vistas guardadas de Rhino = cámara de cada ambiente
@@ -158,7 +164,7 @@ foreach (var o in doc.Objects.GetObjectList(new ObjectEnumeratorSettings { Inclu
   lightList.Add("{\"name\":" + Js(L.Name) + ",\"pos\":" + Js(p3(L.Location)) + "}"); }
 var sbh = new System.Text.StringBuilder("{\"scale\":0.001,\"rooms\":{");
 sbh.Append(string.Join(",", rooms.Select(kv => "\"" + kv.Key + "\":" + Js(kv.Value)))); sbh.Append("},\"views\":{");
-sbh.Append(string.Join(",", views.Select(kv => "\"" + kv.Key + "\":" + kv.Value))); sbh.Append("},\"lights\":[" + string.Join(",", lightList) + "],\"items\":[");
+sbh.Append(string.Join(",", views.Select(kv => "\"" + kv.Key + "\":" + kv.Value))); sbh.Append("},\"lights\":[" + string.Join(",", lightList) + "],\"offRooms\":[" + string.Join(",", offRooms.Select(Js)) + "],\"items\":[");
 sbh.Append(string.Join(",", metas.Select(m => "{" + string.Join(",", m.Select(kv => "\"" + kv.Key + "\":" + Js(kv.Value))) + "}"))); sbh.Append("]}");
 var hb = System.Text.Encoding.UTF8.GetBytes(sbh.ToString()); int hlen = (hb.Length + 3) / 4 * 4;
 string file = @"D:\OneDrive\Escritorio\goya58-web\model.bin";   // fuente sin cifrar, fuera del repo público
