@@ -68,6 +68,6 @@ for it in items:
     it["options"] = OPTIONS.get(it["code"], [])
 
 data = {"rooms": ["ENTRADA", "COMEDOR", "SALÓN", "ESTUDIO", "DORMITORIO", "TERRAZA"], "items": items}
-with open("D:/Website/portfolio/public/goya58/data.json", "w", encoding="utf-8") as f:
+with open("D:/OneDrive/Escritorio/goya58-web/data.json", "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=1)
 print(len(items), round(sum(i["precio"] * i["cant"] for i in items), 2))

@@ -1,4 +1,5 @@
-// Goya 58: exporta el modelo de Rhino a public/goya58/model.bin para la web.
+// Goya 58: exporta el modelo de Rhino a la fuente de la web (Escritorio\goya58-web\model.bin);
+// scripts/goya58_lock.mjs la cifra en public/goya58/.
 // Se ejecuta dentro de Rhino (RhinoCommon, p. ej. con el MCP execute_rhinocommon_csharp_code);
 // `doc` es el RhinoDoc abierto y `output` un StringBuilder.
 //
@@ -148,12 +149,19 @@ foreach (var it in items) {
 bw.Flush();
 Func<object, string> Js = v => v is string s ? "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"" : v is bool b ? (b ? "true" : "false")
   : v is double[] arr ? "[" + string.Join(",", arr.Select(x => x.ToString("0.####", IC))) + "]" : Convert.ToString(v, IC);
+// luces de las lámparas (capa LUCES, nombre "Luz ..."): la web las enciende al pulsar la lámpara más cercana
+var lightList = new List<string>();
+int llIdx = doc.Layers.FindByFullPath("01_ARQ::INSTALACIONES::LUMINARIAS::LUCES", -1);
+foreach (var o in doc.Objects.GetObjectList(new ObjectEnumeratorSettings { IncludeLights = true, HiddenObjects = true, LockedObjects = true })
+           .Where(o => o.Attributes.LayerIndex == llIdx && o is LightObject)) {
+  var L = ((LightObject)o).LightGeometry; if (L.Name == null || !L.Name.StartsWith("Luz ")) continue;
+  lightList.Add("{\"name\":" + Js(L.Name) + ",\"pos\":" + Js(p3(L.Location)) + "}"); }
 var sbh = new System.Text.StringBuilder("{\"scale\":0.001,\"rooms\":{");
 sbh.Append(string.Join(",", rooms.Select(kv => "\"" + kv.Key + "\":" + Js(kv.Value)))); sbh.Append("},\"views\":{");
-sbh.Append(string.Join(",", views.Select(kv => "\"" + kv.Key + "\":" + kv.Value))); sbh.Append("},\"items\":[");
+sbh.Append(string.Join(",", views.Select(kv => "\"" + kv.Key + "\":" + kv.Value))); sbh.Append("},\"lights\":[" + string.Join(",", lightList) + "],\"items\":[");
 sbh.Append(string.Join(",", metas.Select(m => "{" + string.Join(",", m.Select(kv => "\"" + kv.Key + "\":" + Js(kv.Value))) + "}"))); sbh.Append("]}");
 var hb = System.Text.Encoding.UTF8.GetBytes(sbh.ToString()); int hlen = (hb.Length + 3) / 4 * 4;
-string file = @"D:\Website\portfolio\public\goya58\model.bin";
+string file = @"D:\OneDrive\Escritorio\goya58-web\model.bin";   // fuente sin cifrar, fuera del repo público
 using (var fs = System.IO.File.Create(file)) { var w = new System.IO.BinaryWriter(fs); w.Write(System.Text.Encoding.ASCII.GetBytes("G58\0")); w.Write(hlen); w.Write(hb);
   for (int k = hb.Length; k < hlen; k++) w.Write((byte)0); w.Write(data.ToArray()); }
 output.AppendLine("items " + items.Count + " tris " + tris + " bytes " + new System.IO.FileInfo(file).Length);
