@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Goya 58</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f1ec; --panel:#fbfaf7; --ink:#1d1c1a; --muted:#8a867e; --line:#e3dfd6;
+    --accent:#c4552d; --chip:#ece8df; --hover:#f1ece2;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 Inter,system-ui,sans-serif}
+  body{position:fixed;inset:0;overflow:hidden}
+  #app{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) 440px}
+  #view{position:relative;min-width:0}
+  #view canvas{display:block;width:100%;height:100%;outline:none}
+  #panel{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
+
+  .brand{position:absolute;left:20px;top:16px;pointer-events:none}
+  .brand h1{margin:0;font-size:22px;font-weight:600;letter-spacing:-.01em}
+  .brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+  #tools{position:absolute;left:20px;bottom:20px;display:flex;gap:8px}
+  #back{display:none}
+  #hint{position:absolute;right:16px;top:18px;color:var(--muted);font-size:12px;pointer-events:none;text-align:right;max-width:46%}
+  #loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted)}
+
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;cursor:pointer}
+  .btn:hover{background:var(--hover)}
+
+  #head{padding:18px 20px 12px;border-bottom:1px solid var(--line)}
+  #head .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+  #total{font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:2px}
+  #sub{color:var(--muted);font-size:12px}
+  #rooms{display:flex;flex-wrap:wrap;gap:6px;padding:12px 20px;border-bottom:1px solid var(--line)}
+  .chip{border:0;background:var(--chip);border-radius:999px;padding:6px 11px;font:inherit;font-size:12px;cursor:pointer;color:var(--ink)}
+  .chip b{font-weight:600;margin-left:4px}
+  .chip.on{background:var(--ink);color:#fff}
+  #list{flex:1;min-height:0;overflow:auto;padding:4px 0 20px}
+
+  .group{padding:14px 20px 4px;display:flex;justify-content:space-between;align-items:baseline;cursor:pointer}
+  .group h2{margin:0;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .group span{color:var(--muted);font-size:12px}
+  .group:hover h2{color:var(--accent)}
+
+  .row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 20px;border-top:1px solid transparent;cursor:default}
+  .row:hover,.row.hl{background:var(--hover)}
+  .row img{width:52px;height:52px;object-fit:cover;border-radius:6px;background:#fff;border:1px solid var(--line)}
+  .row .t{min-width:0}
+  .row .t .n{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .t .m{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .t .m a{color:inherit}
+  .row .p{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .row .p small{display:block;color:var(--muted);font-size:11px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+  .tag{font-size:10px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:6px;color:var(--muted);vertical-align:1px}
+  .opts{grid-column:2 / 4;display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .opt{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 9px;font:inherit;font-size:12px;cursor:pointer;text-align:left}
+  .opt small{display:block;color:var(--muted);font-size:11px}
+  .opt.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+  .compact .row{grid-template-columns:36px minmax(0,1fr) auto;padding:5px 20px}
+  .compact .row img{width:36px;height:36px}
+
+  @media (max-width:820px){
+    #app{grid-template-columns:minmax(0,1fr);grid-template-rows:46% 54%}
+    #panel{border-left:0;border-top:1px solid var(--line)}
+    #head{padding:12px 16px 8px} #total{font-size:24px}
+    #rooms{padding:8px 16px;flex-wrap:nowrap;overflow-x:auto}
+    .row,.group{padding-left:16px;padding-right:16px}
+    .brand{left:14px;top:10px} .brand h1{font-size:18px}
+    #tools{left:14px;bottom:12px} #hint{display:none}
+  }
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+ "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="app">
+  <div id="view">
+    <div id="loading">Cargando modelo…</div>
+    <div class="brand"><h1>Goya 58</h1><p id="where">Vista general</p></div>
+    <div id="tools"><button class="btn" id="back">← Vista general</button><button class="btn" id="ceil">Mostrar techo</button></div>
+    <div id="hint">Arrastra para girar · clic en un ambiente para entrar · clic en una puerta para abrirla</div>
+  </div>
+  <aside id="panel">
+    <div id="head">
+      <div class="label" id="totLabel">Presupuesto total</div>
+      <div id="total">—</div>
+      <div id="sub"></div>
+    </div>
+    <nav id="rooms"></nav>
+    <div id="list"></div>
+  </aside>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const ROOM_LABEL = {ENTRADA:'Entrada', COMEDOR:'Comedor', 'SALÓN':'Salón', ESTUDIO:'Estudio', DORMITORIO:'Dormitorio', TERRAZA:'Terraza'};
+const eur = new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2});
+const fmt = v => eur.format(v);
+
+// ---------- state: chosen option per item code (persisted per viewer)
+const KEY = 'goya58-opciones';
+let chosen = {};
+try { chosen = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(chosen)); } catch(e) {} };
+
+let DATA, MODEL, focus = null;
+
+// option model: the sheet row is option "actual"; data.items[].options adds alternatives
+function optionsOf(it){ return [{id:'actual', label:'Actual', name:it.name, tienda:it.tienda, url:it.url, precio:it.precio}, ...(it.options||[])]; }
+function current(it){ const o = optionsOf(it); return o.find(x => x.id === chosen[it.code]) || o[0]; }
+const lineTotal = it => current(it).precio * it.cant;
+const roomTotal = r => DATA.items.filter(i => i.room === r).reduce((s,i) => s + lineTotal(i), 0);
+const grandTotal = () => DATA.items.reduce((s,i) => s + lineTotal(i), 0);
+
+// ---------- three.js scene
+const view = document.getElementById('view');
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+view.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#f3f1ec');
+const camera = new THREE.PerspectiveCamera(35, 1, 0.05, 200);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI * 0.62; controls.minDistance = 0.3; controls.maxDistance = 45;
+
+scene.add(new THREE.HemisphereLight('#ffffff', '#d8d2c6', 1.1));
+const sun = new THREE.DirectionalLight('#fff6ea', 1.6);
+sun.position.set(-8, 14, 6); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, {left:-12, right:12, top:12, bottom:-12, near:1, far:40});
+sun.shadow.bias = -0.0004;
+scene.add(sun);
+
+// full-height walls, no ceiling: the wall tops read as the cut, in poché
+const POCHE = new THREE.Color('#d6d2ca'), WALL = new THREE.Color('#fbfaf8');
+const ARCH = {
+  MURO:{c:'#ffffff', poche:1}, ARMARIO:{c:'#f7f5f1'}, LIBRERO:{c:'#7b5a3f'},
+  PUERTA:{c:'#c9a37a'}, MARCO:{c:'#c9a37a'}, VIDRIO:{c:'#bcd6dd', o:.35},
+  HERRAJE:{c:'#3a3936'}, BARANDA:{c:'#f4f2ee'}, ZOCALO:{c:'#ffffff'}, TECHO:{c:'#fbfaf8'},
+  SUELO_MADERA:{c:'#d9b88f'}, SUELO_CERAMICO:{c:'#dad8d3'}, LOSA:{c:'#cfcac0'}, INSTALACION:{c:'#e9e6e0'}, OTRO:{c:'#e6e2da'}
+};
+const GREY = new THREE.Color('#dcd8d0');
+const furniture = [];   // {mesh, code, room, base: Color}
+const doors = {};       // name -> {pivot?, parts:[mesh], state, sign, angle, slide?}
+let ceiling = null;
+// hinged doors turn on a pivot at the hinge; sliding leaves move along their own vector
+function addDoor(mesh, it){
+  const d = doors[it.door] || (doors[it.door] = {parts:[], state: it.state, hinge: it.hinge, sign: it.sign, angle: it.angle});
+  if (it.hinge) {
+    if (!d.pivot) { d.pivot = new THREE.Group(); d.pivot.position.set(...it.hinge); scene.add(d.pivot); }
+    mesh.geometry.translate(-it.hinge[0], -it.hinge[1], -it.hinge[2]);
+    d.pivot.add(mesh);
+  } else {
+    mesh.userData.slideV = new THREE.Vector3(...(it.slide || [0,0,0]));
+    scene.add(mesh);
+  }
+  d.parts.push(mesh);
+}
+const doorAnims = [];
+window.goya58 = {doors, toggleDoor: n => toggleDoor(n)};   // consola: goya58.toggleDoor('Puerta 01')
+function toggleDoor(name){
+  const d = doors[name]; if (!d) return;
+  const opening = d.state === 'closed', t0 = performance.now();
+  if (d.pivot) {
+    // Rhino turns +angle about Z; here Z(up) is Y and the same sign holds
+    const from = d.pivot.rotation.y, to = from + (opening ? 1 : -1) * d.sign * d.angle * Math.PI / 180;
+    doorAnims.push(t => { d.pivot.rotation.y = from + (to - from) * t; });
+  } else {
+    // DOOR_SLIDE takes a leaf from open to closed
+    d.parts.forEach(m => { const from = m.position.clone(), to = from.clone().addScaledVector(m.userData.slideV, opening ? -1 : 1);
+      doorAnims.push(t => m.position.lerpVectors(from, to, t)); });
+  }
+  doorAnims.push({t0});
+  d.state = opening ? 'open' : 'closed';
+}
+const roomBoxes = {};
+
+async function load(){
+  const [data, buf] = await Promise.all([
+    fetch('data.json', {cache:'no-cache'}).then(r => r.json()),
+    fetch('model.bin', {cache:'no-cache'}).then(r => r.arrayBuffer())
+  ]);
+  DATA = data;
+  const dv = new DataView(buf);
+  const hlen = dv.getUint32(4, true);
+  MODEL = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, hlen)).replace(/\0+$/, ''));
+  const base = 8 + hlen, s = MODEL.scale;
+
+  for (const [r, b] of Object.entries(MODEL.rooms)) roomBoxes[r] = new THREE.Box3(new THREE.Vector3(b[0],b[1],b[2]), new THREE.Vector3(b[3],b[4],b[5]));
+
+  for (const it of MODEL.items) {
+    const p16 = new Int16Array(buf, base + it.v, it.nv * 3);
+    const pos = new Float32Array(it.nv * 3); for (let k = 0; k < pos.length; k++) pos[k] = p16[k] * s;
+    const idx = it.i32 ? new Uint32Array(buf, base + it.i, it.ni) : new Uint16Array(buf, base + it.i, it.ni);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setIndex(new THREE.BufferAttribute(idx.slice(), 1));
+    let mat, geo = g;
+    if (it.kind === 'arq') {
+      const a = ARCH[it.cat] || ARCH.OTRO;
+      if (a.poche) geo = poche(g);
+      geo.computeVertexNormals();
+      mat = new THREE.MeshStandardMaterial({color:a.c, roughness:.9, metalness:0, flatShading:true, vertexColors: !!a.poche,
+        side: THREE.DoubleSide, transparent: !!a.o, opacity: a.o || 1});
+    } else {
+      g.computeVertexNormals();
+      // all the blinds share one linen colour; radiators are painted like the wall
+      const c = /^Estor/i.test(it.name) ? new THREE.Color('#e8dfcf')
+              : /^Radiador/i.test(it.name) ? new THREE.Color('#f7f5f1')
+              : new THREE.Color(it.color).lerp(new THREE.Color('#f3efe8'), .4);
+      // some blocks come with inward normals: draw both sides
+      mat = new THREE.MeshStandardMaterial({color:c, roughness:.75, metalness:0, flatShading: it.nv < 400, side: THREE.DoubleSide});
+    }
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow = !it.cat || it.cat === 'MURO' || it.cat === 'ARMARIO' || it.cat === 'LIBRERO';
+    mesh.receiveShadow = true;
+    mesh.userData = it;
+    if (it.cat === 'TECHO') { mesh.visible = false; ceiling = mesh; }
+    if (it.door) addDoor(mesh, it); else scene.add(mesh);
+    if (it.kind === 'mueble') furniture.push({mesh, code: it.code, room: it.room, base: mat.color.clone(), opt: it.opt});
+  }
+  document.getElementById('loading').remove();
+  applyOptionsToModel();
+  home(true);   // every load starts in the general view, ceiling hidden
+  renderPanel();
+}
+
+// faces looking up at the top of the wall get the poché colour
+function poche(g){
+  const n = g.toNonIndexed(), p = n.attributes.position, col = new Float32Array(p.count * 3);
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), nrm = new THREE.Vector3();
+  for (let i = 0; i < p.count; i += 3) {
+    a.fromBufferAttribute(p, i); b.fromBufferAttribute(p, i + 1); c.fromBufferAttribute(p, i + 2);
+    nrm.subVectors(c, b).cross(a.clone().sub(b)).normalize();
+    const top = Math.abs(nrm.y) > .95 && Math.min(a.y, b.y, c.y) > 2.5;
+    const k = top ? POCHE : WALL;
+    for (let j = 0; j < 3; j++) { col[(i + j) * 3] = k.r; col[(i + j) * 3 + 1] = k.g; col[(i + j) * 3 + 2] = k.b; }
+  }
+  n.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return n;
+}
+
+// ---------- room highlight floor
+const floorMat = new THREE.MeshBasicMaterial({color:'#c4552d', transparent:true, opacity:.10, depthWrite:false});
+const floorPlane = new THREE.Mesh(new THREE.PlaneGeometry(1,1), floorMat);
+floorPlane.rotation.x = -Math.PI/2; floorPlane.visible = false; scene.add(floorPlane);
+
+// ---------- camera moves
+let tween = null;
+const FOV = 35;
+function flyTo(target, pos, instant, fov = FOV){
+  if (instant) { controls.target.copy(target); camera.position.copy(pos); camera.fov = fov; camera.updateProjectionMatrix(); controls.update(); return; }
+  tween = {t0:performance.now(), t:0, ft:controls.target.clone(), fp:camera.position.clone(), tt:target, tp:pos, ff:camera.fov, tf:fov};
+}
+// Rhino lens (35 mm equivalent, 36 mm wide frame) -> vertical fov for this canvas
+// vertical fov that keeps the whole Rhino frame (its real h/v angles) inside this canvas
+function viewFov(v){
+  const r = Math.PI / 180, th = Math.tan(v.hfov * r / 2), tv = Math.tan(v.vfov * r / 2);
+  return Math.min(95, 2 * Math.atan(Math.max(tv, th / camera.aspect)) / r);
+}
+function frameBox(box, instant, k = .82){
+  const c = box.getCenter(new THREE.Vector3()); c.y = Math.min(c.y, .6);
+  const size = box.getSize(new THREE.Vector3());
+  const r = Math.max(size.x, size.z) * .5 + .6;
+  const fov = FOV * Math.PI / 180;
+  const aspectFix = Math.max(1, 1 / camera.aspect);
+  const d = (r / Math.sin(fov / 2)) * k * aspectFix;
+  const dir = camera.position.clone().sub(controls.target); dir.y = 0;
+  if (dir.lengthSq() < 1e-6) dir.set(1, 0, 1);
+  dir.normalize().multiplyScalar(Math.cos(.95) * d); dir.y = Math.sin(.95) * d;
+  flyTo(c, c.clone().add(dir), instant);
+}
+function home(instant){
+  focus = null;
+  const all = new THREE.Box3(); scene.traverse(o => { if (o.isMesh && o !== floorPlane) all.expandByObject(o); });
+  if (instant) camera.position.set(-6, 14, 14);
+  frameBox(all, instant, 1.05);
+  floorPlane.visible = false;
+  paint();
+  renderPanel();
+}
+function enter(room){
+  if (!roomBoxes[room]) return;
+  focus = room;
+  const b = roomBoxes[room], s = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3());
+  floorPlane.scale.set(s.x, s.z, 1); floorPlane.position.set(c.x, .01, c.z); floorPlane.visible = true;
+  const v = MODEL.views && MODEL.views[room];
+  if (v) flyTo(new THREE.Vector3(...v.target), new THREE.Vector3(...v.pos), false, viewFov(v));
+  else frameBox(b, false, 1.05);
+  paint();
+  renderPanel();
+}
+
+// grey every piece of furniture outside the room in focus
+function paint(hlCode){
+  for (const f of furniture) {
+    const m = f.mesh.material, inRoom = !focus || f.room === focus;
+    m.color.copy(inRoom ? f.base : GREY);
+    m.transparent = !inRoom; m.opacity = inRoom ? 1 : .35; m.depthWrite = inRoom;
+    m.emissive.set(hlCode && f.code === hlCode ? '#5a2a14' : '#000000');
+  }
+}
+// show the mesh of the option chosen for each code (meshes tagged opt:"<id>" in model.bin)
+function applyOptionsToModel(){
+  for (const f of furniture) {
+    if (!f.code) continue;
+    const it = DATA.items.find(i => i.code === f.code);
+    const sel = it ? current(it).id : 'actual';
+    const hasVariant = furniture.some(g => g.code === f.code && g.opt === sel);
+    f.mesh.visible = hasVariant ? (f.opt || 'actual') === sel : !f.opt;
+  }
+}
+
+// ---------- picking
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let down = null;
+const pick = () => ray.intersectObjects(scene.children.filter(o => (o.isMesh || o.isGroup) && o.visible && o !== floorPlane), true).find(h => h.object.visible);
+renderer.domElement.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = pick();
+  if (!hit) return;
+  const u = hit.object.userData;
+  if (u.door) { toggleDoor(u.door); return; }
+  let room = u.kind === 'mueble' ? u.room : null;
+  if (!room || !roomBoxes[room]) room = Object.keys(roomBoxes).find(k => { const b = roomBoxes[k]; return hit.point.x >= b.min.x && hit.point.x <= b.max.x && hit.point.z >= b.min.z && hit.point.z <= b.max.z; });
+  if (room && room !== focus) enter(room);
+  else if (u.code) flashRow(u.code);
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (e.buttons) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = pick();
+  const isFurn = hit && hit.object.userData.kind === 'mueble';
+  const code = isFurn && (!focus || hit.object.userData.room === focus) ? hit.object.userData.code : null;
+  renderer.domElement.style.cursor = hit && (isFurn || hit.object.userData.door) ? 'pointer' : 'grab';
+  if (code !== hover) { hover = code; paint(code); document.querySelectorAll('.row').forEach(r => r.classList.toggle('hl', r.dataset.code === code)); }
+});
+let hover = null;
+function flashRow(code){ const el = document.querySelector(`.row[data-code="${code}"]`); if (el) { el.scrollIntoView({block:'nearest', behavior:'smooth'}); el.classList.add('hl'); setTimeout(() => el.classList.remove('hl'), 1200); } }
+
+// ---------- panel
+const $ = id => document.getElementById(id);
+$('back').onclick = () => home();
+$('ceil').onclick = () => { if (!ceiling) return; ceiling.visible = !ceiling.visible; $('ceil').textContent = ceiling.visible ? 'Ocultar techo' : 'Mostrar techo'; };
+function renderPanel(){
+  if (!DATA) return;
+  $('back').style.display = focus ? 'block' : 'none';
+  $('where').textContent = focus ? ROOM_LABEL[focus] : 'Vista general';
+  $('totLabel').textContent = focus ? 'Presupuesto · ' + ROOM_LABEL[focus] : 'Presupuesto total';
+  $('total').textContent = fmt(focus ? roomTotal(focus) : grandTotal());
+  const n = DATA.items.filter(i => !focus || i.room === focus).reduce((s,i) => s + i.cant, 0);
+  $('sub').textContent = focus ? `${n} piezas · total del piso ${fmt(grandTotal())}` : `${n} piezas en ${DATA.rooms.length} ambientes`;
+
+  $('rooms').innerHTML = [`<button class="chip ${!focus ? 'on' : ''}" data-room="">Todo</button>`,
+    ...DATA.rooms.map(r => `<button class="chip ${focus === r ? 'on' : ''}" data-room="${r}">${ROOM_LABEL[r]}<b>${fmt(roomTotal(r)).replace(/,\d\d/, '')}</b></button>`)].join('');
+  $('rooms').querySelectorAll('.chip').forEach(b => b.onclick = () => b.dataset.room ? enter(b.dataset.room) : home());
+
+  const list = $('list'); list.classList.toggle('compact', !focus);
+  const rooms = focus ? [focus] : DATA.rooms;
+  list.innerHTML = rooms.map(r => {
+    const items = DATA.items.filter(i => i.room === r);
+    const head = focus ? '' : `<div class="group" data-room="${r}"><h2>${ROOM_LABEL[r]}</h2><span>${fmt(roomTotal(r))}</span></div>`;
+    return head + items.map(rowHTML).join('');
+  }).join('');
+  list.querySelectorAll('.group').forEach(g => g.onclick = () => enter(g.dataset.room));
+  list.querySelectorAll('.row').forEach(el => {
+    el.onmouseenter = () => { paint(el.dataset.code); };
+    el.onmouseleave = () => { paint(); };
+  });
+  list.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+    chosen[b.dataset.code] = b.dataset.id; if (b.dataset.id === 'actual') delete chosen[b.dataset.code];
+    save(); applyOptionsToModel(); renderPanel();
+  });
+}
+function rowHTML(it){
+  const o = current(it), color = colorOf(it.code), opts = optionsOf(it);
+  const dims = o.dims || it.dims;
+  const meta = [o.tienda, dims ? dims.filter(Boolean).join(' × ') + ' m' : ''].filter(Boolean).join(' · ');
+  const tienda = o.url ? `<a href="${o.url}" target="_blank" rel="noopener">${meta || 'ver'}</a>` : meta;
+  const price = o.precio ? `${fmt(o.precio * it.cant)}${it.cant > 1 ? `<small>${it.cant} × ${fmt(o.precio)}</small>` : ''}` : `<small>${it.estado === 'EXISTENTE' ? 'existente' : '—'}</small>`;
+  const choose = focus && opts.length > 1 ? `<div class="opts">${opts.map(x =>
+      `<button class="opt ${x.id === o.id ? 'on' : ''}" data-code="${it.code}" data-id="${x.id}">${x.label}<small>${x.precio ? fmt(x.precio) : '—'}</small></button>`).join('')}</div>` : '';
+  return `<div class="row" data-code="${it.code}">
+    <img src="img/${o.img || it.code}.jpg" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+    <div class="t"><div class="n">${color ? `<i class="dot" style="background:${color}"></i>` : ''}${o.name}${it.estado === 'EXISTENTE' ? '<span class="tag">existente</span>' : ''}</div>
+      <div class="m">${it.code} · ${tienda}</div></div>
+    <div class="p">${price}</div>${choose}</div>`;
+}
+function colorOf(code){ const f = furniture.find(f => f.code === code); return f ? '#' + f.base.getHexString() : null; }
+
+// ---------- loop
+function resize(){
+  const w = view.clientWidth, h = view.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(view); resize();
+renderer.setAnimationLoop(() => {
+  if (tween) {
+    tween.t = Math.min(1, (performance.now() - tween.t0) / 900);
+    const k = tween.t < .5 ? 4 * tween.t ** 3 : 1 - (-2 * tween.t + 2) ** 3 / 2;
+    controls.target.lerpVectors(tween.ft, tween.tt, k); camera.position.lerpVectors(tween.fp, tween.tp, k);
+    camera.fov = tween.ff + (tween.tf - tween.ff) * k; camera.updateProjectionMatrix();
+    if (tween.t >= 1) tween = null;
+  }
+  // door animations: a batch of steppers closed by its {t0} marker
+  for (let i = 0; i < doorAnims.length; i++) {
+    if (doorAnims[i].t0 === undefined) continue;
+    const t = Math.min(1, (performance.now() - doorAnims[i].t0) / 700), k = 1 - (1 - t) ** 3;
+    let j = i - 1; while (j >= 0 && doorAnims[j].t0 === undefined) { doorAnims[j](k); j--; }
+    if (t >= 1) { doorAnims.splice(j + 1, i - j); i = j; }
+  }
+  controls.update();
+  renderer.render(scene, camera);
+});
+load().catch(e => { document.getElementById('loading').textContent = 'No se pudo cargar el modelo: ' + e.message; });
+</script>
+</body>
+</html>

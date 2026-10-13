@@ -1,0 +1,629 @@
+{
+ "rooms": [
+  "ENTRADA",
+  "COMEDOR",
+  "SALÓN",
+  "ESTUDIO",
+  "DORMITORIO",
+  "TERRAZA"
+ ],
+ "items": [
+  {
+   "room": "ENTRADA",
+   "code": "1.1",
+   "item": "PERCHERO",
+   "name": "Perchero Gaillech",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.63",
+    "0.11",
+    "0.07"
+   ],
+   "tienda": "KAVE",
+   "url": "https://kavehome.com/es/es/p/perchero-gaillech-de-madera-maciza-de-teca",
+   "precio": 19.99,
+   "options": []
+  },
+  {
+   "room": "ENTRADA",
+   "code": "1.2",
+   "item": "MUEBLE BAJO",
+   "name": "Mueble vintage para vinilos 113 cm Ronda, nogal",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "1.13",
+    "0.48",
+    "1.02"
+   ],
+   "tienda": "LA REDOUTE INTERIEURS",
+   "url": "https://www.laredoute.es/ppdp/prod-350269827.aspx",
+   "precio": 343.2,
+   "options": []
+  },
+  {
+   "room": "COMEDOR",
+   "code": "2.1",
+   "item": "MESA COMEDOR",
+   "name": "Mesa Core 140",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "2.30",
+    "0.90",
+    "0.75"
+   ],
+   "tienda": "MARLOT BAUS",
+   "url": "https://marlotbaus.com/en/products/core-dining-table",
+   "precio": 1599.0,
+   "options": [
+    {
+     "id": "namara",
+     "label": "Namara",
+     "name": "Mesa redonda Namara Ø140, cemento beige",
+     "tienda": "SKLUM",
+     "url": "https://www.sklum.com/es/comprar-mesas-comedor/184223-mesa-de-comedor-redonda-en-cemento-namara.html?id_c=527312",
+     "precio": 749.95,
+     "dims": [
+      "1.40",
+      "1.40",
+      "0.76"
+     ],
+     "img": "2.1-namara"
+    }
+   ]
+  },
+  {
+   "room": "COMEDOR",
+   "code": "2.2",
+   "item": "LÁMPARA COMEDOR",
+   "name": "Frisbi",
+   "estado": "EXISTENTE",
+   "cant": 1,
+   "dims": [
+    "1.18",
+    "0.76",
+    "1.14"
+   ],
+   "tienda": "FLOS",
+   "url": "https://www.muebleslluesma.com/lamparas-colgantes/15680-lampara-suspension-frisbi-flos.html",
+   "precio": 0.0,
+   "options": []
+  },
+  {
+   "room": "COMEDOR",
+   "code": "2.3",
+   "item": "MUEBLE BAJO",
+   "name": "Aparador metálico modular Steel blanco",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "1.53",
+    "0.38",
+    "0.75"
+   ],
+   "tienda": "SINGULAR MARKET",
+   "url": "https://www.singularmarket.com/vitrinas-alacenas-y-armarios-de-diseno/1878-aparador-metalico-modular-steel-blanco.html",
+   "precio": 999.99,
+   "options": [
+    {
+     "id": "doric",
+     "label": "Doric",
+     "name": "Aparador Doric 3P3C blanco",
+     "tienda": "TEULAT",
+     "url": "https://www.mobler.es/teulat/aparador-doric-3p3c/",
+     "precio": 804,
+     "dims": [
+      "1.48",
+      "0.48",
+      "0.70"
+     ],
+     "img": "2.3-doric"
+    }
+   ]
+  },
+  {
+   "room": "COMEDOR",
+   "code": "2.5",
+   "item": "SILLA COMEDOR",
+   "name": "Silla de madera de roble Jane",
+   "estado": "NUEVO",
+   "cant": 6,
+   "dims": [
+    "0.48",
+    "0.50",
+    "0.81"
+   ],
+   "tienda": "NORTHDECO",
+   "url": "https://northdeco.com/collections/sillas-de-madera/products/silla-de-madera-jane?variant=56712562901378",
+   "precio": 99.0,
+   "options": []
+  },
+  {
+   "room": "COMEDOR",
+   "code": "2.6",
+   "item": "ESTOR",
+   "name": "Estor plegable translúcido Namib lino 216x246",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "2.16",
+    "0.07",
+    "2.46"
+   ],
+   "tienda": "KAATEN",
+   "url": "https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",
+   "precio": 335.41,
+   "options": []
+  },
+  {
+   "room": "COMEDOR",
+   "code": "2.7",
+   "item": "ESPEJO",
+   "name": "Espejo de pie efecto envejecido",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.90",
+    "0.02",
+    "1.50"
+   ],
+   "tienda": "ZARA HOME",
+   "url": "https://www.zarahome.com/es/espejo-pie-efecto-envejecido-l42349106?colorId=817",
+   "precio": 279.0,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.1",
+   "item": "ALFOMBRA SALÓN",
+   "name": "Alfombra Line",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "2.00",
+    "3.00",
+    "0.00"
+   ],
+   "tienda": "TOM DIXON",
+   "url": "https://www.nordicnest.es/marcas/tom-dixon/alfombra-line/?variantId=642048-01",
+   "precio": 409.0,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.2",
+   "item": "BUTACAS",
+   "name": "Silla de caña negra Thisted",
+   "estado": "NUEVO",
+   "cant": 2,
+   "dims": [
+    "0.66",
+    "0.74",
+    "0.74"
+   ],
+   "tienda": "PIB",
+   "url": "https://www.pib.eu/ES-es/silla-de-cana-negra-thisted--0642998",
+   "precio": 370.0,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.3",
+   "item": "MESA DE CENTRO",
+   "name": "Mesa de centro existente",
+   "estado": "EXISTENTE",
+   "cant": 1,
+   "dims": [
+    "1.10",
+    "0.60",
+    "0.43"
+   ],
+   "tienda": "",
+   "url": "",
+   "precio": 0.0,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.4",
+   "item": "LÁMPARA SALÓN",
+   "name": "Pantalla Paper Shade elipse",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.70",
+    "0.70",
+    "0.48"
+   ],
+   "tienda": "HAY",
+   "url": "https://www.nordicnest.es/marcas/hay/pantalla-de-lampara-rice-paper-elipse/",
+   "precio": 65.0,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.5",
+   "item": "BOMBILLA INTELIGENTE",
+   "name": "Bombilla inteligente LED E27",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": null,
+   "tienda": "LEROY MERLIN",
+   "url": "https://www.leroymerlin.es/productos/bombilla-inteligente-led-e27-rgb-de-9-w-con-wifi-y-control-remoto-por-aplicacion-compatible-con-alexa-y-google-assistant-76802430.html",
+   "precio": 19.99,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.6",
+   "item": "MESA AUXILIAR",
+   "name": "Tranered mesa auxiliar, negro",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.44",
+    "0.44",
+    "0.75"
+   ],
+   "tienda": "IKEA",
+   "url": "https://www.ikea.com/es/es/p/tranered-mesa-auxiliar-negro-30609001/",
+   "precio": 79.99,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.8",
+   "item": "LÁMPARA DE MESA",
+   "name": "Bella, réplica Nesso",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.32",
+    "0.32",
+    "0.22"
+   ],
+   "tienda": "VIBE HAUS",
+   "url": "https://vibehausliving.com/es/products/bella-nesso-replica-lampara",
+   "precio": 70.95,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.9",
+   "item": "MÓVIL PARA TV",
+   "name": "Moon TV",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.93",
+    "0.99",
+    "1.10"
+   ],
+   "tienda": "PEDESTAL",
+   "url": "https://es.pedestal.com/products/moon-rollin-charcoal",
+   "precio": 340.0,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.10",
+   "item": "SOFÁ",
+   "name": "Sofá chaise longue existente",
+   "estado": "EXISTENTE",
+   "cant": 1,
+   "dims": [
+    "2.77",
+    "1.58",
+    "0.90"
+   ],
+   "tienda": "",
+   "url": "",
+   "precio": 0.0,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.11",
+   "item": "MESA AUXILIAR SOFÁ",
+   "name": "Mesa auxiliar Aluret, mármol verde",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.35",
+    "0.35",
+    "0.50"
+   ],
+   "tienda": "SKLUM",
+   "url": "https://www.sklum.com/es/comprar-mesas-bajas-y-auxiliares/207192-mesa-auxiliar-cuadrada-35x35-cm-en-mdf-y-piedra-natural-aluret.html?id_c=685390",
+   "precio": 154.95,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.12",
+   "item": "MUEBLE TOCADISCOS",
+   "name": "Mueble para vinilos 51 cm Ronda",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.51",
+    "0.48",
+    "0.81"
+   ],
+   "tienda": "LA REDOUTE INTERIEURS",
+   "url": "https://www.laredoute.es/ppdp/prod-350269828.aspx",
+   "precio": 152.15,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.13",
+   "item": "ESTOR VENTANA",
+   "name": "Estor plegable translúcido Namib lino 216x246",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "2.16",
+    "0.07",
+    "2.46"
+   ],
+   "tienda": "KAATEN",
+   "url": "https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",
+   "precio": 335.41,
+   "options": []
+  },
+  {
+   "room": "SALÓN",
+   "code": "3.14",
+   "item": "ESTOR TERRAZA",
+   "name": "Estor plegable translúcido Namib lino 216x246",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "2.16",
+    "0.07",
+    "2.46"
+   ],
+   "tienda": "KAATEN",
+   "url": "https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",
+   "precio": 335.41,
+   "options": []
+  },
+  {
+   "room": "ESTUDIO",
+   "code": "4.1",
+   "item": "SILLÓN",
+   "name": "Sillón Togo negro",
+   "estado": "NUEVO",
+   "cant": 2,
+   "dims": null,
+   "tienda": "SINGULAR MARKET",
+   "url": "https://www.singularmarket.com/sillones-y-butacas-de-diseno/1701-sillon-togo-negro.html",
+   "precio": 450.0,
+   "options": []
+  },
+  {
+   "room": "ESTUDIO",
+   "code": "4.4",
+   "item": "ALFOMBRA ESTUDIO",
+   "name": "Alfombra Empuries verde 160x230",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "1.60",
+    "2.30",
+    "0.00"
+   ],
+   "tienda": "KAVE",
+   "url": "",
+   "precio": 199.0,
+   "options": []
+  },
+  {
+   "room": "ESTUDIO",
+   "code": "4.5",
+   "item": "PLAFÓN",
+   "name": "Plafón de porcelana Dani",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.10",
+    "0.10",
+    "0.12"
+   ],
+   "tienda": "ZANGRA",
+   "url": "https://zangra.com/es_ES/products/aplique-plafon-porcelana-marron-dani-g9-ip54-pantalla-luz-vidrio",
+   "precio": 50.0,
+   "options": []
+  },
+  {
+   "room": "ESTUDIO",
+   "code": "4.7",
+   "item": "SILLA ESCRITORIO",
+   "name": "Think",
+   "estado": "EXISTENTE",
+   "cant": 1,
+   "dims": [
+    "0.74",
+    "0.58",
+    "0.98"
+   ],
+   "tienda": "STEELCASE",
+   "url": "https://es.steelcase.com/products/think?variant=41727594463430",
+   "precio": 0.0,
+   "options": []
+  },
+  {
+   "room": "ESTUDIO",
+   "code": "4.8",
+   "item": "ESCRITORIO",
+   "name": "Escritorio existente",
+   "estado": "EXISTENTE",
+   "cant": 1,
+   "dims": [
+    "1.40",
+    "0.77",
+    "0.90"
+   ],
+   "tienda": "",
+   "url": "https://www.ikea.com/es/es/p/nackanas-mesa-acacia-40511056/",
+   "precio": 0.0,
+   "options": []
+  },
+  {
+   "room": "ESTUDIO",
+   "code": "4.9",
+   "item": "SILLAS",
+   "name": "Sandsberg",
+   "estado": "EXISTENTE",
+   "cant": 4,
+   "dims": [
+    "0.48",
+    "0.43",
+    "0.78"
+   ],
+   "tienda": "IKEA",
+   "url": "https://www.ikea.com/es/es/p/sandsberg-silla-marron-rojizo-60605426/",
+   "precio": 0.0,
+   "options": []
+  },
+  {
+   "room": "ESTUDIO",
+   "code": "4.10",
+   "item": "MESA DE CENTRO",
+   "name": "Mesa de centro redonda Fleksa",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.72",
+    "0.72",
+    "0.36"
+   ],
+   "tienda": "KAVE",
+   "url": "https://kavehome.com/es/es/p/mesa-de-centro-redonda-fleksa-de-metal-mostaza-o-72-cm",
+   "precio": 199.0,
+   "options": []
+  },
+  {
+   "room": "ESTUDIO",
+   "code": "4.11",
+   "item": "ESTOR",
+   "name": "Estor plegable translúcido Namib lino 218x246",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "2.18",
+    "0.07",
+    "2.46"
+   ],
+   "tienda": "KAATEN",
+   "url": "https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",
+   "precio": 0.0,
+   "options": []
+  },
+  {
+   "room": "DORMITORIO",
+   "code": "5.1",
+   "item": "APLIQUE PARED",
+   "name": "Aplique LED circular luz indirecta",
+   "estado": "NUEVO",
+   "cant": 2,
+   "dims": [
+    "0.25",
+    "0.00",
+    "0.25"
+   ],
+   "tienda": "ILUMINIA",
+   "url": "https://www.ilumnia.es/productos-led/1134-3399-aplique-pared-led-12w-circular-luz-indirecta-aluminio.html",
+   "precio": 49.9,
+   "options": []
+  },
+  {
+   "room": "DORMITORIO",
+   "code": "5.2",
+   "item": "MESA DE NOCHE",
+   "name": "Mesita de noche Shantay",
+   "estado": "NUEVO",
+   "cant": 2,
+   "dims": [
+    "0.35",
+    "0.40",
+    "0.50"
+   ],
+   "tienda": "KAVE",
+   "url": "https://kavehome.com/es/es/p/mesita-de-noche-shantay-acero-con-acabado-negro-40-x-50-cm",
+   "precio": 159.0,
+   "options": []
+  },
+  {
+   "room": "DORMITORIO",
+   "code": "5.3",
+   "item": "MUEBLE BAJO",
+   "name": "Mueble TV Shantay",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "1.50",
+    "0.35",
+    "0.50"
+   ],
+   "tienda": "KAVE",
+   "url": "https://kavehome.com/es/es/p/mueble-tv-shantay-1-puerta-y-1-cajon-de-metal-con-acabado-pintado-negro-150-x-50-cm",
+   "precio": 399.0,
+   "options": []
+  },
+  {
+   "room": "DORMITORIO",
+   "code": "5.4",
+   "item": "ESTOR DORMITORIO",
+   "name": "Estor plegable translúcido Namib lino 158x246",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "1.58",
+    "0.07",
+    "2.46"
+   ],
+   "tienda": "KAATEN",
+   "url": "https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",
+   "precio": 0.0,
+   "options": []
+  },
+  {
+   "room": "DORMITORIO",
+   "code": "5.5",
+   "item": "ESTOR DORMITORIO 2",
+   "name": "Estor plegable translúcido Namib lino 208x246",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "2.08",
+    "0.07",
+    "2.46"
+   ],
+   "tienda": "KAATEN",
+   "url": "https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",
+   "precio": 0.0,
+   "options": []
+  },
+  {
+   "room": "TERRAZA",
+   "code": "6.1",
+   "item": "MESA EXTERIOR",
+   "name": "Mesa de exterior cuadrada 70x70 Zoilo",
+   "estado": "NUEVO",
+   "cant": 1,
+   "dims": [
+    "0.70",
+    "0.70",
+    "0.73"
+   ],
+   "tienda": "THE MASIE",
+   "url": "https://www.themasie.com/es/comprar-mesas-de-exterior/241712-mesa-de-exterior-cuadrada-70x70-cm-de-metal-zoilo.html",
+   "precio": 119.95,
+   "options": []
+  }
+ ]
+}
