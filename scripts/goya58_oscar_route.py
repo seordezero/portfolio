@@ -111,10 +111,19 @@ def simplify(path, eps=.04):
     return simplify(path[:imax + 1], eps)[:-1] + simplify(path[imax:], eps)
 
 
+# the corridor is walked on its axis, straight, whatever its width does around the door recesses
+CORRIDOR_X, CORRIDOR = .15, (-.2, .75, -7.9, 1.95)     # axis x; band x0, x1, y0, y1
+
+
+def on_axis(path):
+    x0, x1, y0, y1 = CORRIDOR
+    return [(CORRIDOR_X, y) if (x0 < x < x1 and y0 < y < y1) else (x, y) for x, y in path]
+
+
 STOPS = {k: nearest_free(v) for k, v in STOPS.items()}
 legs = []
 for a, b in zip(ORDER, ORDER[1:]):
-    s = simplify(astar(STOPS[a], STOPS[b]))
+    s = simplify(on_axis(astar(STOPS[a], STOPS[b])))
     legs.append((a, b, s))
     print(a, '->', b, '%d pts %.1f m' % (len(s), sum(math.hypot(q[0] - p[0], q[1] - p[1]) for p, q in zip(s, s[1:]))))
 bpy.app.driver_namespace['goya_legs'] = (STOPS, legs)
