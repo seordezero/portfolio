@@ -55,12 +55,12 @@ body{background:var(--bg);color:var(--fg);font:15px/1.45 Inter,"Segoe UI",system
 form{display:flex;flex-direction:column;gap:12px;width:min(320px,100%)}
 h1{font-size:24px;margin:0;font-weight:600}
 p{margin:0;color:var(--mut);font-size:13px}
-input,button{font:inherit;padding:10px 12px;border-radius:0;border:1px solid var(--line);box-sizing:border-box;width:100%}
-input{background:#000;color:var(--fg)}
-button{background:var(--fg);color:#000;border-color:var(--fg);cursor:pointer}
-input:focus-visible,button:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
-label{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mut)}
-label input{width:auto}
+#f input,#f button{font:inherit;padding:10px 12px;border-radius:0;border:1px solid var(--line);box-sizing:border-box;width:100%}
+#f input{background:#000;color:var(--fg)}
+#f button{background:var(--fg);color:#000;border-color:var(--fg);cursor:pointer}
+#f input:focus-visible,#f button:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
+#f label{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mut)}
+#f label input{width:auto}
 #msg{min-height:1.2em;color:#e0705a}
 </style></head><body>
 <form id="f">
@@ -78,6 +78,7 @@ async function open(raw){
   const key=await crypto.subtle.importKey("raw",raw,"AES-GCM",false,["decrypt"]);
   const html=new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:u8(IV)},key,u8(DATA)));
   try{sessionStorage.setItem(K,btoa(String.fromCharCode(...raw)))}catch(_){}
+  if(document.readyState!=="complete")await new Promise(r=>addEventListener("load",r,{once:true}));
   document.open();document.write(html);document.close();
 }
 async function derive(pw){
