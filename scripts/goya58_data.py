@@ -55,6 +55,12 @@ for r in rows:
 
 # alternativas por código (la fila del spreadsheet es siempre la opción "actual")
 OPTIONS = {
+    "1.2": [{"id": "yoana", "label": "Yoana", "name": "Consola Yoana de chapa de roble y metal negro 120 x 80 cm", "tienda": "KAVE",
+             "url": "https://kavehome.com/es/es/p/consola-yoana-de-chapa-de-roble-y-estructura-de-metal-pintado-negro-120-x-80-cm",
+             "precio": 299, "dims": ["1.20", "0.30", "0.80"], "img": "1.2-yoana"},
+            {"id": "evoke", "label": "Evoke", "name": "Aparador alto Evoke en madera color nogal, 4 puertas", "tienda": "KLAST HOME",
+             "url": "https://klasthome.com/es/aparadores/5347-aparador-alto-en-madera-color-nogal",
+             "precio": 229.95, "dims": ["1.00", "0.38", "1.18"], "img": "1.2-evoke"}],
     "2.1": [{"id": "namara", "label": "Namara", "name": "Mesa redonda Namara Ø140, cemento beige", "tienda": "SKLUM",
              "url": "https://www.sklum.com/es/comprar-mesas-comedor/184223-mesa-de-comedor-redonda-en-cemento-namara.html?id_c=527312",
              "precio": 749.95, "dims": ["1.40", "1.40", "0.76"], "img": "2.1-namara"}],
