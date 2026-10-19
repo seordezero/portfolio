@@ -7,7 +7,7 @@
 // (AES-GCM, key from PBKDF2-SHA256, same scheme as lock-page.js). data.json and
 // model.bin are published only as <file>.enc (12-byte IV + ciphertext, same key); the
 // page reads the key the password page leaves in sessionStorage/localStorage.
-// Product photos in img/ are copied as they are; renders/ and proceso/ go encrypted.
+// Product photos in img/ are copied as they are; renders/, proceso/ and docs/ go encrypted.
 import fs from 'node:fs';
 import path from 'node:path';
 import { webcrypto as c } from 'node:crypto';
@@ -32,7 +32,7 @@ fs.mkdirSync(out, { recursive: true });
 for (const f of ['data.json', 'model.bin', 'oscar.glb', 'contexto.json'].filter(f => fs.existsSync(path.join(src, f)))) fs.writeFileSync(path.join(out, f + '.enc'), await enc(fs.readFileSync(path.join(src, f))));
 fs.cpSync(path.join(src, 'img'), path.join(out, 'img'), { recursive: true });
 // room renders and process images: client material, published only encrypted
-for (const dir of ['renders', 'proceso']) {
+for (const dir of ['renders', 'proceso', 'docs']) {
   if (!fs.existsSync(path.join(src, dir))) continue;
   fs.mkdirSync(path.join(out, dir), { recursive: true });
   for (const f of fs.readdirSync(path.join(src, dir)))
