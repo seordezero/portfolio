@@ -29,7 +29,7 @@ const b64 = a => Buffer.from(a).toString('base64');
 // fresh output: never leave a plain data.json/model.bin behind
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
-for (const f of ['data.json', 'model.bin', 'oscar.glb', 'contexto.json'].filter(f => fs.existsSync(path.join(src, f)))) fs.writeFileSync(path.join(out, f + '.enc'), await enc(fs.readFileSync(path.join(src, f))));
+for (const f of ['data.json', 'model.bin', 'oscar.glb', 'contexto.json', 'planos.pdf'].filter(f => fs.existsSync(path.join(src, f)))) fs.writeFileSync(path.join(out, f + '.enc'), await enc(fs.readFileSync(path.join(src, f))));
 fs.cpSync(path.join(src, 'img'), path.join(out, 'img'), { recursive: true });
 // room renders and process images: client material, published only encrypted
 for (const dir of ['renders', 'proceso', 'docs']) {
