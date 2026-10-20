@@ -67,6 +67,7 @@ foreach (var l in doc.Layers.Where(l => !l.IsDeleted && l.FullPath.StartsWith("0
   objs.AddRange(doc.Objects.FindByLayer(l));
 var archAcc = new Dictionary<string, Mesh>();
 var doorParts = new Dictionary<string, (Mesh m, InstanceObject io, ObjectAttributes a)>();
+var fixtures = new Dictionary<string, (Mesh m, ObjectAttributes a)>();
 foreach (var o in objs) {
   var lay = doc.Layers[o.Attributes.LayerIndex]; string opt = o.Attributes.GetUserString("OPTION");
   if (!lay.IsVisible && !lay.FullPath.StartsWith("02_MOBILIARIO")) continue;
@@ -80,6 +81,10 @@ foreach (var o in objs) {
     var meta = new Dictionary<string, object> { { "kind", "mueble" }, { "room", room }, { "code", code }, { "name", name }, { "color", $"#{c.R:X2}{c.G:X2}{c.B:X2}" } };
     if (opt != null) meta["opt"] = opt;
     addItem(meta, m, 6000);
+  } else if (path.StartsWith("01_ARQ") && o.Attributes.GetUserString("ID_CODE") != null && !(o is InstanceObject)) {
+    // luminarias de arquitectura marcadas con ID_CODE/ROOM/FIXTURE: la web las trata como lámparas (se encienden con un clic)
+    string fx = o.Attributes.GetUserString("FIXTURE") ?? o.Id.ToString(); var pm = toMesh(o.Geometry); if (pm == null) continue;
+    if (!fixtures.ContainsKey(fx)) fixtures[fx] = (new Mesh(), o.Attributes); fixtures[fx].m.Append(pm);
   } else if (path.StartsWith("01_ARQ")) {
     if (o is InstanceObject ai) {
       string nm = ai.Attributes.Name ?? "";
@@ -96,6 +101,9 @@ foreach (var o in objs) {
       if (!archAcc.ContainsKey(key)) archAcc[key] = new Mesh(); archAcc[key].Append(pm); }
   }
 }
+foreach (var kv in fixtures) { var A = kv.Value.a; var c = A.ColorSource == ObjectColorSource.ColorFromObject ? A.ObjectColor : System.Drawing.Color.FromArgb(230, 230, 230);
+  addItem(new Dictionary<string, object> { { "kind", "mueble" }, { "room", A.GetUserString("ROOM") ?? "" }, { "code", A.GetUserString("ID_CODE") },
+    { "name", A.GetUserString("ID_NAME") ?? kv.Key }, { "color", $"#{c.R:X2}{c.G:X2}{c.B:X2}" } }, kv.Value.m, 2000); }
 foreach (var kv in archAcc) { var parts = kv.Key.Split('|'); var meta = new Dictionary<string, object> { { "kind", "arq" }, { "cat", parts[0] }, { "name", parts[1] } };
   addItem(meta, kv.Value, 12000); }
 
