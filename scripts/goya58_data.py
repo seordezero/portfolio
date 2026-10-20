@@ -3,6 +3,7 @@ import json
 rows = [
 ["VESTÍBULO","1.1","PERCHERO","Perchero Gaillech","NUEVO","1","0.63","0.11","0.07","KAVE","https://kavehome.com/es/es/p/perchero-gaillech-de-madera-maciza-de-teca","19.99"],
 ["","1.2","MUEBLE BAJO","Mueble vintage para vinilos 113 cm Ronda, nogal","NUEVO","1","1.13","0.48","1.02","LA REDOUTE INTERIEURS","https://www.laredoute.es/ppdp/prod-350269827.aspx","343.20"],
+["","1.3","MUEBLE A MEDIDA","Mueble de entrada a medida, MDF lacado beige (precio estimado)","NUEVO","1","1.52","0.38","2.10","CARPINTERÍA A MEDIDA","","1850.00"],
 ["COMEDOR","2.1","MESA COMEDOR","Mesa Core 140","NUEVO","1","2.30","0.90","0.75","MARLOT BAUS","https://marlotbaus.com/en/products/core-dining-table","1599.00"],
 ["","2.2","LÁMPARA COMEDOR","Frisbi","EXISTENTE","1","1.18","0.76","1.14","FLOS","https://www.muebleslluesma.com/lamparas-colgantes/15680-lampara-suspension-frisbi-flos.html",""],
 ["","2.3","MUEBLE BAJO","Aparador metálico modular Steel blanco","NUEVO","1","1.53","0.38","0.75","SINGULAR MARKET","https://www.singularmarket.com/vitrinas-alacenas-y-armarios-de-diseno/1878-aparador-metalico-modular-steel-blanco.html","999.99"],
