@@ -6,6 +6,7 @@ rows = [
 ["","1.3","MUEBLE A MEDIDA","Mueble de entrada a medida, MDF lacado beige (precio estimado)","NUEVO","1","1.52","0.38","2.10","CARPINTERÍA A MEDIDA","","1850.00"],
 ["","1.4","ESPEJO","Espejo rectangular de pino oscuro Eimar 122x51","NUEVO","1","1.22","0.025","0.51","THE MASIE","https://www.themasie.com/es/comprar-espejos/200046-espejo-de-pared-rectangular-de-madera-de-pino-122x51-cm-eimar.html","86.95"],
 ["","1.5","PÓSTER","Póster de la entrada","SIN PRECIO","1","0.70","0.02","1.04","","",""],
+["","1.6","LÁMPARA DE MESA","Bella, réplica Nesso (sobre el mueble de la entrada)","NUEVO","1","0.32","0.32","0.22","VIBE HAUS","https://vibehausliving.com/es/products/bella-nesso-replica-lampara","70.95"],
 ["COMEDOR","2.1","MESA COMEDOR","Mesa Core 140","NUEVO","1","2.30","0.90","0.75","MARLOT BAUS","https://marlotbaus.com/en/products/core-dining-table","1599.00"],
 ["","2.2","LÁMPARA COMEDOR","Frisbi","EXISTENTE","1","1.18","0.76","1.14","FLOS","https://www.muebleslluesma.com/lamparas-colgantes/15680-lampara-suspension-frisbi-flos.html",""],
 ["","2.3","MUEBLE BAJO","Aparador metálico modular Steel blanco","NUEVO","1","1.53","0.38","0.75","SINGULAR MARKET","https://www.singularmarket.com/vitrinas-alacenas-y-armarios-de-diseno/1878-aparador-metalico-modular-steel-blanco.html","999.99"],
