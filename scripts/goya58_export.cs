@@ -73,7 +73,11 @@ foreach (var o in objs) {
   if (!lay.IsVisible && !lay.FullPath.StartsWith("02_MOBILIARIO")) continue;
   var path = lay.FullPath;
   if (path.StartsWith("02_MOBILIARIO") && o is InstanceObject io) {
-    var m = new Mesh(); foreach (var p in explodeWorld(io)) m.Append(p.m);
+    // el cristal de los espejos (material "Espejo") sale aparte: la web lo convierte en un reflector
+    var m = new Mesh(); var gl = new Mesh();
+    foreach (var p in explodeWorld(io)) { int mi = p.a.MaterialIndex;
+      bool glass = p.a.MaterialSource == ObjectMaterialSource.MaterialFromObject && mi >= 0 && doc.Materials[mi].Name == "Espejo";
+      (glass ? gl : m).Append(p.m); }
     var c = o.Attributes.ColorSource == ObjectColorSource.ColorFromObject ? o.Attributes.ObjectColor : System.Drawing.Color.FromArgb(180, 180, 180);
     string code = o.Attributes.GetUserString("ID_CODE") ?? "";
     string name = o.Attributes.GetUserString("ID_NAME") ?? io.InstanceDefinition.Name;
@@ -81,6 +85,7 @@ foreach (var o in objs) {
     var meta = new Dictionary<string, object> { { "kind", "mueble" }, { "room", room }, { "code", code }, { "name", name }, { "color", $"#{c.R:X2}{c.G:X2}{c.B:X2}" } };
     if (opt != null) meta["opt"] = opt;
     addItem(meta, m, 6000);
+    if (gl.Faces.Count > 0) { var gm = new Dictionary<string, object>(meta); gm["glass"] = true; addItem(gm, gl, 2000); }
   } else if (path.StartsWith("01_ARQ") && o.Attributes.GetUserString("ID_CODE") != null && !(o is InstanceObject)) {
     // luminarias de arquitectura marcadas con ID_CODE/ROOM/FIXTURE: la web las trata como lámparas (se encienden con un clic)
     string fx = o.Attributes.GetUserString("FIXTURE") ?? o.Id.ToString(); var pm = toMesh(o.Geometry); if (pm == null) continue;

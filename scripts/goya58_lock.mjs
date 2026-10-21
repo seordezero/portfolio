@@ -16,27 +16,38 @@ const [, , src, out, pass] = process.argv;
 if (!src || !out || !pass) { console.error('usage: node scripts/goya58_lock.mjs <plain folder> <out folder> <password>'); process.exit(1); }
 
 const ITER = 310000;
-const salt = c.getRandomValues(new Uint8Array(16));
+// keep the salt of the build already published: same key, so a file that did not change keeps its
+// bytes and git only carries what changed (re-encrypting everything made every push ~25 MB)
+let salt = null;
+try { const m = fs.readFileSync(path.join(out, 'index.html'), 'utf8').match(/const SALT="([^"]+)"/); if (m) salt = new Uint8Array(Buffer.from(m[1], 'base64')); } catch (e) {}
+salt ??= c.getRandomValues(new Uint8Array(16));
 const base = await c.subtle.importKey('raw', new TextEncoder().encode(pass.trim().toLowerCase()), 'PBKDF2', false, ['deriveKey']);
-const key = await c.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, true, ['encrypt']);
+const key = await c.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
 const enc = async bytes => {
   const iv = c.getRandomValues(new Uint8Array(12));
   const ct = new Uint8Array(await c.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes));
   return Buffer.concat([Buffer.from(iv), Buffer.from(ct)]);
 };
 const b64 = a => Buffer.from(a).toString('base64');
+const dec = async buf => Buffer.from(await c.subtle.decrypt({ name: 'AES-GCM', iv: buf.subarray(0, 12) }, key, buf.subarray(12)));
 
-// fresh output: never leave a plain data.json/model.bin behind
-fs.rmSync(out, { recursive: true, force: true });
+// every file this build publishes; anything else left in <out> is removed at the end
+// (so a plain data.json/model.bin can never stay behind)
+const keep = new Set();
+async function put(rel, bytes) {
+  const o = path.join(out, rel); keep.add(path.resolve(o));
+  if (fs.existsSync(o)) { try { if ((await dec(fs.readFileSync(o))).equals(bytes)) return; } catch (e) {} }
+  fs.mkdirSync(path.dirname(o), { recursive: true }); fs.writeFileSync(o, await enc(bytes));
+}
 fs.mkdirSync(out, { recursive: true });
-for (const f of ['data.json', 'model.bin', 'oscar.glb', 'contexto.json', 'planos.pdf'].filter(f => fs.existsSync(path.join(src, f)))) fs.writeFileSync(path.join(out, f + '.enc'), await enc(fs.readFileSync(path.join(src, f))));
+for (const f of ['data.json', 'model.bin', 'oscar.glb', 'contexto.json', 'planos.pdf'].filter(f => fs.existsSync(path.join(src, f)))) await put(f + '.enc', fs.readFileSync(path.join(src, f)));
 fs.cpSync(path.join(src, 'img'), path.join(out, 'img'), { recursive: true });
+for (const f of fs.readdirSync(path.join(src, 'img'), { recursive: true })) keep.add(path.resolve(out, 'img', f));
 // room renders and process images: client material, published only encrypted
 for (const dir of ['renders', 'proceso', 'docs']) {
   if (!fs.existsSync(path.join(src, dir))) continue;
-  fs.mkdirSync(path.join(out, dir), { recursive: true });
   for (const f of fs.readdirSync(path.join(src, dir)))
-    fs.writeFileSync(path.join(out, dir, f + '.enc'), await enc(fs.readFileSync(path.join(src, dir, f))));
+    await put(path.join(dir, f + '.enc'), fs.readFileSync(path.join(src, dir, f)));
 }
 
 // two pages, same key: index.html (title and process) and visor/index.html (the 3D viewer).
@@ -44,7 +55,7 @@ for (const dir of ['renders', 'proceso', 'docs']) {
 for (const [rel, title] of [['index.html', 'Goya 58'], ['visor/index.html', 'Goya 58 · Visor']]) {
 const page = await enc(fs.readFileSync(path.join(src, rel)));
 const iv = page.subarray(0, 12), ct = page.subarray(12);
-fs.mkdirSync(path.dirname(path.join(out, rel)), { recursive: true });
+fs.mkdirSync(path.dirname(path.join(out, rel)), { recursive: true }); keep.add(path.resolve(out, rel));
 fs.writeFileSync(path.join(out, rel), `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow">
 <title>${title}</title>
@@ -101,5 +112,8 @@ document.getElementById("f").onsubmit=async e=>{
 };
 </script></body></html>
 `);
+}
+for (const f of fs.readdirSync(out, { recursive: true })) {
+  const p = path.resolve(out, f); if (fs.statSync(p).isFile() && !keep.has(p)) fs.rmSync(p);
 }
 console.log('locked ->', out);
