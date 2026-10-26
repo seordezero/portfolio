@@ -86,6 +86,8 @@ foreach (var o in objs) {
     if (opt != null) meta["opt"] = opt;
     // WHEN=<código>: esta copia sustituye a la normal mientras esa pieza esté a la vista (el perchero cambia de pared con el mueble a medida)
     string when = o.Attributes.GetUserString("WHEN"); if (when != null) meta["when"] = when;
+    // ON_TOP=<código>: se apoya en esa pieza y sube o baja con la que esté a la vista (la planta de la mesa de centro)
+    string on = o.Attributes.GetUserString("ON_TOP"); if (on != null) meta["on"] = on;
     addItem(meta, m, 6000);
     if (gl.Faces.Count > 0) { var gm = new Dictionary<string, object>(meta); gm["glass"] = true; addItem(gm, gl, 2000); }
   } else if (path.StartsWith("01_ARQ") && o.Attributes.GetUserString("ID_CODE") != null && !(o is InstanceObject)) {
