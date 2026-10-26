@@ -84,6 +84,8 @@ foreach (var o in objs) {
     string room = path.Split(new[] { "::" }, StringSplitOptions.None)[1];
     var meta = new Dictionary<string, object> { { "kind", "mueble" }, { "room", room }, { "code", code }, { "name", name }, { "color", $"#{c.R:X2}{c.G:X2}{c.B:X2}" } };
     if (opt != null) meta["opt"] = opt;
+    // WHEN=<código>: esta copia sustituye a la normal mientras esa pieza esté a la vista (el perchero cambia de pared con el mueble a medida)
+    string when = o.Attributes.GetUserString("WHEN"); if (when != null) meta["when"] = when;
     addItem(meta, m, 6000);
     if (gl.Faces.Count > 0) { var gm = new Dictionary<string, object>(meta); gm["glass"] = true; addItem(gm, gl, 2000); }
   } else if (path.StartsWith("01_ARQ") && o.Attributes.GetUserString("ID_CODE") != null && !(o is InstanceObject)) {
