@@ -14,6 +14,7 @@ rows = [
 ["","2.6","ESTOR","Estor plegable translúcido Namib lino 216x246","NUEVO","1","2.16","0.07","2.46","KAATEN","https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd","335.41"],
 ["","2.7","ESPEJO","Espejo de pie efecto envejecido","NUEVO","1","0.90","0.02","1.50","ZARA HOME","https://www.zarahome.com/es/espejo-pie-efecto-envejecido-l42349106?colorId=817","279.00"],
 ["","2.8","CUADRO","Cuadro del comedor","SIN PRECIO","1","0.90","0.02","0.89","","",""],
+["","2.9","MUEBLE A MEDIDA","Estantería a medida sobre el radiador, MDF lacado (precio estimado)","NUEVO","1","0.74","0.24","2.10","CARPINTERÍA A MEDIDA","","650.00"],
 ["SALON","3.1","ALFOMBRA SALÓN","Alfombra Line","NUEVO","1","2.00","3.00","0.00","TOM DIXON","https://www.nordicnest.es/marcas/tom-dixon/alfombra-line/?variantId=642048-01","409.00"],
 ["","3.2","BUTACAS","Silla de caña negra Thisted","NUEVO","2","0.66","0.74","0.74","PIB","https://www.pib.eu/ES-es/silla-de-cana-negra-thisted--0642998","370.00"],
 ["","3.3","MESA DE CENTRO","Mesa de centro existente","EXISTENTE","1","1.10","0.60","0.43","","",""],
