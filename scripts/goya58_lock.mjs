@@ -44,7 +44,7 @@ for (const f of ['data.json', 'model.bin', 'oscar.glb', 'contexto.json', 'planos
 fs.cpSync(path.join(src, 'img'), path.join(out, 'img'), { recursive: true });
 for (const f of fs.readdirSync(path.join(src, 'img'), { recursive: true })) keep.add(path.resolve(out, 'img', f));
 // room renders and process images: client material, published only encrypted
-for (const dir of ['renders', 'proceso', 'docs']) {
+for (const dir of ['renders', 'proceso', 'docs', 'arte']) {
   if (!fs.existsSync(path.join(src, dir))) continue;
   for (const f of fs.readdirSync(path.join(src, dir)))
     await put(path.join(dir, f + '.enc'), fs.readFileSync(path.join(src, dir, f)));
