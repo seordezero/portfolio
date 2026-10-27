@@ -1,19 +1,19 @@
 {
  "opciones": {
-  "1.1": "colgadores",
-  "1.2": "oscura",
-  "1.6": "donut",
   "2.3": "havel",
   "2.1": "brisa",
   "3.3": "olmo",
+  "3.6": "redonda",
   "3.10": "borghese",
   "3.12": "aron",
-  "3.17": "pared",
   "3.15": "timb",
-  "3.6": "redonda",
+  "3.17": "pared",
   "4.8": "mittzon",
   "4.4": "vbeige",
-  "4.7": "think"
+  "1.2": "oscura",
+  "1.1": "colgadores",
+  "1.6": "donut",
+  "5.2": "zara"
  },
  "ocultos": [
   "2.7"
