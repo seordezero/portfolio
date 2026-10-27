@@ -158,7 +158,7 @@ for it in items:
 # (only with ?editor) downloads goya58_propuesta.json; the newest one in Descargas replaces the one kept here.
 import glob, os, shutil
 here = os.path.join(os.path.dirname(os.path.abspath(__file__)), "goya58_propuesta.json")
-got = sorted(glob.glob(os.path.expanduser("~/Downloads/goya58_propuesta*.json")), key=os.path.getmtime)
+got = sorted(glob.glob(os.path.expanduser("~/Downloads/goya58_propuesta*.json")) + glob.glob("D:/Downloads/goya58_propuesta*.json"), key=os.path.getmtime)
 if got and (not os.path.exists(here) or os.path.getmtime(got[-1]) > os.path.getmtime(here)):
     shutil.copyfile(got[-1], here); print("propuesta <-", got[-1])
 propuesta = json.load(open(here, encoding="utf-8")) if os.path.exists(here) else {}
