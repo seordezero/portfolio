@@ -92,6 +92,9 @@ OPTIONS = {
             {"id": "lana", "label": "Lana lisa", "name": "Alfombra lana diseño liso 200x300, beige", "tienda": "ZARA HOME", "url": "https://www.zarahome.com/es/alfombra-lana-diseno-liso-l42312029?colorId=731", "precio": 399, "dims": ["2.00", "3.00", "0.01"], "img": "3.1-lana"},
             {"id": "vmarron", "label": "Vintage marrón", "name": "Alfombra efecto vintage 200x300, marrón", "tienda": "ZARA HOME", "url": "https://www.zarahome.com/es/alfombra-efecto-vintage-l42331029?colorId=700", "precio": 229, "dims": ["2.00", "3.00", "0.01"], "img": "3.1-vmarron"},
             {"id": "vbeige", "label": "Vintage beige", "name": "Alfombra efecto vintage 200x300, beige", "tienda": "ZARA HOME", "url": "https://www.zarahome.com/es/alfombra-efecto-vintage-l41329029?colorId=710", "precio": 159, "dims": ["2.00", "3.00", "0.01"], "img": "3.1-vbeige"}],
+    "1.1": [{"id": "colgadores", "label": "Colgadores", "name": "Tres colgadores de cerámica con base metálica, en fila", "tienda": "ZARA HOME",
+             "url": "https://www.zarahome.com/es/colgador-ceramica-l44358517?colorId=802",
+             "precio": 20.97, "dims": ["0.45", "0.055", "0.09"], "img": "1.1-colgadores"}],
     "1.6": [{"id": "velo", "label": "Velo", "name": "Velo, lámpara de mesa cromada sin cable", "tienda": "VIBE HAUS", "url": "https://vibehausliving.com/es/products/lampara-velo-cromo", "precio": 45.95, "dims": ["0.16", "0.16", "0.21"], "img": "1.6-velo"},
             {"id": "donut", "label": "Donut", "name": "Lámpara Donut naranja, vidrio y hierro", "tienda": "VIBE HAUS", "url": "https://vibehausliving.com/es/products/lampara-donut-naranja", "precio": 90.95, "dims": ["0.30", "0.30", "0.13"], "img": "1.6-donut"}],
     "3.8": [{"id": "velo", "label": "Velo", "name": "Velo, lámpara de mesa cromada sin cable", "tienda": "VIBE HAUS", "url": "https://vibehausliving.com/es/products/lampara-velo-cromo", "precio": 45.95, "dims": ["0.16", "0.16", "0.21"], "img": "3.8-velo"},
@@ -149,7 +152,16 @@ OPTIONS = {
 for it in items:
     it["options"] = OPTIONS.get(it["code"], [])
 
-data = {"rooms": ["ENTRADA", "COMEDOR", "SALÓN", "ESTUDIO", "DORMITORIO", "TERRAZA"], "items": items}
+# Sebastián's proposal: the selection the viewer can always go back to. The viewer's "Guardar como propuesta"
+# (only with ?editor) downloads goya58_propuesta.json; the newest one in Descargas replaces the one kept here.
+import glob, os, shutil
+here = os.path.join(os.path.dirname(os.path.abspath(__file__)), "goya58_propuesta.json")
+got = sorted(glob.glob(os.path.expanduser("~/Downloads/goya58_propuesta*.json")), key=os.path.getmtime)
+if got and (not os.path.exists(here) or os.path.getmtime(got[-1]) > os.path.getmtime(here)):
+    shutil.copyfile(got[-1], here); print("propuesta <-", got[-1])
+propuesta = json.load(open(here, encoding="utf-8")) if os.path.exists(here) else {}
+
+data = {"rooms": ["ENTRADA", "COMEDOR", "SALÓN", "ESTUDIO", "DORMITORIO", "TERRAZA"], "items": items, "propuesta": propuesta}
 with open("D:/OneDrive/Escritorio/goya58-web/data.json", "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=1)
 print(len(items), round(sum(i["precio"] * i["cant"] for i in items), 2))
