@@ -7,9 +7,11 @@
     "dev": "astro dev",
     "start": "astro dev",
     "content": "node scripts/build-content.mjs",
-    "build": "node scripts/build-content.mjs && astro build",
+    "build": "node scripts/build-content.mjs && node scripts/build-instagram.mjs && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "instagram": "node scripts/build-instagram.mjs",
+    "instagram:prueba": "node scripts/publicar-instagram.mjs --prueba"
   },
   "dependencies": {
     "astro": "^4.16.0",

@@ -1,0 +1,50 @@
+# Publica en Instagram (@feral_taxonomy) el siguiente post de content/instagram/.
+#
+# Corre martes y viernes a las 17:07 UTC (18:07 en Madrid en invierno, 19:07 en
+# verano) y se puede lanzar a mano desde la pestaña Actions. Cada vez sube UNO,
+# el primero que no esté en content/instagram/publicado.json, y deja el apunte
+# hecho con un commit. Si la cola está vacía no hace nada.
+#
+# Secretos (Settings > Secrets and variables > Actions):
+#   IG_USER_ID       id de la cuenta de Instagram
+#   IG_ACCESS_TOKEN  token de larga duración; caduca a los 60 días y hay que
+#                    renovarlo. Cuando caduca, la ejecución falla y GitHub avisa
+#                    por correo.
+name: Publicar en Instagram
+
+on:
+  schedule:
+    - cron: "7 17 * * 2,5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Sin npm ci: la publicación solo usa fetch.
+      - run: node scripts/publicar-instagram.mjs
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+
+      - name: Apuntar lo publicado
+        run: |
+          git add content/instagram/publicado.json
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
+          git commit -m "instagram: apuntar publicación"
+          git push

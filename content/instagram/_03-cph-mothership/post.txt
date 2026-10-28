@@ -1,0 +1,9 @@
+Proyecto: cph-mothership
+
+CPH Mothership — X-Urban Studio, IAAC (2023)
+
+A counter-proposal for Lynetteholm, Copenhagen. Taking Koolhaas' BIGNESS literally: the envelope separates from the organs, and modules from three experimental precedents assemble into a system of systems. Connections tested with Monoceros for Grasshopper.
+
+With Mu-Huai Liu, Aikaterini Marinaki and Yang Xiao.
+
+#architecture #urbanism #bigness #computationaldesign #grasshopper #iaac
