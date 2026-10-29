@@ -1,6 +1,6 @@
 {
  "opciones": {
-  "2.3": "havel",
+  "2.3": "comoda",
   "2.1": "brisa",
   "3.3": "olmo",
   "3.6": "redonda",
@@ -11,12 +11,12 @@
   "4.8": "mittzon",
   "4.4": "vbeige",
   "1.2": "oscura",
-  "1.1": "colgadores",
   "1.6": "donut",
   "5.2": "zara"
  },
  "ocultos": [
   "2.7"
  ],
- "arte": {}
+ "arte": {},
+ "sonido": "SALÓN"
 }

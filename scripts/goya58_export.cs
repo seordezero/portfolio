@@ -88,6 +88,9 @@ foreach (var o in objs) {
     string when = o.Attributes.GetUserString("WHEN"); if (when != null) meta["when"] = when;
     // ON_TOP=<código>: se apoya en esa pieza y sube o baja con la que esté a la vista (la planta de la mesa de centro)
     string on = o.Attributes.GetUserString("ON_TOP"); if (on != null) meta["on"] = on;
+    // PLACE=<ambiente>: copia que solo se ve cuando el sonido está en ese ambiente (salón o estudio); ANYOPT=1 vale para todas las opciones
+    string pl = o.Attributes.GetUserString("PLACE"); if (pl != null) meta["place"] = pl;
+    if (o.Attributes.GetUserString("ANYOPT") != null) meta["anyopt"] = true;
     addItem(meta, m, 6000);
     if (gl.Faces.Count > 0) { var gm = new Dictionary<string, object>(meta); gm["glass"] = true; addItem(gm, gl, 2000); }
   } else if (path.StartsWith("01_ARQ") && o.Attributes.GetUserString("ID_CODE") != null && !(o is InstanceObject)) {
