@@ -120,14 +120,11 @@ OPTIONS = {
     "4.7": [{"id": "think", "label": "Think", "name": "Think, silla de oficina ergonómica, 3D Knit negro", "tienda": "STEELCASE",
              "url": "https://es.steelcase.com/products/think?variant=41727594463430",
              "precio": 1039, "dims": ["0.74", "0.58", "0.98"], "img": "4.7-think"}],
-    "4.8": [{"id": "mittzon", "label": "Mittzon", "name": "Escritorio elevable eléctrico Mittzon 120x80, blanco", "tienda": "IKEA",
-             "url": "https://www.ikea.com/es/es/p/mittzon-escritorio-elevable-electrico-blanco-s99527569/",
-             "precio": 399, "dims": ["1.20", "0.80", "0.75"], "img": "4.8-mittzon"},
-            {"id": "luisxvi", "label": "Luis XVI", "name": "Escritorio vintage de cerezo y piel, estilo Luis XVI", "tienda": "ANTIQUE ARTE Y DECORACIÓN",
+    "4.8": [{"id": "luisxvi", "label": "Luis XVI", "name": "Escritorio vintage de cerezo y piel, estilo Luis XVI", "tienda": "ANTIQUE ARTE Y DECORACIÓN",
              "url": "https://antiquearteydecoracion.com/collections/escritorios/products/escritorio-vintage-de-cerezo-con-tablero-de-piel-estilo-luis-xvi",
              "precio": 1645, "dims": ["1.64", "0.83", "0.78"], "img": "4.8-luisxvi"},
-            {"id": "lagkapten", "label": "Península IKEA", "name": "Escritorio en península: tablero Lagkapten 140x60 + 2 patas Adils, fijado a la pared", "tienda": "IKEA", "url": "https://www.ikea.com/es/es/p/lagkapten-tablero-tinte-blanco-efecto-roble-80460823/", "precio": 45, "dims": ["1.40", "0.60", "0.75"], "img": "4.8-lagkapten"},
-            {"id": "peninsula", "label": "Península a medida", "name": "Escritorio en península a medida, roble macizo 160x65, fijado a la pared (precio estimado)", "tienda": "CARPINTERÍA A MEDIDA", "precio": 450, "dims": ["1.60", "0.65", "0.75"], "img": "4.8-peninsula"}],
+            {"id": "ergohide", "label": "ErgoHide", "name": "Escritorio elevable ErgoHide, roble oscuro 150x80, pies negros", "tienda": "ERGOHIDE", "url": "https://ergohide.com/products/oak-standing-desk?c=20hcr150&wood=darkoak&a=a", "precio": 1130, "dims": ["1.50", "0.80", "0.74"], "img": "4.8-ergohide"},
+            {"id": "oako", "label": "Oako", "name": "Escritorio elevable de roble macizo Oako, caoba 140x80, pies negros, con ruedas (49 €) y bandeja de cables (59 €)", "tienda": "OAKO DENMARK", "url": "https://oakodenmark.dk/products/solid-oak-standing-desk?variant=56573516153210", "precio": 1144.99, "dims": ["1.40", "0.80", "0.74"], "img": "4.8-oako"}],
     "3.3": [{"id": "olmo", "label": "Olmo", "name": "Mesa centro madera olmo 160x70", "tienda": "ZARA HOME", "url": "https://www.zarahome.com/es/mesa-centro-madera-olmo-l46301072?colorId=052", "precio": 349, "dims": ["1.60", "0.70", "0.25"], "img": "3.3-olmo"},
             {"id": "cos", "label": "Cos", "name": "Mesa de centro Cos 80x80, cromo y cristal", "tienda": "NORTHDECO", "url": "https://northdeco.com/products/mesa-de-centro-cuadrada-de-metal-y-cristal-templado-cos-80x80cm?variant=55253603549570", "precio": 229, "dims": ["0.80", "0.80", "0.40"], "img": "3.3-cos"}],
     "3.15": [{"id": "timb", "label": "Timb", "name": "Silla Timb, marrón cenizo y cuero chocolate", "tienda": "NORMANN COPENHAGEN", "url": "https://www.nordicnest.es/marcas/normann-copenhagen/silla-timb_1198790/?variantId=651034-01", "precio": 423, "dims": ["0.52", "0.51", "0.82"], "img": "3.15-timb"},
@@ -141,9 +138,6 @@ OPTIONS = {
             {"id": "afghan200", "label": "Afghan 200", "name": "Afghan Fine 200x285, negro/rojo oscuro (sillones)", "tienda": "RUGVISTA",
              "url": "https://www.rugvista.es/p/afghan-fine-alfombra-200x285-cm-anudada-a-mano-negro-rojo-oscuro-afganistan-grande-alfombra-de-lana-HJTZZD716",
              "precio": 630, "dims": ["2.00", "2.85", "0.01"], "img": "4.4-afghan200"},
-            {"id": "dos", "label": "Las dos", "name": "Las dos Afghan Fine: sillones y escritorio, pisándose", "tienda": "RUGVISTA",
-             "url": "https://www.rugvista.es/p/afghan-fine-alfombra-196x280-cm-anudada-a-mano-negro-rojo-oscuro-afganistan-grande-alfombra-de-lana-HJTZZD428",
-             "precio": 1230, "dims": ["1.96 + 2.00", "2.80 + 2.85", "0.01"], "img": "4.4-dos"},
             {"id": "vmarron", "label": "Vintage marrón", "name": "Alfombra efecto vintage 200x300, marrón", "tienda": "ZARA HOME", "url": "https://www.zarahome.com/es/alfombra-efecto-vintage-l42331029?colorId=700", "precio": 229, "dims": ["2.00", "3.00", "0.01"], "img": "4.4-vmarron"},
             {"id": "vbeige", "label": "Vintage beige", "name": "Alfombra efecto vintage 200x300, beige", "tienda": "ZARA HOME", "url": "https://www.zarahome.com/es/alfombra-efecto-vintage-l41329029?colorId=710", "precio": 159, "dims": ["2.00", "3.00", "0.01"], "img": "4.4-vbeige"}],
     "3.6": [{"id": "redonda", "label": "Redonda", "name": "Mesita redonda Ø41, madera de mango oscura", "tienda": "ZARA HOME",
@@ -171,8 +165,11 @@ OPTIONS = {
              "url": "https://www.zarahome.com/es/comoda-madera-tres-cajones-l46102077?colorId=700",
              "precio": 799, "dims": ["1.112", "0.50", "1.00"], "img": "2.3-comoda"}],
 }
+# nombre corto de la pieza por defecto en los botones de opciones (nunca "Actual")
+LABEL = {"1.2": "Ronda", "1.3": "Banco acacia", "1.4": "Eimar", "1.6": "Bella", "2.1": "Core", "2.3": "Steel", "3.1": "Line", "3.3": "Mesa existente", "3.6": "Tranered", "3.8": "Bella", "3.10": "Chaise longue", "3.11": "Nilsi", "3.12": "Ronda", "3.15": "Sandsberg", "3.17": "De pie", "3.18": "Nilsi", "4.4": "Empuries", "4.7": "Silla existente", "4.8": "Escritorio existente", "5.2": "Shantay", "5.3": "Shantay", "5.6": "Aro EVO"}
 for it in items:
     it["options"] = OPTIONS.get(it["code"], [])
+    if it["options"]: it["label"] = LABEL[it["code"]]
 
 # Sebastián's proposal: the selection the viewer can always go back to. The viewer's "Guardar como propuesta"
 # (only with ?editor) downloads goya58_propuesta.json; the newest one in Descargas replaces the one kept here.
