@@ -41,6 +41,7 @@ rows = [
 ["","4.11","ESTOR","Estor plegable translúcido Namib lino 218x246","NUEVO","1","2.18","0.07","2.46","KAATEN","https://kaaten.com/products/estor-plegable-translucido-namib-lino-amd",""],
 ["","4.12","MÓVIL PARA TV","Moon TV","NUEVO","1","0.93","0.99","1.10","PEDESTAL","https://es.pedestal.com/products/moon-rollin-charcoal","340.00"],
 ["","4.13","CUADRO","Cuadro del estudio","SIN PRECIO","1","0.70","0.02","1.04","","",""],
+["","4.14","ESTANTERÍA","Estantería de nogal macizo 100x40x65, contra la pared junto al escritorio","NUEVO","1","1.00","0.40","0.65","TANDER","https://tandermuebles.com/librerias-y-estanterias/1341-estanteria-para-bano-madera-maciza-de-nogal-100x40x65-cm-8718475715092.html","112.88"],
 ["DORMITORIO","5.1","APLIQUE PARED","Aplique LED circular luz indirecta","NUEVO","2","0.25","0.00","0.25","ILUMINIA","https://www.ilumnia.es/productos-led/1134-3399-aplique-pared-led-12w-circular-luz-indirecta-aluminio.html","49.90"],
 ["","5.2","MESA DE NOCHE","Mesita de noche Shantay","NUEVO","2","0.35","0.40","0.50","KAVE","https://kavehome.com/es/es/p/mesita-de-noche-shantay-acero-con-acabado-negro-40-x-50-cm","159.00"],
 ["","5.3","MUEBLE BAJO","Mueble TV Shantay","NUEVO","1","1.50","0.35","0.50","KAVE","https://kavehome.com/es/es/p/mueble-tv-shantay-1-puerta-y-1-cajon-de-metal-con-acabado-pintado-negro-150-x-50-cm","399.00"],
