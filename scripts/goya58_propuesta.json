@@ -8,15 +8,15 @@
   "3.12": "aron",
   "3.15": "timb",
   "3.17": "pared",
-  "4.8": "mittzon",
+  "4.8": "ergohide",
   "4.4": "vbeige",
   "1.2": "oscura",
-  "1.1": "colgadores",
   "1.6": "donut",
   "5.2": "zara"
  },
  "ocultos": [
   "2.7"
  ],
- "arte": {}
+ "arte": {},
+ "sonido": "SALÓN"
 }
