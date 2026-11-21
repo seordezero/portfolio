@@ -91,7 +91,8 @@ foreach (var o in objs) {
     // PLACE=<ambiente>: copia que solo se ve cuando el sonido está en ese ambiente (salón o estudio); ANYOPT=1 vale para todas las opciones
     string pl = o.Attributes.GetUserString("PLACE"); if (pl != null) meta["place"] = pl;
     if (o.Attributes.GetUserString("ANYOPT") != null) meta["anyopt"] = true;
-    addItem(meta, m, 6000);
+    // WEB_CAP=<n>: triangle budget for a piece whose detail matters (default 6000; above it the mesh is clustered)
+    addItem(meta, m, int.TryParse(o.Attributes.GetUserString("WEB_CAP"), out int wcap) ? wcap : 6000);
     if (gl.Faces.Count > 0) { var gm = new Dictionary<string, object>(meta); gm["glass"] = true; addItem(gm, gl, 2000); }
   } else if (path.StartsWith("01_ARQ") && o.Attributes.GetUserString("ID_CODE") != null && !(o is InstanceObject)) {
     // luminarias de arquitectura marcadas con ID_CODE/ROOM/FIXTURE: la web las trata como lámparas (se encienden con un clic)
