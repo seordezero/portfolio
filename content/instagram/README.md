@@ -1,7 +1,7 @@
 # Instagram (@feral_taxonomy)
 
 Cada carpeta de aquí es un post. La Action `Publicar en Instagram` sube **uno**
-cada martes y viernes (17:07 UTC), el primero en orden de nombre que no esté en
+cada martes (17:07 UTC), el primero en orden de nombre que no esté en
 `publicado.json`, y lo apunta ahí. También se lanza a mano desde la pestaña
 Actions.
 
