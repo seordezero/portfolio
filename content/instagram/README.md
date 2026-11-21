@@ -10,22 +10,23 @@ Actions.
 ```
 content/instagram/05-nombre/
   post.txt
-  01.jpg, 02.png …   (opcional)
+  imagen.jpg         (opcional; también .png o .webp)
 ```
 
 `post.txt`:
 
 ```
-Proyecto: jiron-tumbes     (opcional: usa las imágenes de ese proyecto)
-Imágenes: 2, 1             (opcional: cuáles y en qué orden; si no, todas)
+Proyecto: jiron-tumbes     (opcional: usa una imagen de ese proyecto)
+Imagen: 2                  (opcional: cuál; si no, la primera)
 
 El texto del post, tal cual. Hasta 2.200 caracteres y 30 hashtags.
 ```
 
-- Si la carpeta tiene imágenes propias, se usan esas y se ignora `Proyecto`.
-- 1 imagen → foto; de 2 a 10 → carrusel. Solo imágenes, no vídeo.
-- Todas se llevan a la proporción de la primera (entre 4:5 y 1.91:1) con
-  relleno blanco. No se recorta nada.
+- **Una imagen por post. Nada de carruseles**: una carpeta con dos imágenes da
+  error. Tampoco vídeo.
+- Si la carpeta tiene imagen propia, se usa esa y se ignora `Proyecto`.
+- Si la proporción se sale de lo que acepta Instagram (entre 4:5 y 1.91:1), se
+  rellena de blanco. No se recorta nada.
 - **Las carpetas que empiezan por `_` son borradores** y no se publican. Para
   aprobar uno, quitarle el `_`.
 

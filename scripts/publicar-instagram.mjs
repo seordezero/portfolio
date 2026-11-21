@@ -48,29 +48,15 @@ async function main() {
   const next = (await readQueue()).find((p) => !published[p.name]);
   if (!next) { console.log("Cola vacía: no hay nada que publicar."); return; }
 
-  console.log(`Siguiente: ${next.name} (${next.urls.length} imágenes)`);
-  for (const url of next.urls) {
-    const res = await fetch(url, { method: "HEAD" }).catch((err) => { throw new Error(`${url}: ${err.cause?.code || err.message}`); });
-    if (!res.ok) throw new Error(`${url} devuelve ${res.status}: el sitio aún no tiene este post desplegado`);
-  }
-  if (DRY) { console.log(next.urls.join("\n")); console.log("---\n" + next.caption); return; }
+  console.log(`Siguiente: ${next.name}`);
+  const head = await fetch(next.url, { method: "HEAD" }).catch((err) => { throw new Error(`${next.url}: ${err.cause?.code || err.message}`); });
+  if (!head.ok) throw new Error(`${next.url} devuelve ${head.status}: el sitio aún no tiene este post desplegado`);
+  if (DRY) { console.log(next.url + "\n---\n" + next.caption); return; }
 
   const user = process.env.IG_USER_ID;
   if (!user || !process.env.IG_ACCESS_TOKEN) throw new Error("faltan IG_USER_ID o IG_ACCESS_TOKEN");
 
-  let container;
-  if (next.urls.length === 1) {
-    container = (await call("POST", `${user}/media`, { image_url: next.urls[0], caption: next.caption })).id;
-  } else {
-    const children = [];
-    for (const url of next.urls) {
-      children.push((await call("POST", `${user}/media`, { image_url: url, is_carousel_item: "true" })).id);
-    }
-    for (const id of children) await waitReady(id);
-    container = (await call("POST", `${user}/media`, {
-      media_type: "CAROUSEL", children: children.join(","), caption: next.caption,
-    })).id;
-  }
+  const container = (await call("POST", `${user}/media`, { image_url: next.url, caption: next.caption })).id;
   await waitReady(container);
 
   const { id } = await call("POST", `${user}/media_publish`, { creation_id: container });

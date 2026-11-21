@@ -14,8 +14,7 @@ export const PROJECTS = path.join(ROOT, "content", "projects");
 export const PUBLISHED_JSON = path.join(QUEUE, "publicado.json");
 export const SITE = "https://sebastianortizdezevallos.com";
 
-const IMG_EXT = new Set([".jpg", ".jpeg", ".png"]);
-const MAX_ITEMS = 10;            // tope de un carrusel
+const IMG_EXT = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const MAX_CAPTION = 2200;
 const MAX_HASHTAGS = 30;
 
@@ -60,21 +59,18 @@ export async function readQueue() {
     }
     const { meta, caption } = parsePostTxt(raw);
 
-    // Imágenes propias de la carpeta; si no hay, las del proyecto que nombre.
+    // Una sola imagen por post: nada de carruseles. La propia de la carpeta o,
+    // si no hay, la que se elija del proyecto que nombre.
     let sources = await imagesIn(folder);
     if (sources.length === 0 && meta.proyecto) {
       const all = await imagesIn(path.join(PROJECTS, meta.proyecto));
-      if (meta.imagenes) {
-        const picks = meta.imagenes.split(",").map((s) => parseInt(s, 10)).filter(Boolean);
-        sources = picks.map((n) => {
-          if (!all[n - 1]) throw new Error(`${name}: ${meta.proyecto} no tiene imagen ${n}`);
-          return all[n - 1];
-        });
-      } else sources = all;
+      const n = parseInt(meta.imagen || "1", 10);
+      if (!all[n - 1]) throw new Error(`${name}: ${meta.proyecto} no tiene imagen ${n}`);
+      sources = [all[n - 1]];
     }
 
-    if (sources.length === 0) throw new Error(`${name}: sin imágenes`);
-    if (sources.length > MAX_ITEMS) throw new Error(`${name}: ${sources.length} imágenes, el máximo es ${MAX_ITEMS}`);
+    if (sources.length === 0) throw new Error(`${name}: sin imagen`);
+    if (sources.length > 1) throw new Error(`${name}: ${sources.length} imágenes; un post lleva una sola`);
     if (caption.length > MAX_CAPTION) throw new Error(`${name}: el texto pasa de ${MAX_CAPTION} caracteres`);
     const tags = (caption.match(/#[\p{L}\p{N}_]+/gu) || []).length;
     if (tags > MAX_HASHTAGS) throw new Error(`${name}: ${tags} hashtags, el máximo es ${MAX_HASHTAGS}`);
@@ -82,10 +78,9 @@ export async function readQueue() {
     posts.push({
       name,
       caption,
-      sources,
-      // Dónde las deja el build y desde dónde las baja Instagram.
-      files: sources.map((_, k) => `${String(k + 1).padStart(2, "0")}.jpg`),
-      urls: sources.map((_, k) => `${SITE}/instagram/${name}/${String(k + 1).padStart(2, "0")}.jpg`),
+      source: sources[0],
+      // Dónde la deja el build y desde dónde la baja Instagram.
+      url: `${SITE}/instagram/${name}.jpg`,
     });
   }
   return posts;
