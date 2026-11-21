@@ -5,6 +5,13 @@ cada martes (17:07 UTC), el primero en orden de nombre que no esté en
 `publicado.json`, y lo apunta ahí. También se lanza a mano desde la pestaña
 Actions.
 
+## De dónde salen las imágenes
+
+Las imágenes nuevas para publicar están en Google Drive:
+`My Drive/00_Proyectos/11_MIDJOURNEY/FERAL TAXONOMY`
+(carpeta `1C9TfwdF4XVIBB8Kuvl82M0U5hSG_NvnO`). El texto se escribe siguiendo
+`VOZ.md`.
+
 ## Un post
 
 ```
